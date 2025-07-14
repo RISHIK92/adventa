@@ -290,9 +290,11 @@ export default function TestPage() {
                   </div>
                   <Progress value={(timeLeft / timeLimit) * 100} className="w-full" />
                   <CardDescription>
-                    <Badge variant="outline">{currentQuestion.subject}</Badge>
+                    <div className="flex justify-between items-center mt-2">
+                      <Badge variant="outline">{currentQuestion.subject}</Badge>
+                    </div>
                     <div className="prose prose-sm max-w-none p-4 dark:prose-invert md:prose-base md:p-6">
-                      <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>
+                      <ReactMarkdown remarkPlugins={[[remarkMath, {singleDollarTextMath: false}], remarkGfm]} rehypePlugins={[rehypeKatex]}>
                         {currentQuestion.question}
                       </ReactMarkdown>
                     </div>
@@ -315,7 +317,7 @@ export default function TestPage() {
                         </FormControl>
                         <FormLabel className="w-full cursor-pointer font-normal">
                            <div className="prose prose-sm max-w-none dark:prose-invert">
-                            <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>
+                            <ReactMarkdown remarkPlugins={[[remarkMath, {singleDollarTextMath: false}], remarkGfm]} rehypePlugins={[rehypeKatex]}>
                               {option}
                             </ReactMarkdown>
                           </div>
@@ -385,7 +387,7 @@ export default function TestPage() {
                         <AccordionContent>
                           <div className="space-y-6 p-2">
                             <div className="prose prose-sm max-w-none dark:prose-invert md:prose-base">
-                              <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>{q.question}</ReactMarkdown>
+                              <ReactMarkdown remarkPlugins={[[remarkMath, {singleDollarTextMath: false}], remarkGfm]} rehypePlugins={[rehypeKatex]}>{q.question}</ReactMarkdown>
                             </div>
                             <div className="space-y-2">
                               {q.options.map((option, i) => (
@@ -403,14 +405,14 @@ export default function TestPage() {
                                   ) : (
                                     <div className="mt-0.5 h-4 w-4 flex-shrink-0" />
                                   )}
-                                  <div className="prose prose-sm max-w-none dark:prose-invert"><ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>{option}</ReactMarkdown></div>
+                                  <div className="prose prose-sm max-w-none dark:prose-invert"><ReactMarkdown remarkPlugins={[[remarkMath, {singleDollarTextMath: false}], remarkGfm]} rehypePlugins={[rehypeKatex]}>{option}</ReactMarkdown></div>
                                 </div>
                               ))}
                             </div>
                             <div>
                               <Badge>Explanation</Badge>
                               <div className="prose prose-sm mt-2 max-w-none rounded-md border bg-secondary/50 p-4 dark:prose-invert md:prose-base">
-                                <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>{q.explanation}</ReactMarkdown>
+                                <ReactMarkdown remarkPlugins={[[remarkMath, {singleDollarTextMath: false}], remarkGfm]} rehypePlugins={[rehypeKatex]}>{q.explanation}</ReactMarkdown>
                               </div>
                             </div>
                           </div>
@@ -487,7 +489,7 @@ export default function TestPage() {
                         <Select onValueChange={field.onChange} defaultValue={field.value}>
                           <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
                           <SelectContent>
-                            {Object.keys(subjectGroups).filter(g => g !== 'PCMB' || subjectGroups[g].length === 4).map((group) => (
+                            {Object.keys(subjectGroups).filter(g => g !== 'PCMB' || subjectGroups[g as keyof typeof subjectGroups].length === 4).map((group) => (
                               <SelectItem key={group} value={group}>{group}</SelectItem>
                             ))}
                           </SelectContent>

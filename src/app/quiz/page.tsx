@@ -217,7 +217,7 @@ export default function QuizPage() {
                   </CardTitle>
                   <CardDescription>
                     <div className="prose prose-sm max-w-none p-4 dark:prose-invert md:prose-base md:p-6">
-                      <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>
+                      <ReactMarkdown remarkPlugins={[[remarkMath, {singleDollarTextMath: false}], remarkGfm]} rehypePlugins={[rehypeKatex]}>
                         {currentQuestion.question}
                       </ReactMarkdown>
                     </div>
@@ -242,7 +242,7 @@ export default function QuizPage() {
                         </FormControl>
                         <FormLabel className="w-full cursor-pointer font-normal">
                            <div className="prose prose-sm max-w-none dark:prose-invert">
-                            <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>
+                            <ReactMarkdown remarkPlugins={[[remarkMath, {singleDollarTextMath: false}], remarkGfm]} rehypePlugins={[rehypeKatex]}>
                               {option}
                             </ReactMarkdown>
                           </div>
@@ -302,7 +302,7 @@ export default function QuizPage() {
                         <AccordionContent>
                           <div className="space-y-6 p-2">
                             <div className="prose prose-sm max-w-none dark:prose-invert md:prose-base">
-                              <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>
+                              <ReactMarkdown remarkPlugins={[[remarkMath, {singleDollarTextMath: false}], remarkGfm]} rehypePlugins={[rehypeKatex]}>
                                 {q.question}
                               </ReactMarkdown>
                             </div>
@@ -330,7 +330,7 @@ export default function QuizPage() {
                                       <div className="mt-0.5 h-4 w-4 flex-shrink-0" />
                                     )}
                                     <div className="prose prose-sm max-w-none dark:prose-invert">
-                                      <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>
+                                      <ReactMarkdown remarkPlugins={[[remarkMath, {singleDollarTextMath: false}], remarkGfm]} rehypePlugins={[rehypeKatex]}>
                                         {option}
                                       </ReactMarkdown>
                                     </div>
@@ -341,7 +341,7 @@ export default function QuizPage() {
                             <div>
                               <Badge>Explanation</Badge>
                               <div className="prose prose-sm mt-2 max-w-none rounded-md border bg-secondary/50 p-4 dark:prose-invert md:prose-base">
-                                <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>
+                                <ReactMarkdown remarkPlugins={[[remarkMath, {singleDollarTextMath: false}], remarkGfm]} rehypePlugins={[rehypeKatex]}>
                                   {q.explanation}
                                 </ReactMarkdown>
                               </div>
