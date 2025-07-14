@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -189,56 +190,61 @@ export default function QuizPage() {
         );
       case 'displaying':
         return (
-          <Card>
-            <CardHeader>
-              <CardTitle>
-                Question {currentQuestionIndex + 1} of {questions.length}
-              </CardTitle>
-              <CardDescription>
-                <div className="prose prose-sm max-w-none p-4 dark:prose-invert md:prose-base md:p-6">
-                  <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>
-                    {currentQuestion.question}
-                  </ReactMarkdown>
-                </div>
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <RadioGroup
-                onValueChange={(value) => handleAnswerSelect(Number(value))}
-                value={
-                  selectedAnswers[currentQuestionIndex]?.toString() ?? undefined
-                }
-                className="space-y-4"
-              >
-                {currentQuestion.options.map((option, index) => (
-                  <FormItem
-                    key={index}
-                    className="flex items-center space-x-3 space-y-0 rounded-md border p-4 transition-colors has-[:checked]:bg-secondary"
-                  >
-                    <FormControl>
-                      <RadioGroupItem value={index.toString()} />
-                    </FormControl>
-                    <FormLabel className="w-full cursor-pointer font-normal">
-                       <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]} className="prose prose-sm max-w-none dark:prose-invert">
-                        {option}
+          <Form {...form}>
+            <form>
+              <Card>
+                <CardHeader>
+                  <CardTitle>
+                    Question {currentQuestionIndex + 1} of {questions.length}
+                  </CardTitle>
+                  <CardDescription>
+                    <div className="prose prose-sm max-w-none p-4 dark:prose-invert md:prose-base md:p-6">
+                      <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>
+                        {currentQuestion.question}
                       </ReactMarkdown>
-                    </FormLabel>
-                  </FormItem>
-                ))}
-              </RadioGroup>
-            </CardContent>
-            <CardFooter>
-              <Button
-                onClick={handleNextQuestion}
-                disabled={selectedAnswers[currentQuestionIndex] === undefined}
-                className="w-full"
-              >
-                {currentQuestionIndex < questions.length - 1
-                  ? 'Next Question'
-                  : 'Finish Quiz'}
-              </Button>
-            </CardFooter>
-          </Card>
+                    </div>
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <RadioGroup
+                    onValueChange={(value) => handleAnswerSelect(Number(value))}
+                    value={
+                      selectedAnswers[currentQuestionIndex]?.toString() ?? undefined
+                    }
+                    className="space-y-4"
+                  >
+                    {currentQuestion.options.map((option, index) => (
+                      <FormItem
+                        key={index}
+                        className="flex items-center space-x-3 space-y-0 rounded-md border p-4 transition-colors has-[:checked]:bg-secondary"
+                      >
+                        <FormControl>
+                          <RadioGroupItem value={index.toString()} />
+                        </FormControl>
+                        <FormLabel className="w-full cursor-pointer font-normal">
+                           <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]} className="prose prose-sm max-w-none dark:prose-invert">
+                            {option}
+                          </ReactMarkdown>
+                        </FormLabel>
+                      </FormItem>
+                    ))}
+                  </RadioGroup>
+                </CardContent>
+                <CardFooter>
+                  <Button
+                    onClick={handleNextQuestion}
+                    disabled={selectedAnswers[currentQuestionIndex] === undefined}
+                    className="w-full"
+                    type="button"
+                  >
+                    {currentQuestionIndex < questions.length - 1
+                      ? 'Next Question'
+                      : 'Finish Quiz'}
+                  </Button>
+                </CardFooter>
+              </Card>
+            </form>
+          </Form>
         );
       case 'finished':
         return (
