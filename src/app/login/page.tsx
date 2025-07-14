@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
-import { signInWithEmailAndPassword } from 'firebase/auth';
+import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 import { BrainCircuit, Loader2 } from 'lucide-react';
 
 import { auth } from '@/lib/firebase';
@@ -31,6 +31,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/use-auth';
+import { Separator } from '@/components/ui/separator';
 
 const formSchema = z.object({
   email: z.string().email({ message: 'Please enter a valid email address.' }),
@@ -39,11 +40,19 @@ const formSchema = z.object({
 
 type LoginFormValues = z.infer<typeof formSchema>;
 
+const GoogleIcon = () => (
+  <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" className="h-4 w-4">
+    <title>Google</title>
+    <path d="M12.48 10.92v3.28h7.84c-.24 1.84-.85 3.18-1.73 4.1-1.02 1.02-2.3 1.84-4.25 1.84-5.18 0-9.4-4.22-9.4-9.4s4.22-9.4 9.4-9.4c2.6 0 4.92 1.02 6.57 2.6l2.5-2.5C19.05 1.18 15.98 0 12.48 0 5.88 0 0 5.88 0 12.48s5.88 12.48 12.48 12.48c7.2 0 12.03-4.92 12.03-12.03 0-.8-.08-1.55-.2-2.3H12.48z" />
+  </svg>
+);
+
 export default function LoginPage() {
   const router = useRouter();
   const { toast } = useToast();
   const { user } = useAuth();
   const [isLoading, setIsLoading] = React.useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = React.useState(false);
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(formSchema),
@@ -78,6 +87,27 @@ export default function LoginPage() {
       setIsLoading(false);
     }
   };
+  
+  const handleGoogleSignIn = async () => {
+    setIsGoogleLoading(true);
+    try {
+      const provider = new GoogleAuthProvider();
+      await signInWithPopup(auth, provider);
+      toast({
+        title: 'Login Successful',
+        description: "Welcome!",
+      });
+      router.push('/profile');
+    } catch (error: any) {
+      toast({
+        variant: 'destructive',
+        title: 'Login Failed',
+        description: error.message || 'Could not sign in with Google.',
+      });
+    } finally {
+      setIsGoogleLoading(false);
+    }
+  }
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-gradient-to-br from-primary/10 via-background to-background p-4">
@@ -99,7 +129,7 @@ export default function LoginPage() {
                   <FormItem>
                     <FormLabel>Email</FormLabel>
                     <FormControl>
-                      <Input placeholder="you@example.com" {...field} />
+                      <Input placeholder="you@example.com" {...field} disabled={isGoogleLoading} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -112,7 +142,7 @@ export default function LoginPage() {
                   <FormItem>
                     <FormLabel>Password</FormLabel>
                     <FormControl>
-                      <Input type="password" placeholder="••••••••" {...field} />
+                      <Input type="password" placeholder="••••••••" {...field} disabled={isGoogleLoading}/>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -120,19 +150,35 @@ export default function LoginPage() {
               />
             </CardContent>
             <CardFooter className="flex flex-col gap-4">
-              <Button type="submit" className="w-full" disabled={isLoading}>
+              <Button type="submit" className="w-full" disabled={isLoading || isGoogleLoading}>
                 {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Sign In
               </Button>
-              <p className="text-sm text-muted-foreground">
-                Don't have an account?{' '}
-                <Button variant="link" asChild className="p-0">
-                  <Link href="/signup">Sign up</Link>
-                </Button>
-              </p>
             </CardFooter>
           </form>
         </Form>
+        <div className="relative mb-4">
+          <div className="absolute inset-0 flex items-center">
+            <span className="w-full border-t" />
+          </div>
+          <div className="relative flex justify-center text-xs uppercase">
+            <span className="bg-card px-2 text-muted-foreground">
+              Or continue with
+            </span>
+          </div>
+        </div>
+        <CardFooter className="flex flex-col gap-4">
+           <Button variant="outline" className="w-full" onClick={handleGoogleSignIn} disabled={isLoading || isGoogleLoading}>
+            {isGoogleLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <GoogleIcon />}
+            Google
+          </Button>
+          <p className="text-sm text-muted-foreground">
+            Don't have an account?{' '}
+            <Button variant="link" asChild className="p-0">
+              <Link href="/signup">Sign up</Link>
+            </Button>
+          </p>
+        </CardFooter>
       </Card>
     </main>
   );
