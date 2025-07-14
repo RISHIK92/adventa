@@ -1,3 +1,4 @@
+
 import type {Config} from 'tailwindcss';
 
 export default {
@@ -167,10 +168,22 @@ export default {
             },
           },
         },
+        sm: {
+          css: {
+            '.katex-display, .katex': {
+              'font-size': 'inherit',
+            },
+          },
+        },
+        base: {
+          css: {
+            '.katex-display, .katex': {
+              'font-size': 'inherit',
+            },
+          },
+        },
       }),
     },
   },
   plugins: [require('tailwindcss-animate'), require('@tailwindcss/typography')],
 } satisfies Config;
-
-    

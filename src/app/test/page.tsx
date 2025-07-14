@@ -150,13 +150,31 @@ export default function TestPage() {
 
   const currentQuestion = questions[currentQuestionIndex];
 
+    const finishTest = React.useCallback(() => {
+    setTestState(prevState => {
+      if (prevState === 'testing') {
+        setQuestions(currentQuestions => {
+          const answeredQuestions = currentQuestions.map(q => ({
+            ...q,
+            isCorrect: q.userAnswer === q.correctAnswer,
+          }));
+          return answeredQuestions;
+        });
+        clearInterval(timerIntervalRef.current);
+        return 'finished';
+      }
+      return prevState;
+    });
+  }, []);
+
   React.useEffect(() => {
     if (testState === 'testing' && timeLeft > 0) {
       timerIntervalRef.current = setInterval(() => {
         setTimeLeft((prev) => {
           if (prev <= 1) {
             clearInterval(timerIntervalRef.current);
-            handleTimeUp();
+            setIsTimeUp(true);
+            finishTest();
             return 0;
           }
           return prev - 1;
@@ -164,8 +182,7 @@ export default function TestPage() {
       }, 1000);
     }
     return () => clearInterval(timerIntervalRef.current);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [testState, timeLeft]);
+  }, [testState, timeLeft, finishTest]);
 
   const handleGenerateTest = async (values: TestFormValues) => {
     setTestState('loading');
@@ -184,7 +201,7 @@ export default function TestPage() {
     try {
       const result = await generateTest(input);
       if (result && result.questions?.length > 0) {
-        setQuestions(result.questions);
+        setQuestions(result.questions.map(q => ({...q, userAnswer: undefined, isCorrect: undefined })));
         setCurrentQuestionIndex(0);
         setTimeLeft(timeLimit * 60);
         setIsReviewing(false);
@@ -207,19 +224,8 @@ export default function TestPage() {
     handleGenerateTest(values);
   };
 
-  const finishTest = React.useCallback(() => {
-    const answeredQuestions = questions.map((q) => ({
-      ...q,
-      isCorrect: q.userAnswer === q.correctAnswer,
-    }));
-    setQuestions(answeredQuestions);
-    setTestState('finished');
-    clearInterval(timerIntervalRef.current);
-  }, [questions]);
-
   const handleTimeUp = () => {
     setIsTimeUp(true);
-    finishTest();
   };
   
   const handleAnswerSelect = (answerIndex: number) => {
@@ -369,7 +375,7 @@ export default function TestPage() {
                         </AccordionTrigger>
                         <AccordionContent>
                           <div className="space-y-6 p-2">
-                            <div className="prose prose-sm max-w-none dark:prose-invert">
+                            <div className="prose prose-sm max-w-none dark:prose-invert md:prose-base">
                               <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>{q.question}</ReactMarkdown>
                             </div>
                             <div className="space-y-2">
@@ -388,13 +394,13 @@ export default function TestPage() {
                                   ) : (
                                     <div className="mt-0.5 h-4 w-4 flex-shrink-0" />
                                   )}
-                                  <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]} className="prose prose-sm max-w-none dark:prose-invert">{option}</ReactMarkdown>
+                                  <div className="prose prose-sm max-w-none dark:prose-invert md:prose-base"><ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>{option}</ReactMarkdown></div>
                                 </div>
                               ))}
                             </div>
                             <div>
                               <Badge>Explanation</Badge>
-                              <div className="prose prose-sm mt-2 max-w-none rounded-md border bg-secondary/50 p-4 dark:prose-invert">
+                              <div className="prose prose-sm mt-2 max-w-none rounded-md border bg-secondary/50 p-4 dark:prose-invert md:prose-base">
                                 <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>{q.explanation}</ReactMarkdown>
                               </div>
                             </div>
