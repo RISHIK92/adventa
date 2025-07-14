@@ -105,69 +105,71 @@ export function VerticalAscentClient({ subjects: initialSubjects }: VerticalAsce
       <div className="absolute inset-0 -z-10 bg-background" />
       <div className="absolute inset-0 -z-10 bg-primary/10 [mask-image:radial-gradient(100%_100%_at_50%_0,white,transparent)]" />
       
-      <div className="container mx-auto relative">
-        <div
-          className={cn(
-            'absolute top-8 left-1/2 -translate-x-1/2 transition-all duration-700 ease-in-out',
-            viewState !== 'subjects'
-              ? 'opacity-100 scale-100'
-              : 'opacity-0 scale-90 pointer-events-none'
-          )}
-        >
-          {selectedSubject && <SubjectHeader subject={selectedSubject} />}
-        </div>
-        
-        <div
-          className={cn(
-            'transition-all duration-500 ease-in-out',
-            viewState !== 'subjects' ? 'opacity-0 pointer-events-none' : 'opacity-100'
-          )}
-        >
-          <SubjectsView subjects={subjects} onSelectSubject={handleSelectSubject} />
-        </div>
+      <div className="container mx-auto">
+        <div className="flex flex-col items-center">
+            <div
+              className={cn(
+                'transition-all duration-700 ease-in-out mb-8',
+                viewState !== 'subjects'
+                  ? 'opacity-100 scale-100'
+                  : 'opacity-0 scale-90 pointer-events-none'
+              )}
+            >
+              {selectedSubject && <SubjectHeader subject={selectedSubject} />}
+            </div>
+            
+            <div
+              className={cn(
+                'transition-all duration-500 ease-in-out',
+                viewState !== 'subjects' ? 'opacity-0 pointer-events-none absolute' : 'opacity-100'
+              )}
+            >
+              <SubjectsView subjects={subjects} onSelectSubject={handleSelectSubject} />
+            </div>
 
-        <div className="relative">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleBack}
-            className={cn(
-              'absolute -top-4 left-0 transition-opacity duration-300 flex items-center gap-2',
-              viewState === 'subjects' ? 'opacity-0 pointer-events-none' : 'opacity-100'
-            )}
-          >
-            <ArrowLeft className="h-4 w-4" />
-            {backButtonText}
-          </Button>
+            <div className={cn("w-full max-w-4xl relative", viewState === 'subjects' ? 'hidden' : 'block' )}>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleBack}
+                className={cn(
+                  'absolute -top-16 left-0 transition-opacity duration-300 flex items-center gap-2',
+                   viewState === 'subjects' ? 'opacity-0 pointer-events-none' : 'opacity-100'
+                )}
+              >
+                <ArrowLeft className="h-4 w-4" />
+                {backButtonText}
+              </Button>
 
-          <div
-            className={cn(
-              'transition-all duration-700 ease-in-out delay-200',
-              viewState === 'lessons'
-                ? 'opacity-100'
-                : 'opacity-0 pointer-events-none'
-            )}
-          >
-            {selectedSubject && (
-              <LessonsView
-                subject={selectedSubject}
-                onSelectLesson={handleSelectLesson}
-              />
-            )}
-          </div>
+              <div
+                className={cn(
+                  'transition-all duration-700 ease-in-out',
+                  viewState === 'lessons'
+                    ? 'opacity-100'
+                    : 'opacity-0 pointer-events-none absolute'
+                )}
+              >
+                {selectedSubject && (
+                  <LessonsView
+                    subject={selectedSubject}
+                    onSelectLesson={handleSelectLesson}
+                  />
+                )}
+              </div>
 
-          <div
-            className={cn(
-              'transition-all duration-700 ease-in-out',
-              viewState === 'lesson_detail'
-                ? 'opacity-100'
-                : 'opacity-0 pointer-events-none -translate-y-4'
-            )}
-          >
-            {selectedSubject && selectedLesson && (
-              <LessonDetailView subject={selectedSubject} lesson={selectedLesson} toast={toast}/>
-            )}
-          </div>
+              <div
+                className={cn(
+                  'transition-all duration-700 ease-in-out',
+                  viewState === 'lesson_detail'
+                    ? 'opacity-100'
+                    : 'opacity-0 pointer-events-none -translate-y-4'
+                )}
+              >
+                {selectedSubject && selectedLesson && (
+                  <LessonDetailView subject={selectedSubject} lesson={selectedLesson} toast={toast}/>
+                )}
+              </div>
+            </div>
         </div>
       </div>
     </div>
@@ -218,19 +220,19 @@ function SubjectHeader({ subject }: { subject: Subject }) {
 
 function LessonsView({ subject, onSelectLesson }: { subject: Subject, onSelectLesson: (lesson: Lesson) => void }) {
   return (
-    <div className="pt-32 flex justify-center">
-        <div className="flex flex-col items-center gap-8">
+    <div className="flex justify-center">
+        <div className="flex flex-col items-center gap-0">
             {subject.lessons.map((lesson, index) => (
                 <div key={lesson.id} className="flex flex-col items-center relative">
+                    {index > 0 && (
+                      <div className="w-1 h-8 bg-transparent border-l border-dashed border-primary/50"/>
+                    )}
                     <Card
                         onClick={() => onSelectLesson(lesson)}
                         className="w-80 h-24 flex items-center justify-center text-center p-4 cursor-pointer hover:bg-accent/20 hover:border-accent transition-all duration-300 shadow-md"
                     >
                         <CardTitle className="text-lg font-medium">{lesson.title}</CardTitle>
                     </Card>
-                    {index < subject.lessons.length - 1 && (
-                      <div className="w-1 h-8 bg-primary/50 border-l border-dashed border-primary"/>
-                    )}
                 </div>
             ))}
         </div>
@@ -240,7 +242,7 @@ function LessonsView({ subject, onSelectLesson }: { subject: Subject, onSelectLe
 
 function LessonDetailView({ subject, lesson, toast }: { subject: Subject; lesson: Lesson, toast: any }) {
   return (
-    <div className="pt-32 max-w-4xl mx-auto">
+    <div className="max-w-4xl mx-auto">
       <Card className="mb-8">
         <CardHeader>
           <CardTitle className="text-3xl font-bold font-headline">{lesson.title}</CardTitle>
