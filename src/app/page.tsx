@@ -1,4 +1,4 @@
-import { ArrowRight, BookOpen, BrainCircuit } from 'lucide-react';
+import { ArrowRight, BookOpen, BrainCircuit, ClipboardCheck } from 'lucide-react';
 import Link from 'next/link';
 
 import {
@@ -18,11 +18,11 @@ export default function Home() {
         <h1 className="font-headline text-4xl font-bold md:text-6xl">
           Welcome to Your Learning Hub
         </h1>
-        <p className="mb-12 mt-4 max-w-3xl text-lg text-muted-foreground">
-          Choose your path. Dive deep into complex subjects with Vertical Ascent, or test your knowledge with a dynamically generated quiz.
+        <p className="mb-12 mt-4 max-w-4xl text-lg text-muted-foreground">
+          Choose your path. Dive deep into complex subjects with Vertical Ascent, test your knowledge with a dynamically generated quiz, or challenge yourself with a mock test.
         </p>
 
-        <div className="grid w-full max-w-4xl grid-cols-1 gap-8 md:grid-cols-2">
+        <div className="grid w-full max-w-6xl grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
           <Card className="transform-gpu transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl">
             <CardHeader>
               <div className="mb-4 flex justify-center">
@@ -62,6 +62,27 @@ export default function Home() {
               <Button asChild size="lg" variant="secondary" className="w-full">
                 <Link href="/quiz">
                   Take a Quiz <ArrowRight className="ml-2" />
+                </Link>
+              </Button>
+            </CardContent>
+          </Card>
+
+           <Card className="transform-gpu transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl md:col-span-2 lg:col-span-1">
+            <CardHeader>
+              <div className="mb-4 flex justify-center">
+                <div className="rounded-full bg-secondary/80 p-4">
+                  <ClipboardCheck className="h-10 w-10 text-secondary-foreground" />
+                </div>
+              </div>
+              <CardTitle className="font-headline text-3xl">Mock Test</CardTitle>
+              <CardDescription className="text-md">
+                Simulate an exam with a timed test covering multiple subjects and track your performance.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button asChild size="lg" variant="secondary" className="w-full">
+                <Link href="/test">
+                  Start a Test <ArrowRight className="ml-2" />
                 </Link>
               </Button>
             </CardContent>
