@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -32,7 +33,7 @@ import { cn } from '@/lib/utils';
 type ViewState = 'subjects' | 'lessons' | 'lesson_detail';
 
 interface VerticalAscentClientProps {
-  subjects: Omit<Subject, 'icon'>[];
+  subjects: Omit<Subject, 'iconName'>[];
 }
 
 const iconMap = {
@@ -52,7 +53,9 @@ function SubjectIcon({
   return Icon ? <Icon className={className} /> : null;
 }
 
-export function VerticalAscentClient({ subjects }: VerticalAscentClientProps) {
+export function VerticalAscentClient({ subjects: initialSubjects }: VerticalAscentClientProps) {
+  const subjects = React.useMemo(() => initialSubjects.map(s => ({...s, iconName: s.iconName || 'Atom' })), [initialSubjects]);
+
   const [viewState, setViewState] = React.useState<ViewState>('subjects');
   const [selectedSubject, setSelectedSubject] = React.useState<Subject | null>(
     null
@@ -215,17 +218,19 @@ function SubjectHeader({ subject }: { subject: Subject }) {
 
 function LessonsView({ subject, onSelectLesson }: { subject: Subject, onSelectLesson: (lesson: Lesson) => void }) {
   return (
-    <div className="pt-32">
-        <div className="flex flex-wrap justify-center gap-x-8 gap-y-12">
+    <div className="pt-32 flex justify-center">
+        <div className="flex flex-col items-center gap-8">
             {subject.lessons.map((lesson, index) => (
                 <div key={lesson.id} className="flex flex-col items-center relative">
-                    <div className="absolute top-1/2 left-full w-8 border-b-2 border-dashed border-primary/50" style={{display: index === subject.lessons.length - 1 || (index+1) % 3 === 0 ? 'none' : 'block' }}/>
                     <Card
                         onClick={() => onSelectLesson(lesson)}
-                        className="w-64 h-32 flex items-center justify-center text-center p-4 cursor-pointer hover:bg-accent/20 hover:border-accent transition-all duration-300"
+                        className="w-80 h-24 flex items-center justify-center text-center p-4 cursor-pointer hover:bg-accent/20 hover:border-accent transition-all duration-300 shadow-md"
                     >
                         <CardTitle className="text-lg font-medium">{lesson.title}</CardTitle>
                     </Card>
+                    {index < subject.lessons.length - 1 && (
+                      <div className="w-1 h-8 bg-primary/50 border-l border-dashed border-primary"/>
+                    )}
                 </div>
             ))}
         </div>
