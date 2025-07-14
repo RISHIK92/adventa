@@ -61,6 +61,17 @@ export default function ProfilePage() {
     );
   }
 
+  const renderTimestamp = (timestamp: string) => {
+    try {
+      if (timestamp && !isNaN(new Date(timestamp).getTime())) {
+        return formatDistanceToNow(new Date(timestamp), { addSuffix: true });
+      }
+    } catch (e) {
+      // In case of any other parsing error
+    }
+    return null;
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-background">
       <Header />
@@ -98,7 +109,7 @@ export default function ProfilePage() {
                             {result.score}/{result.totalQuestions}
                           </p>
                           <p className="text-xs text-muted-foreground">
-                            {formatDistanceToNow(new Date(result.timestamp), { addSuffix: true })}
+                             {renderTimestamp(result.timestamp)}
                           </p>
                         </div>
                       </div>
@@ -141,7 +152,7 @@ export default function ProfilePage() {
                               {result.score}/{result.totalQuestions}
                             </p>
                              <p className="text-xs text-muted-foreground">
-                              {formatDistanceToNow(new Date(result.timestamp), { addSuffix: true })}
+                               {renderTimestamp(result.timestamp)}
                             </p>
                           </div>
                         </div>
