@@ -16,6 +16,7 @@ import {
 
 import type { Lesson, Subject } from '@/lib/types';
 import { getSuggestions } from '@/app/actions';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -111,7 +112,7 @@ export function VerticalAscentClient({ subjects: initialSubjects }: VerticalAsce
               className={cn(
                 'transition-all duration-700 ease-in-out',
                 viewState !== 'subjects'
-                  ? 'opacity-100 scale-100 mb-4'
+                  ? 'opacity-100 scale-100 mb-8'
                   : 'opacity-0 scale-90 pointer-events-none'
               )}
             >
@@ -133,7 +134,7 @@ export function VerticalAscentClient({ subjects: initialSubjects }: VerticalAsce
                 size="sm"
                 onClick={handleBack}
                 className={cn(
-                  'absolute -top-14 left-0 transition-opacity duration-300 flex items-center gap-2',
+                  'absolute -top-16 left-0 transition-opacity duration-300 flex items-center gap-2',
                    viewState === 'subjects' ? 'opacity-0 pointer-events-none' : 'opacity-100'
                 )}
               >
@@ -178,10 +179,10 @@ export function VerticalAscentClient({ subjects: initialSubjects }: VerticalAsce
 
 function SubjectsView({ subjects, onSelectSubject }: { subjects: Subject[], onSelectSubject: (subject: Subject) => void }) {
   return (
-    <div className="flex flex-col items-center justify-center min-h-[80vh] text-center">
-      <BrainCircuit className="h-16 w-16 mb-4 text-primary" />
+    <div className="flex flex-col items-center justify-center min-h-[80vh] text-center px-4">
+      <BrainCircuit className="h-12 w-12 md:h-16 md:w-16 mb-4 text-primary" />
       <h1 className="text-4xl md:text-5xl font-bold font-headline">Vertical Ascent</h1>
-      <p className="mt-2 mb-12 text-lg text-muted-foreground max-w-2xl">
+      <p className="mt-2 mb-8 md:mb-12 text-md md:text-lg text-muted-foreground max-w-2xl">
         An interactive learning journey. Select a subject to begin your ascent.
       </p>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -213,22 +214,23 @@ function SubjectHeader({ subject }: { subject: Subject }) {
             <div className="p-2 bg-primary/10 rounded-full">
               <SubjectIcon name={subject.iconName} className="h-6 w-6 text-primary" />
             </div>
-            <h1 className="text-2xl font-bold font-headline">{subject.title}</h1>
+            <h1 className="text-xl md:text-2xl font-bold font-headline">{subject.title}</h1>
         </div>
     );
 }
 
 function LessonsView({ subject, onSelectLesson }: { subject: Subject, onSelectLesson: (lesson: Lesson) => void }) {
+  const isMobile = useIsMobile();
   const containerRef = React.useRef<HTMLDivElement>(null);
   const [svgDimensions, setSvgDimensions] = React.useState({ width: 0, height: 0 });
 
-  const PADDING_X = 50;
+  const ITEMS_PER_ROW = isMobile ? 1 : 4;
+  const PADDING_X = isMobile ? 16 : 50;
   const PADDING_Y = 20;
-  const NODE_WIDTH = 180;
+  const NODE_WIDTH = isMobile ? 280 : 180;
   const NODE_HEIGHT = 60;
-  const H_SPACING = 40;
-  const V_SPACING = 40;
-  const ITEMS_PER_ROW = 4;
+  const H_SPACING = isMobile ? 0 : 40;
+  const V_SPACING = isMobile ? 20 : 40;
   
   const nodes = React.useMemo(() => {
     return subject.lessons.map((lesson, i) => {
@@ -242,23 +244,47 @@ function LessonsView({ subject, onSelectLesson }: { subject: Subject, onSelectLe
       
       return { ...lesson, x, y, rowIndex };
     });
-  }, [subject.lessons]);
+  }, [subject.lessons, ITEMS_PER_ROW, NODE_WIDTH, H_SPACING, V_SPACING]);
   
   React.useEffect(() => {
     function updateSize() {
       if (containerRef.current) {
         const numRows = Math.ceil(subject.lessons.length / ITEMS_PER_ROW);
         const totalHeight = numRows * (NODE_HEIGHT + V_SPACING) + PADDING_Y;
-        const totalWidth = ITEMS_PER_ROW * (NODE_WIDTH + H_SPACING) + PADDING_X;
+        let totalWidth = ITEMS_PER_ROW * (NODE_WIDTH + H_SPACING) + PADDING_X;
+        if (isMobile && containerRef.current) {
+          totalWidth = containerRef.current.offsetWidth;
+        }
         setSvgDimensions({ width: totalWidth, height: totalHeight });
       }
     }
     updateSize();
     window.addEventListener('resize', updateSize);
     return () => window.removeEventListener('resize', updateSize);
-  }, [subject.lessons, nodes]);
+  }, [subject.lessons, nodes, isMobile, ITEMS_PER_ROW, NODE_WIDTH, H_SPACING, V_SPACING]);
 
   const { width, height } = svgDimensions;
+
+  if (isMobile) {
+    return (
+      <div className="space-y-4">
+        {subject.lessons.map((lesson, index) => (
+          <div key={lesson.id} className="relative flex items-center justify-center">
+             {index < subject.lessons.length - 1 && (
+                <div className="absolute top-full left-1/2 w-0.5 h-4 bg-primary/30" />
+            )}
+            <Card
+              onClick={() => onSelectLesson(lesson)}
+              className="w-full max-w-sm flex items-center justify-center text-center p-2 cursor-pointer bg-card/60 backdrop-blur-sm border-2 border-transparent hover:border-primary/80 transition-all duration-300 shadow-lg hover:shadow-primary/20"
+              style={{height: `${NODE_HEIGHT}px`}}
+            >
+              <CardTitle className="text-sm font-medium">{lesson.title}</CardTitle>
+            </Card>
+          </div>
+        ))}
+      </div>
+    );
+  }
 
   return (
     <div ref={containerRef} className="relative w-full flex justify-center items-center" style={{ height: `${height}px` }}>
@@ -341,7 +367,7 @@ function LessonDetailView({ subject, lesson, toast }: { subject: Subject; lesson
     <div className="max-w-4xl mx-auto">
       <Card className="mb-8 bg-card/80 backdrop-blur-sm">
         <CardHeader>
-          <CardTitle className="text-3xl font-bold font-headline">{lesson.title}</CardTitle>
+          <CardTitle className="text-2xl md:text-3xl font-bold font-headline">{lesson.title}</CardTitle>
           <CardDescription>From the subject: {subject.title}</CardDescription>
         </CardHeader>
         <CardContent>
@@ -352,14 +378,14 @@ function LessonDetailView({ subject, lesson, toast }: { subject: Subject; lesson
             </TabsList>
             <TabsContent value="cheatsheet">
               <Card className="mt-4">
-                <CardContent className="p-6 text-base leading-relaxed prose dark:prose-invert">
+                <CardContent className="p-4 md:p-6 text-base leading-relaxed prose dark:prose-invert max-w-none">
                   {lesson.content.cheatsheet}
                 </CardContent>
               </Card>
             </TabsContent>
             <TabsContent value="formulasheet">
               <Card className="mt-4">
-                <CardContent className="p-6 font-mono whitespace-pre-wrap">
+                <CardContent className="p-4 md:p-6 font-mono whitespace-pre-wrap text-sm md:text-base">
                   {lesson.content.formulasheet}
                 </CardContent>
               </Card>
@@ -402,7 +428,7 @@ function AiSuggestions({ subject, lesson, toast }: { subject: Subject; lesson: L
         return (
             <Card className="bg-card/80 backdrop-blur-sm">
                 <CardHeader>
-                    <CardTitle className="flex items-center gap-2 font-headline"><Lightbulb className="text-primary"/> Related Subjects</CardTitle>
+                    <CardTitle className="flex items-center gap-2 font-headline text-xl md:text-2xl"><Lightbulb className="text-primary"/> Related Subjects</CardTitle>
                     <CardDescription>Broaden your knowledge with these related topics.</CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -413,7 +439,7 @@ function AiSuggestions({ subject, lesson, toast }: { subject: Subject; lesson: L
                     ) : (
                         <div className="flex flex-wrap gap-2">
                             {suggestions.map((suggestion, index) => (
-                                <Badge key={index} variant="secondary" className="text-base px-3 py-1 cursor-default">{suggestion}</Badge>
+                                <Badge key={index} variant="secondary" className="text-sm md:text-base px-3 py-1 cursor-default">{suggestion}</Badge>
                             ))}
                         </div>
                     )}
@@ -423,10 +449,12 @@ function AiSuggestions({ subject, lesson, toast }: { subject: Subject; lesson: L
     }
 
     return (
-        <div className="text-center">
+        <div className="text-center py-4">
             <Button onClick={handleFetchSuggestions} disabled={isLoading}>
                 {isLoading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Thinking...</> : <><Lightbulb className="mr-2 h-4 w-4" /> Get Smart Suggestions</>}
             </Button>
         </div>
     );
 }
+
+    
