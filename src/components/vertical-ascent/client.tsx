@@ -489,7 +489,7 @@ function LessonDetailView({
         </div>
       );
     }
-    return <ReactMarkdown remarkPlugins={[[remarkMath, {singleDollarTextMath: false}], remarkGfm]} rehypePlugins={[rehypeKatex]}>{content || ''}</ReactMarkdown>
+    return <ReactMarkdown remarkPlugins={[remarkMath, remarkGfm]} rehypePlugins={[rehypeKatex]}>{content || ''}</ReactMarkdown>
   }
 
   return (

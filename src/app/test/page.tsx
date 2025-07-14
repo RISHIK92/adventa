@@ -294,7 +294,7 @@ export default function TestPage() {
                       <Badge variant="outline">{currentQuestion.subject}</Badge>
                     </div>
                     <div className="prose prose-sm max-w-none p-4 dark:prose-invert md:prose-base md:p-6">
-                      <ReactMarkdown remarkPlugins={[[remarkMath, {singleDollarTextMath: false}], remarkGfm]} rehypePlugins={[rehypeKatex]}>
+                      <ReactMarkdown remarkPlugins={[remarkMath, remarkGfm]} rehypePlugins={[rehypeKatex]}>
                         {currentQuestion.question}
                       </ReactMarkdown>
                     </div>
@@ -317,7 +317,7 @@ export default function TestPage() {
                         </FormControl>
                         <FormLabel className="w-full cursor-pointer font-normal">
                            <div className="prose prose-sm max-w-none dark:prose-invert">
-                            <ReactMarkdown remarkPlugins={[[remarkMath, {singleDollarTextMath: false}], remarkGfm]} rehypePlugins={[rehypeKatex]}>
+                            <ReactMarkdown remarkPlugins={[remarkMath, remarkGfm]} rehypePlugins={[rehypeKatex]}>
                               {option}
                             </ReactMarkdown>
                           </div>
@@ -386,9 +386,7 @@ export default function TestPage() {
                         </AccordionTrigger>
                         <AccordionContent>
                           <div className="space-y-6 p-2">
-                            <div className="prose prose-sm max-w-none dark:prose-invert md:prose-base">
-                              <ReactMarkdown remarkPlugins={[[remarkMath, {singleDollarTextMath: false}], remarkGfm]} rehypePlugins={[rehypeKatex]}>{q.question}</ReactMarkdown>
-                            </div>
+                            <div className="prose prose-sm max-w-none dark:prose-invert md:prose-base"><ReactMarkdown remarkPlugins={[remarkMath, remarkGfm]} rehypePlugins={[rehypeKatex]}>{q.question}</ReactMarkdown></div>
                             <div className="space-y-2">
                               {q.options.map((option, i) => (
                                 <div
@@ -405,14 +403,14 @@ export default function TestPage() {
                                   ) : (
                                     <div className="mt-0.5 h-4 w-4 flex-shrink-0" />
                                   )}
-                                  <div className="prose prose-sm max-w-none dark:prose-invert"><ReactMarkdown remarkPlugins={[[remarkMath, {singleDollarTextMath: false}], remarkGfm]} rehypePlugins={[rehypeKatex]}>{option}</ReactMarkdown></div>
+                                  <div className="prose prose-sm max-w-none dark:prose-invert"><ReactMarkdown remarkPlugins={[remarkMath, remarkGfm]} rehypePlugins={[rehypeKatex]}>{option}</ReactMarkdown></div>
                                 </div>
                               ))}
                             </div>
                             <div>
                               <Badge>Explanation</Badge>
                               <div className="prose prose-sm mt-2 max-w-none rounded-md border bg-secondary/50 p-4 dark:prose-invert md:prose-base">
-                                <ReactMarkdown remarkPlugins={[[remarkMath, {singleDollarTextMath: false}], remarkGfm]} rehypePlugins={[rehypeKatex]}>{q.explanation}</ReactMarkdown>
+                                <ReactMarkdown remarkPlugins={[remarkMath, remarkGfm]} rehypePlugins={[rehypeKatex]}>{q.explanation}</ReactMarkdown>
                               </div>
                             </div>
                           </div>
