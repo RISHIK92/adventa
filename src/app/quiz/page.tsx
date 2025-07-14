@@ -560,7 +560,7 @@ export default function QuizPage() {
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue placeholder="Select a difficulty" />
-                            </Trigger>
+                            </SelectTrigger>
                           </FormControl>
                           <SelectContent>
                             {difficultyLevels.map((level) => (
