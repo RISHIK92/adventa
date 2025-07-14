@@ -2,6 +2,11 @@ import type {Config} from 'tailwindcss';
 
 export default {
   darkMode: ['class'],
+  safelist: [
+    {
+      pattern: /grid-cols-.+/,
+    },
+  ],
   content: [
     './src/pages/**/*.{js,ts,jsx,tsx,mdx}',
     './src/components/**/*.{js,ts,jsx,tsx,mdx}',

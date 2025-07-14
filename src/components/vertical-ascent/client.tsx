@@ -4,6 +4,7 @@
 import * as React from 'react';
 import {
   ArrowLeft,
+  ArrowRight,
   Atom,
   Beaker,
   BrainCircuit,
@@ -109,9 +110,9 @@ export function VerticalAscentClient({ subjects: initialSubjects }: VerticalAsce
         <div className="flex flex-col items-center">
             <div
               className={cn(
-                'transition-all duration-700 ease-in-out mb-8',
+                'transition-all duration-700 ease-in-out',
                 viewState !== 'subjects'
-                  ? 'opacity-100 scale-100'
+                  ? 'opacity-100 scale-100 mb-8'
                   : 'opacity-0 scale-90 pointer-events-none'
               )}
             >
@@ -127,7 +128,7 @@ export function VerticalAscentClient({ subjects: initialSubjects }: VerticalAsce
               <SubjectsView subjects={subjects} onSelectSubject={handleSelectSubject} />
             </div>
 
-            <div className={cn("w-full max-w-4xl relative", viewState === 'subjects' ? 'hidden' : 'block' )}>
+            <div className={cn("w-full max-w-5xl relative", viewState === 'subjects' ? 'hidden' : 'block' )}>
               <Button
                 variant="ghost"
                 size="sm"
@@ -218,27 +219,56 @@ function SubjectHeader({ subject }: { subject: Subject }) {
     );
 }
 
+const LESSONS_PER_ROW = 4;
+
 function LessonsView({ subject, onSelectLesson }: { subject: Subject, onSelectLesson: (lesson: Lesson) => void }) {
+  const lessonRows = React.useMemo(() => {
+    const rows: Lesson[][] = [];
+    for (let i = 0; i < subject.lessons.length; i += LESSONS_PER_ROW) {
+      rows.push(subject.lessons.slice(i, i + LESSONS_PER_ROW));
+    }
+    return rows;
+  }, [subject.lessons]);
+
   return (
-    <div className="flex justify-center">
-        <div className="flex flex-col items-center gap-0">
-            {subject.lessons.map((lesson, index) => (
-                <div key={lesson.id} className="flex flex-col items-center relative">
-                    {index > 0 && (
-                      <div className="w-1 h-8 bg-transparent border-l border-dashed border-primary/50"/>
-                    )}
-                    <Card
-                        onClick={() => onSelectLesson(lesson)}
-                        className="w-80 h-24 flex items-center justify-center text-center p-4 cursor-pointer hover:bg-accent/20 hover:border-accent transition-all duration-300 shadow-md"
-                    >
-                        <CardTitle className="text-lg font-medium">{lesson.title}</CardTitle>
-                    </Card>
+    <div className="flex flex-col items-center gap-0 w-full">
+      {lessonRows.map((row, rowIndex) => {
+        const isReversed = rowIndex % 2 !== 0;
+        const lessonsInRow = isReversed ? [...row].reverse() : row;
+
+        return (
+          <React.Fragment key={rowIndex}>
+            {/* Horizontal connections */}
+            <div className={cn("grid gap-4 items-center", `grid-cols-${row.length}`)}>
+              {lessonsInRow.map((lesson, lessonIndex) => (
+                <div key={lesson.id} className="relative flex justify-center items-center">
+                  {/* Horizontal line */}
+                  {lessonIndex < lessonsInRow.length - 1 && (
+                    <div className="absolute left-1/2 w-full h-1 bg-transparent border-t border-dashed border-primary/50 z-0" />
+                  )}
+                  <Card
+                    onClick={() => onSelectLesson(lesson)}
+                    className="w-48 h-24 flex items-center justify-center text-center p-4 cursor-pointer hover:bg-accent/20 hover:border-accent transition-all duration-300 shadow-md z-10"
+                  >
+                    <CardTitle className="text-base font-medium">{lesson.title}</CardTitle>
+                  </Card>
                 </div>
-            ))}
-        </div>
+              ))}
+            </div>
+
+            {/* Vertical connector */}
+            {rowIndex < lessonRows.length - 1 && (
+              <div className={cn("w-full h-8 flex", isReversed ? "justify-start" : "justify-end")}>
+                <div className="w-[calc(100%/8)] h-full border-l border-b border-dashed border-primary/50 rounded-bl-xl" style={isReversed ? { borderRight: '1px dashed hsl(var(--primary)/0.5)', borderLeft: 'none', borderRadius: '0 0 0.75rem 0' } : {}}/>
+              </div>
+            )}
+          </React.Fragment>
+        );
+      })}
     </div>
   );
 }
+
 
 function LessonDetailView({ subject, lesson, toast }: { subject: Subject; lesson: Lesson, toast: any }) {
   return (
