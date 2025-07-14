@@ -16,6 +16,8 @@ import {
 import { useIsMobile } from '@/hooks/use-mobile';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import remarkMath from 'remark-math';
+import rehypeKatex from 'rehype-katex';
 
 import type { Lesson, Subject } from '@/lib/types';
 import { getSuggestions } from '@/app/actions';
@@ -487,7 +489,7 @@ function LessonDetailView({
         </div>
       );
     }
-    return <ReactMarkdown remarkPlugins={[remarkGfm]}>{content || ''}</ReactMarkdown>
+    return <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>{content || ''}</ReactMarkdown>
   }
 
   return (
@@ -611,5 +613,3 @@ function AiSuggestions({
     </div>
   );
 }
-
-    
