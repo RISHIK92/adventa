@@ -1,10 +1,6 @@
 export type Lesson = {
   id: string;
   title: string;
-  content: {
-    cheatsheet: string;
-    formulasheet: string;
-  };
 };
 
 export type Subject = {
