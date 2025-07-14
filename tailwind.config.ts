@@ -93,10 +93,20 @@ export default {
             height: '0',
           },
         },
+        'stroke-draw': {
+          from: { strokeDashoffset: 'var(--stroke-dashoffset, 1000)' },
+          to: { strokeDashoffset: 0 },
+        },
+        'fade-in-up': {
+          from: { opacity: '0', transform: 'translateY(10px) translateX(-50%)' },
+          to: { opacity: '1', transform: 'translateY(0) translateX(-50%)' },
+        }
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
+        'stroke-draw': 'stroke-draw 0.8s ease-out forwards',
+        'fade-in-up': 'fade-in-up 0.5s ease-out forwards',
       },
     },
   },

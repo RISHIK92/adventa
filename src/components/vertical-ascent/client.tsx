@@ -4,7 +4,6 @@
 import * as React from 'react';
 import {
   ArrowLeft,
-  ArrowRight,
   Atom,
   Beaker,
   BrainCircuit,
@@ -112,7 +111,7 @@ export function VerticalAscentClient({ subjects: initialSubjects }: VerticalAsce
               className={cn(
                 'transition-all duration-700 ease-in-out',
                 viewState !== 'subjects'
-                  ? 'opacity-100 scale-100 mb-4'
+                  ? 'opacity-100 scale-100 mb-8'
                   : 'opacity-0 scale-90 pointer-events-none'
               )}
             >
@@ -134,7 +133,7 @@ export function VerticalAscentClient({ subjects: initialSubjects }: VerticalAsce
                 size="sm"
                 onClick={handleBack}
                 className={cn(
-                  'absolute -top-10 left-0 transition-opacity duration-300 flex items-center gap-2',
+                  'absolute -top-16 left-0 transition-opacity duration-300 flex items-center gap-2',
                    viewState === 'subjects' ? 'opacity-0 pointer-events-none' : 'opacity-100'
                 )}
               >
@@ -219,66 +218,112 @@ function SubjectHeader({ subject }: { subject: Subject }) {
     );
 }
 
-const LESSONS_PER_ROW = 4;
+function LessonsView({ subject, onSelectLesson }: { subject: Subject, onSelectLesson: (lesson: Lesson) => void }) {
+  const containerRef = React.useRef<HTMLDivElement>(null);
+  const [svgDimensions, setSvgDimensions] = React.useState({ width: 0, height: 0 });
 
-function LessonsView({ subject, onSelectLesson }: { subject: Subject; onSelectLesson: (lesson: Lesson) => void }) {
-  const lessonRows = React.useMemo(() => {
-    const rows: Lesson[][] = [];
-    for (let i = 0; i < subject.lessons.length; i += LESSONS_PER_ROW) {
-      rows.push(subject.lessons.slice(i, i + LESSONS_PER_ROW));
-    }
-    return rows;
+  const PADDING = 20;
+  const NODE_WIDTH = 160;
+  const NODE_HEIGHT = 80;
+  const H_SPACING = 60;
+  const V_SPACING = 40;
+  
+  const nodes = React.useMemo(() => {
+    return subject.lessons.map((lesson, i) => {
+      const side = i % 2 === 0 ? -1 : 1;
+      const level = Math.floor(i / 2);
+      const x = (NODE_WIDTH / 2 + H_SPACING) * side;
+      const y = level * (NODE_HEIGHT + V_SPACING);
+      return { ...lesson, x, y };
+    });
   }, [subject.lessons]);
+  
+  React.useEffect(() => {
+    function updateSize() {
+      if (containerRef.current) {
+        const trunkHeight = nodes.length > 0 ? nodes[nodes.length - 1].y + NODE_HEIGHT + PADDING : 0;
+        const width = containerRef.current.offsetWidth;
+        setSvgDimensions({ width: width, height: trunkHeight });
+      }
+    }
+    window.addEventListener('resize', updateSize);
+    updateSize();
+    return () => window.removeEventListener('resize', updateSize);
+  }, [nodes]);
+
+  const { width, height } = svgDimensions;
+  const centerX = width / 2;
 
   return (
-    <div className="flex flex-col items-center w-full max-w-4xl mx-auto mt-8">
-      {lessonRows.map((row, rowIndex) => {
-        const isReversed = rowIndex % 2 !== 0;
-        const isLastRow = rowIndex === lessonRows.length - 1;
-
-        return (
-          <div
-            key={rowIndex}
-            className={cn(
-              "grid gap-x-4",
-              `grid-cols-${LESSONS_PER_ROW}`,
-              isReversed && "direction-rtl"
-            )}
-          >
-            {row.map((lesson, lessonIndex) => {
-              const isFirstInRow = lessonIndex === 0;
-              const isLastInRow = lessonIndex === row.length - 1;
-
+    <div ref={containerRef} className="relative w-full" style={{ height: `${height}px` }}>
+      {width > 0 && (
+        <>
+          <svg width={width} height={height} className="absolute inset-0">
+            <defs>
+              <linearGradient id="trunkGradient" x1="0.5" y1="0" x2="0.5" y2="1">
+                <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0" />
+                <stop offset="100%" stopColor="hsl(var(--primary))" />
+              </linearGradient>
+            </defs>
+            {/* Trunk */}
+            <line
+              x1={centerX}
+              y1={0}
+              x2={centerX}
+              y2={height - PADDING}
+              stroke="url(#trunkGradient)"
+              strokeWidth="3"
+              className="[animation-delay:0s] animate-stroke-draw"
+              strokeDasharray={height}
+              strokeDashoffset={height}
+            />
+            {/* Branches */}
+            {nodes.map((node, i) => {
+              const startX = centerX;
+              const startY = node.y + NODE_HEIGHT / 2;
+              const endX = centerX + node.x;
+              const path = `M ${startX},${startY} C ${startX + (endX - startX) / 2},${startY} ${startX + (endX - startX) / 2},${startY} ${endX},${startY}`;
+              const pathLength = Math.abs(endX-startX);
               return (
-                <div
-                  key={lesson.id}
-                  className={cn(
-                    "relative flex justify-center items-center h-32 group/lesson",
-                    // Horizontal connector logic
-                    !isLastInRow && "after:content-[''] after:absolute after:top-1/2 after:h-px after:w-full after:bg-primary/50 after:border-t after:border-dashed after:border-primary/50 after:-z-10",
-                    !isReversed && !isLastInRow && "after:left-1/2",
-                    isReversed && !isLastInRow && "after:right-1/2",
-                    
-                    // Vertical connector logic
-                    isLastInRow && !isLastRow && "before:content-[''] before:absolute before:bg-primary/50 before:border-r before:border-dashed before:border-primary/50 before:-z-10 before:h-[128px] before:w-px",
-                    !isReversed && isLastInRow && !isLastRow && "before:top-1/2 before:right-[calc(50%-0.5px)]",
-                    isReversed && isLastInRow && !isLastRow && "before:top-1/2 before:left-[calc(50%-0.5px)]",
-                  )}
-                >
-                  <Card
-                    onClick={() => onSelectLesson(lesson)}
-                    className="w-40 h-24 flex items-center justify-center text-center p-2 cursor-pointer hover:bg-accent/20 hover:border-accent transition-all duration-300 shadow-md z-10 relative"
-                  >
-                    <CardTitle className="text-sm font-medium">{lesson.title}</CardTitle>
-                  </Card>
-                </div>
+                <path
+                  key={`branch-${node.id}`}
+                  d={path}
+                  stroke="hsl(var(--primary) / 0.6)"
+                  strokeWidth="2"
+                  fill="none"
+                  className="animate-stroke-draw"
+                  strokeDasharray={pathLength}
+                  strokeDashoffset={pathLength}
+                  style={{ animationDelay: `${0.1 + i * 0.05}s` }}
+                />
               );
             })}
-             {/* Fill in empty grid cells to maintain layout */}
-             {Array.from({ length: LESSONS_PER_ROW - row.length }).map((_, i) => <div key={`placeholder-${i}`} />)}
-          </div>
-        );
-      })}
+          </svg>
+
+          {/* Lesson Nodes */}
+          {nodes.map((node, i) => (
+            <div
+              key={node.id}
+              className="absolute transition-transform duration-300 ease-in-out animate-fade-in-up"
+              style={{
+                top: `${node.y}px`,
+                left: `calc(50% + ${node.x}px)`,
+                width: `${NODE_WIDTH}px`,
+                height: `${NODE_HEIGHT}px`,
+                transform: `translateX(-50%)`,
+                animationDelay: `${0.2 + i * 0.05}s`
+              }}
+            >
+              <Card
+                onClick={() => onSelectLesson(node)}
+                className="w-full h-full flex items-center justify-center text-center p-2 cursor-pointer hover:bg-accent/20 hover:border-accent transition-all duration-300 shadow-lg hover:shadow-primary/30 z-10"
+              >
+                <CardTitle className="text-sm font-medium">{node.title}</CardTitle>
+              </Card>
+            </div>
+          ))}
+        </>
+      )}
     </div>
   );
 }
