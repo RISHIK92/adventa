@@ -90,13 +90,13 @@ const questionCountOptions: Record<keyof typeof subjectGroups, string[]> = {
 
 const formSchema = z.object({
   subjectGroup: z.enum(['MPC', 'PCB', 'BPC', 'PCMB']),
-  questionCount: z.string().transform(Number),
-  timeLimit: z.enum(timeLimits).transform(Number),
+  questionCount: z.string(),
+  timeLimit: z.enum(timeLimits),
   difficulty: z.enum(difficultyLevels),
 }).refine(
   (data) => {
     const subjectsInGroup = subjectGroups[data.subjectGroup].length;
-    return data.questionCount % subjectsInGroup === 0;
+    return Number(data.questionCount) % subjectsInGroup === 0;
   },
   {
     message: 'Question count must be divisible by the number of subjects in the group.',
@@ -125,6 +125,8 @@ export default function TestPage() {
   const [timeLeft, setTimeLeft] = React.useState(0);
   const [isReviewing, setIsReviewing] = React.useState(false);
   const [isTimeUp, setIsTimeUp] = React.useState(false);
+  const [testConfig, setTestConfig] = React.useState<{ timeLimit: number, questionCount: number } | null>(null);
+
 
   const timerIntervalRef = React.useRef<NodeJS.Timeout>();
 
@@ -134,8 +136,8 @@ export default function TestPage() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       subjectGroup: 'MPC',
-      questionCount: 30,
-      timeLimit: 30,
+      questionCount: '30',
+      timeLimit: '30',
       difficulty: 'Medium',
     },
   });
@@ -144,7 +146,7 @@ export default function TestPage() {
   const availableQuestionCounts = questionCountOptions[subjectGroup];
 
   React.useEffect(() => {
-    const defaultCount = Number(questionCountOptions[subjectGroup][0]);
+    const defaultCount = questionCountOptions[subjectGroup][0];
     form.setValue('questionCount', defaultCount);
   }, [subjectGroup, form]);
 
@@ -164,12 +166,17 @@ export default function TestPage() {
       }, 1000);
     }
     return () => clearInterval(timerIntervalRef.current);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [testState, timeLeft]);
 
   const handleGenerateTest = async (values: TestFormValues) => {
     setTestState('loading');
+    const questionCount = Number(values.questionCount);
+    const timeLimit = Number(values.timeLimit);
+    setTestConfig({ questionCount, timeLimit });
+
     const subjects = subjectGroups[values.subjectGroup];
-    const questionsPerSubject = values.questionCount / subjects.length;
+    const questionsPerSubject = questionCount / subjects.length;
 
     const input: GenerateTestInput = {
       subjects: subjects.map(subject => ({ subject, count: questionsPerSubject })),
@@ -181,7 +188,7 @@ export default function TestPage() {
       if (result && result.questions?.length > 0) {
         setQuestions(result.questions);
         setCurrentQuestionIndex(0);
-        setTimeLeft(values.timeLimit * 60);
+        setTimeLeft(timeLimit * 60);
         setIsReviewing(false);
         setTestState('testing');
       } else {
@@ -243,8 +250,8 @@ export default function TestPage() {
     setTestState('configuring');
     form.reset({
       subjectGroup: 'MPC',
-      questionCount: 30,
-      timeLimit: 30,
+      questionCount: '30',
+      timeLimit: '30',
       difficulty: 'Medium',
     });
   };
@@ -261,7 +268,7 @@ export default function TestPage() {
           </div>
         );
       case 'testing':
-        const timeLimit = form.getValues('timeLimit') * 60;
+        const timeLimit = (testConfig?.timeLimit || 0) * 60;
         return (
           <Form {...form}>
             <form>
@@ -482,7 +489,7 @@ export default function TestPage() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Total Questions</FormLabel>
-                        <Select onValueChange={(val) => field.onChange(val)} value={field.value.toString()}>
+                        <Select onValueChange={field.onChange} value={field.value}>
                           <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
                           <SelectContent>
                             {availableQuestionCounts.map((count) => (
@@ -501,7 +508,7 @@ export default function TestPage() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Time Limit</FormLabel>
-                        <Select onValueChange={(val) => field.onChange(val)} defaultValue={field.value.toString()}>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
                           <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
                           <SelectContent>
                             {timeLimits.map((limit) => (
@@ -570,5 +577,3 @@ export default function TestPage() {
     </main>
   );
 }
-
-    
