@@ -110,9 +110,9 @@ export function VerticalAscentClient({ subjects: initialSubjects }: VerticalAsce
         <div className="flex flex-col items-center">
             <div
               className={cn(
-                'transition-all duration-700 ease-in-out',
+                'transition-all duration-700 ease-in-out mb-4',
                 viewState !== 'subjects'
-                  ? 'opacity-100 scale-100 mb-4'
+                  ? 'opacity-100 scale-100'
                   : 'opacity-0 scale-90 pointer-events-none'
               )}
             >
@@ -231,51 +231,49 @@ function LessonsView({ subject, onSelectLesson }: { subject: Subject, onSelectLe
   }, [subject.lessons]);
 
   return (
-    <div className="flex flex-col items-center gap-0 w-full max-w-4xl mx-auto">
+    <div className="flex flex-col items-center w-full max-w-4xl mx-auto space-y-0">
       {lessonRows.map((row, rowIndex) => {
         const isReversed = rowIndex % 2 !== 0;
         const lessonsInRow = isReversed ? [...row].reverse() : row;
+        const isLastRow = rowIndex === lessonRows.length - 1;
 
         return (
           <React.Fragment key={rowIndex}>
-            <div className={cn("grid w-full items-center gap-x-4", `grid-cols-${LESSONS_PER_ROW}`)}>
+            {/* Row of lessons */}
+            <div className={cn("grid w-full gap-x-4", `grid-cols-${LESSONS_PER_ROW}`)}>
               {lessonsInRow.map((lesson, lessonIndex) => (
-                <div key={lesson.id} className="relative flex justify-center items-center h-32">
-                  {/* Horizontal line - only if not the last item in the original row direction */}
-                   {(isReversed ? lessonIndex > 0 : lessonIndex < lessonsInRow.length - 1) && (
-                     <div className="absolute left-1/2 w-full h-px bg-primary/50 border-t border-dashed border-primary/50 z-0" />
-                   )}
-                   {(lessonsInRow.length < LESSONS_PER_ROW && !isReversed && lessonIndex === lessonsInRow.length - 1) && (
-                     <div className="absolute left-1/2 w-1/2 h-px bg-primary/50 border-t border-dashed border-primary/50 z-0" />
-                   )}
-                   {(lessonsInRow.length < LESSONS_PER_ROW && isReversed && lessonIndex === 0) && (
-                     <div className="absolute right-1/2 w-1/2 h-px bg-primary/50 border-t border-dashed border-primary/50 z-0" />
-                   )}
+                <div key={lesson.id} className="relative flex justify-center items-center h-32 group">
+                  {/* Horizontal Connector */}
+                  <div
+                    className={cn(
+                      "absolute top-1/2 -translate-y-1/2 h-px bg-primary/50 border-t border-dashed border-primary/50 z-0",
+                       // For LTR rows, line goes from center to right edge
+                       !isReversed && "left-1/2 w-1/2",
+                       // For RTL rows, line goes from center to left edge
+                       isReversed && "right-1/2 w-1/2",
+                       // Hide line on last item in LTR row
+                       !isReversed && lessonIndex === lessonsInRow.length - 1 && "hidden",
+                       // Hide line on last item in RTL row (which is the first visually)
+                       isReversed && lessonIndex === 0 && "hidden"
+                    )}
+                  />
+                  {/* Card */}
                   <Card
                     onClick={() => onSelectLesson(lesson)}
-                    className="w-40 h-24 flex items-center justify-center text-center p-2 cursor-pointer hover:bg-accent/20 hover:border-accent transition-all duration-300 shadow-md z-10"
+                    className="w-40 h-24 flex items-center justify-center text-center p-2 cursor-pointer hover:bg-accent/20 hover:border-accent transition-all duration-300 shadow-md z-10 relative"
                   >
                     <CardTitle className="text-sm font-medium">{lesson.title}</CardTitle>
                   </Card>
                 </div>
               ))}
-              {/* Fill in empty grid cells to maintain layout */}
-              {Array.from({ length: LESSONS_PER_ROW - lessonsInRow.length }).map((_, i) => <div key={`placeholder-${i}`} />)}
+               {/* Fill in empty grid cells to maintain layout */}
+               {Array.from({ length: LESSONS_PER_ROW - lessonsInRow.length }).map((_, i) => <div key={`placeholder-${i}`} />)}
             </div>
 
             {/* Vertical connector */}
-            {rowIndex < lessonRows.length - 1 && (
+            {!isLastRow && (
               <div className={cn("w-full h-8 flex relative", isReversed ? "justify-start" : "justify-end")}>
-                <div 
-                   className={cn(
-                     "w-1/8 h-full border-dashed",
-                     isReversed 
-                       ? "border-r border-b rounded-br-xl" 
-                       : "border-l border-b rounded-bl-xl",
-                     "border-primary/50"
-                   )}
-                   style={{width: `calc(100% / ${LESSONS_PER_ROW * 2})`}}
-                 />
+                 <div className="w-px h-full bg-primary/50 border-r border-dashed border-primary/50" />
               </div>
             )}
           </React.Fragment>
