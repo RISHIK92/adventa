@@ -150,6 +150,13 @@ export default {
             '--tw-prose-invert-pre-bg': theme('colors.secondary.DEFAULT'),
             '--tw-prose-invert-th-borders': theme('colors.border'),
             '--tw-prose-invert-td-borders': theme('colors.border'),
+            // This prevents prose from styling KaTeX elements
+            '.math': {
+              all: 'unset',
+            },
+            '.katex': {
+              fontSize: '1.1em',
+            }
           },
         },
       }),
@@ -157,5 +164,3 @@ export default {
   },
   plugins: [require('tailwindcss-animate'), require('@tailwindcss/typography')],
 } satisfies Config;
-
-    
