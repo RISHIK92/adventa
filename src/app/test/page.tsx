@@ -74,16 +74,23 @@ import {
 const subjectGroups = {
   MPC: ['Mathematics', 'Physics', 'Chemistry'],
   PCB: ['Physics', 'Chemistry', 'Biology'],
+  BPC: ['Biology', 'Physics', 'Chemistry'],
   PCMB: ['Physics', 'Chemistry', 'Mathematics', 'Biology'],
 };
 
 const difficultyLevels = ['Easy', 'Medium', 'Hard', 'Expert'] as const;
-const questionCounts = ['12', '24', '36', '48'] as const;
-const timeLimits = ['15', '30', '45', '60'] as const;
+const timeLimits = ['15', '30', '45', '60', '90', '120', '180'] as const;
+
+const questionCountOptions: Record<keyof typeof subjectGroups, string[]> = {
+    MPC: ['30', '60', '90'],
+    PCB: ['30', '60', '90'],
+    BPC: ['60', '90', '180'],
+    PCMB: ['40', '80', '120'],
+}
 
 const formSchema = z.object({
-  subjectGroup: z.enum(['MPC', 'PCB', 'PCMB']),
-  questionCount: z.enum(questionCounts).transform(Number),
+  subjectGroup: z.enum(['MPC', 'PCB', 'BPC', 'PCMB']),
+  questionCount: z.string().transform(Number),
   timeLimit: z.enum(timeLimits).transform(Number),
   difficulty: z.enum(difficultyLevels),
 }).refine(
@@ -127,11 +134,19 @@ export default function TestPage() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       subjectGroup: 'MPC',
-      questionCount: 12,
-      timeLimit: 15,
+      questionCount: 30,
+      timeLimit: 30,
       difficulty: 'Medium',
     },
   });
+
+  const subjectGroup = form.watch('subjectGroup');
+  const availableQuestionCounts = questionCountOptions[subjectGroup];
+
+  React.useEffect(() => {
+    const defaultCount = Number(questionCountOptions[subjectGroup][0]);
+    form.setValue('questionCount', defaultCount);
+  }, [subjectGroup, form]);
 
   const currentQuestion = questions[currentQuestionIndex];
 
@@ -226,7 +241,12 @@ export default function TestPage() {
 
   const handleRestart = () => {
     setTestState('configuring');
-    form.reset();
+    form.reset({
+      subjectGroup: 'MPC',
+      questionCount: 30,
+      timeLimit: 30,
+      difficulty: 'Medium',
+    });
   };
 
   const renderContent = () => {
@@ -462,10 +482,10 @@ export default function TestPage() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Total Questions</FormLabel>
-                        <Select onValueChange={(val) => field.onChange(Number(val))} defaultValue={field.value.toString()}>
+                        <Select onValueChange={(val) => field.onChange(val)} value={field.value.toString()}>
                           <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
                           <SelectContent>
-                            {questionCounts.map((count) => (
+                            {availableQuestionCounts.map((count) => (
                               <SelectItem key={count} value={count}>{count} Questions</SelectItem>
                             ))}
                           </SelectContent>
@@ -481,7 +501,7 @@ export default function TestPage() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Time Limit</FormLabel>
-                        <Select onValueChange={(val) => field.onChange(Number(val))} defaultValue={field.value.toString()}>
+                        <Select onValueChange={(val) => field.onChange(val)} defaultValue={field.value.toString()}>
                           <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
                           <SelectContent>
                             {timeLimits.map((limit) => (
@@ -550,3 +570,5 @@ export default function TestPage() {
     </main>
   );
 }
+
+    
