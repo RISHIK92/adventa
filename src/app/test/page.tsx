@@ -115,6 +115,7 @@ type TestState =
 type AnsweredQuestion = TestQuestion & {
   userAnswer?: number;
   isCorrect?: boolean;
+  isUnattempted?: boolean;
 };
 
 export default function TestPage() {
@@ -160,6 +161,7 @@ export default function TestPage() {
         currentQuestions.map(q => ({
           ...q,
           isCorrect: q.userAnswer === q.correctAnswer,
+          isUnattempted: q.userAnswer === undefined,
         }))
       );
       return 'finished';
@@ -200,7 +202,7 @@ export default function TestPage() {
     try {
       const result = await generateTest(input);
       if (result && result.questions?.length > 0) {
-        setQuestions(result.questions.map(q => ({...q, userAnswer: undefined, isCorrect: undefined })));
+        setQuestions(result.questions.map(q => ({...q, userAnswer: undefined, isCorrect: undefined, isUnattempted: true })));
         setCurrentQuestionIndex(0);
         setTimeLeft(timeLimit * 60);
         setIsReviewing(false);
@@ -336,12 +338,8 @@ export default function TestPage() {
         );
       case 'finished':
         const subjectScores: Record<string, { correct: number; total: number }> = {};
-        const scoredQuestions = questions.map(q => ({
-          ...q,
-          isCorrect: q.userAnswer === q.correctAnswer,
-        }))
-
-        scoredQuestions.forEach(q => {
+        
+        questions.forEach(q => {
           if (!subjectScores[q.subject]) {
             subjectScores[q.subject] = { correct: 0, total: 0 };
           }
@@ -363,11 +361,11 @@ export default function TestPage() {
               </CardHeader>
               <CardContent>
                 <Accordion type="single" collapsible className="w-full">
-                  {scoredQuestions.map((q, index) => {
+                  {questions.map((q, index) => {
                     const selected = q.userAnswer;
                     const correct = q.correctAnswer;
                     const isCorrect = q.isCorrect;
-                    const isUnattempted = selected === undefined;
+                    const isUnattempted = q.isUnattempted;
                     
                     return (
                       <AccordionItem value={`item-${index}`} key={index}>

@@ -151,21 +151,16 @@ export default {
             '--tw-prose-invert-pre-bg': theme('colors.secondary.DEFAULT'),
             '--tw-prose-invert-th-borders': theme('colors.border'),
             '--tw-prose-invert-td-borders': theme('colors.border'),
-            // This prevents prose from styling KaTeX elements
             '.katex-display, .katex': {
-              '--tw-prose-code': 'inherit',
-              '--tw-prose-pre-code': 'inherit',
-              '--tw-prose-pre-bg': 'transparent',
-              'background-color': 'transparent',
+              margin: '0',
+              padding: '0',
               'font-size': 'inherit',
               'line-height': 'inherit',
-              'margin': '0',
-              'padding': '0',
             },
-            'p > .katex-display': {
-              'margin-top': '0 !important',
-              'margin-bottom': '0 !important',
-            },
+             'p > .katex-display': {
+               'margin-top': '0 !important',
+               'margin-bottom': '0 !important',
+             },
           },
         },
         sm: {
