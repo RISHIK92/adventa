@@ -150,20 +150,18 @@ export default function TestPage() {
 
   const currentQuestion = questions[currentQuestionIndex];
 
-    const finishTest = React.useCallback(() => {
+  const finishTest = React.useCallback(() => {
+    clearInterval(timerIntervalRef.current);
     setTestState(prevState => {
-      if (prevState === 'testing') {
-        setQuestions(currentQuestions => {
-          const answeredQuestions = currentQuestions.map(q => ({
-            ...q,
-            isCorrect: q.userAnswer === q.correctAnswer,
-          }));
-          return answeredQuestions;
-        });
-        clearInterval(timerIntervalRef.current);
-        return 'finished';
-      }
-      return prevState;
+      if (prevState !== 'testing') return prevState;
+      
+      setQuestions(currentQuestions => {
+        return currentQuestions.map(q => ({
+          ...q,
+          isCorrect: q.userAnswer === q.correctAnswer,
+        }));
+      });
+      return 'finished';
     });
   }, []);
 
@@ -299,6 +297,7 @@ export default function TestPage() {
                 </CardHeader>
                 <CardContent>
                   <RadioGroup
+                    key={currentQuestionIndex}
                     onValueChange={(value) => handleAnswerSelect(Number(value))}
                     value={currentQuestion.userAnswer?.toString() ?? undefined}
                     className="space-y-4"

@@ -225,6 +225,7 @@ export default function QuizPage() {
                 </CardHeader>
                 <CardContent>
                   <RadioGroup
+                    key={currentQuestionIndex}
                     onValueChange={(value) => handleAnswerSelect(Number(value))}
                     value={
                       selectedAnswers[currentQuestionIndex]?.toString() ?? undefined
