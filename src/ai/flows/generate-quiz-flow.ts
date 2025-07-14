@@ -37,6 +37,9 @@ const QuizQuestionSchema = z.object({
     .min(0)
     .max(3)
     .describe('The index (0-3) of the correct answer in the options array.'),
+  explanation: z
+    .string()
+    .describe('A brief explanation for why the correct answer is right.'),
 });
 export type QuizQuestion = z.infer<typeof QuizQuestionSchema>;
 
@@ -62,7 +65,8 @@ const prompt = ai.definePrompt({
   prompt: `You are an expert educator responsible for creating challenging and accurate quizzes.
 
 Generate a quiz with 5-10 questions for the given subject and difficulty level.
-The questions and answers can contain complex mathematical formulas in LaTeX format. Ensure the LaTeX is correctly formatted.
+For each question, provide a brief explanation for the correct answer.
+The questions, answers, and explanations can contain complex mathematical formulas in LaTeX format. Ensure the LaTeX is correctly formatted.
 
 Subject: {{{subject}}}
 Difficulty: {{{difficulty}}}

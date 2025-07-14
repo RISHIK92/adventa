@@ -5,10 +5,13 @@ import * as React from 'react';
 import Link from 'next/link';
 import {
   ArrowLeft,
+  BookOpen,
   BrainCircuit,
+  CheckCircle2,
   Dices,
   Loader2,
   Shuffle,
+  XCircle,
 } from 'lucide-react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
@@ -50,6 +53,14 @@ import {
 import { subjects as allSubjects } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion';
+import { cn } from '@/lib/utils';
+import { Badge } from '@/components/ui/badge';
 
 const subjectGroups = {
   PCM: ['Physics', 'Chemistry', 'Mathematics'],
@@ -81,6 +92,8 @@ export default function QuizPage() {
   const [selectedAnswers, setSelectedAnswers] = React.useState<
     Record<number, number>
   >({});
+  const [finalScore, setFinalScore] = React.useState(0);
+  const [isReviewing, setIsReviewing] = React.useState(false);
   const { toast } = useToast();
 
   const form = useForm<QuizFormValues>({
@@ -109,6 +122,8 @@ export default function QuizPage() {
         setCurrentQuestionIndex(0);
         setScore(0);
         setSelectedAnswers({});
+        setFinalScore(0);
+        setIsReviewing(false);
         setQuizState('displaying');
       } else {
         throw new Error('No questions were generated.');
@@ -162,12 +177,13 @@ export default function QuizPage() {
   const handleNextQuestion = () => {
     const isCorrect =
       selectedAnswers[currentQuestionIndex] === currentQuestion.correctAnswer;
-    if (isCorrect) {
-      setScore((prev) => prev + 1);
-    }
+    const currentScore = isCorrect ? score + 1 : score;
+    setScore(currentScore);
+
     if (currentQuestionIndex < questions.length - 1) {
       setCurrentQuestionIndex((prev) => prev + 1);
     } else {
+      setFinalScore(currentScore);
       setQuizState('finished');
     }
   };
@@ -247,6 +263,105 @@ export default function QuizPage() {
           </Form>
         );
       case 'finished':
+        if (isReviewing) {
+          return (
+            <Card className="w-full max-w-4xl">
+              <CardHeader>
+                <CardTitle className="font-headline text-3xl">
+                  Review Your Answers
+                </CardTitle>
+                <CardDescription>
+                  Your final score was {finalScore} / {questions.length}.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Accordion type="single" collapsible className="w-full">
+                  {questions.map((q, index) => {
+                    const selected = selectedAnswers[index];
+                    const correct = q.correctAnswer;
+                    const isCorrect = selected === correct;
+                    return (
+                      <AccordionItem value={`item-${index}`} key={index}>
+                        <AccordionTrigger>
+                          <div className="flex items-center gap-4">
+                            {isCorrect ? (
+                              <CheckCircle2 className="h-5 w-5 flex-shrink-0 text-green-500" />
+                            ) : (
+                              <XCircle className="h-5 w-5 flex-shrink-0 text-red-500" />
+                            )}
+                            <span className="text-left">
+                              Question {index + 1}
+                            </span>
+                          </div>
+                        </AccordionTrigger>
+                        <AccordionContent>
+                          <div className="space-y-6 p-2">
+                            <div className="prose prose-sm max-w-none dark:prose-invert">
+                              <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>
+                                {q.question}
+                              </ReactMarkdown>
+                            </div>
+                            <div className="space-y-2">
+                              {q.options.map((option, i) => {
+                                const isSelected = i === selected;
+                                const isCorrectAnswer = i === correct;
+                                return (
+                                  <div
+                                    key={i}
+                                    className={cn(
+                                      'flex items-start gap-3 rounded-md border p-3 text-sm',
+                                      isCorrectAnswer &&
+                                        'border-green-500 bg-green-500/10',
+                                      isSelected &&
+                                        !isCorrectAnswer &&
+                                        'border-red-500 bg-red-500/10'
+                                    )}
+                                  >
+                                    {isCorrectAnswer ? (
+                                      <CheckCircle2 className="mt-0.5 h-4 w-4 flex-shrink-0 text-green-500" />
+                                    ) : isSelected ? (
+                                      <XCircle className="mt-0.5 h-4 w-4 flex-shrink-0 text-red-500" />
+                                    ) : (
+                                      <div className="mt-0.5 h-4 w-4 flex-shrink-0" />
+                                    )}
+                                    <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]} className="prose prose-sm max-w-none dark:prose-invert">
+                                      {option}
+                                    </ReactMarkdown>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                            <div>
+                              <Badge>Explanation</Badge>
+                              <div className="prose prose-sm mt-2 max-w-none rounded-md border bg-secondary/50 p-4 dark:prose-invert">
+                                <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>
+                                  {q.explanation}
+                                </ReactMarkdown>
+                              </div>
+                            </div>
+                          </div>
+                        </AccordionContent>
+                      </AccordionItem>
+                    );
+                  })}
+                </Accordion>
+              </CardContent>
+              <CardFooter className="flex-col gap-4">
+                <Button onClick={() => setIsReviewing(false)} className="w-full">
+                  Back to Score
+                </Button>
+                <Button
+                  onClick={handleRestart}
+                  variant="secondary"
+                  className="w-full"
+                >
+                  Take Another Quiz
+                </Button>
+              </CardFooter>
+            </Card>
+          );
+        }
+
         return (
           <Card className="text-center">
             <CardHeader>
@@ -257,11 +372,18 @@ export default function QuizPage() {
             </CardHeader>
             <CardContent>
               <p className="text-5xl font-bold">
-                {score} / {questions.length}
+                {finalScore} / {questions.length}
               </p>
             </CardContent>
             <CardFooter className="flex-col gap-4">
-              <Button onClick={handleRestart} className="w-full">
+              <Button onClick={() => setIsReviewing(true)} className="w-full">
+                <BookOpen className="mr-2" /> Review Answers
+              </Button>
+              <Button
+                onClick={handleRestart}
+                variant="secondary"
+                className="w-full"
+              >
                 Take Another Quiz
               </Button>
             </CardFooter>
