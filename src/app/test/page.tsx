@@ -82,26 +82,29 @@ const difficultyLevels = ['Easy', 'Medium', 'Hard', 'Expert'] as const;
 const timeLimits = ['15', '30', '45', '60', '90', '120', '180'] as const;
 
 const questionCountOptions: Record<keyof typeof subjectGroups, string[]> = {
-    MPC: ['30', '60', '90'],
-    BPC: ['60', '90', '180'],
-    PCMB: ['40', '80', '120'],
-}
+  MPC: ['30', '60', '90'],
+  BPC: ['60', '90', '180'],
+  PCMB: ['40', '80', '120'],
+};
 
-const formSchema = z.object({
-  subjectGroup: z.enum(['MPC', 'BPC', 'PCMB']),
-  questionCount: z.string(),
-  timeLimit: z.enum(timeLimits),
-  difficulty: z.enum(difficultyLevels),
-}).refine(
-  (data) => {
-    const subjectsInGroup = subjectGroups[data.subjectGroup].length;
-    return Number(data.questionCount) % subjectsInGroup === 0;
-  },
-  {
-    message: 'Question count must be divisible by the number of subjects in the group.',
-    path: ['questionCount'],
-  }
-);
+const formSchema = z
+  .object({
+    subjectGroup: z.enum(['MPC', 'BPC', 'PCMB']),
+    questionCount: z.string(),
+    timeLimit: z.enum(timeLimits),
+    difficulty: z.enum(difficultyLevels),
+  })
+  .refine(
+    (data) => {
+      const subjectsInGroup = subjectGroups[data.subjectGroup].length;
+      return Number(data.questionCount) % subjectsInGroup === 0;
+    },
+    {
+      message:
+        'Question count must be divisible by the number of subjects in the group.',
+      path: ['questionCount'],
+    }
+  );
 
 type TestFormValues = z.infer<typeof formSchema>;
 
@@ -125,8 +128,10 @@ export default function TestPage() {
   const [timeLeft, setTimeLeft] = React.useState(0);
   const [isReviewing, setIsReviewing] = React.useState(false);
   const [isTimeUp, setIsTimeUp] = React.useState(false);
-  const [testConfig, setTestConfig] = React.useState<{ timeLimit: number, questionCount: number } | null>(null);
-
+  const [testConfig, setTestConfig] = React.useState<{
+    timeLimit: number;
+    questionCount: number;
+  } | null>(null);
 
   const timerIntervalRef = React.useRef<NodeJS.Timeout>();
 
@@ -154,11 +159,11 @@ export default function TestPage() {
 
   const finishTest = React.useCallback(() => {
     clearInterval(timerIntervalRef.current);
-    setTestState(prevState => {
+    setTestState((prevState) => {
       if (prevState !== 'testing') return prevState;
-      
-      setQuestions(currentQuestions =>
-        currentQuestions.map(q => ({
+
+      setQuestions((currentQuestions) =>
+        currentQuestions.map((q) => ({
           ...q,
           isCorrect: q.userAnswer === q.correctAnswer,
           isUnattempted: q.userAnswer === undefined,
@@ -195,27 +200,42 @@ export default function TestPage() {
     const questionsPerSubject = questionCount / subjects.length;
 
     const input: GenerateTestInput = {
-      subjects: subjects.map(subject => ({ subject, count: questionsPerSubject })),
+      subjects: subjects.map((subject) => ({
+        subject,
+        count: questionsPerSubject,
+      })),
       difficulty: values.difficulty,
     };
 
     try {
       const result = await generateTest(input);
-      if (result && result.questions?.length > 0) {
-        setQuestions(result.questions.map(q => ({...q, userAnswer: undefined, isCorrect: undefined, isUnattempted: true })));
+      if (
+        result &&
+        result.questions?.length > 0 &&
+        result.questions.length === questionCount
+      ) {
+        setQuestions(
+          result.questions.map((q) => ({
+            ...q,
+            userAnswer: undefined,
+            isCorrect: undefined,
+            isUnattempted: true,
+          }))
+        );
         setCurrentQuestionIndex(0);
         setTimeLeft(timeLimit * 60);
         setIsReviewing(false);
         setTestState('testing');
       } else {
-        throw new Error('No questions were generated.');
+        throw new Error('Incorrect number of questions were generated.');
       }
     } catch (error) {
       console.error('Test generation failed:', error);
       toast({
         variant: 'destructive',
         title: 'Test Generation Error',
-        description: 'Could not generate test questions. Please try again later.',
+        description:
+          'Could not generate test questions. Please try again later.',
       });
       setTestState('error');
     }
@@ -228,7 +248,7 @@ export default function TestPage() {
   const handleTimeUp = () => {
     setIsTimeUp(true);
   };
-  
+
   const handleAnswerSelect = (answerIndex: number) => {
     setQuestions((prev) =>
       prev.map((q, i) =>
@@ -279,22 +299,31 @@ export default function TestPage() {
             <form>
               <Card className="w-full max-w-4xl">
                 <CardHeader>
-                  <div className="flex justify-between items-center">
+                  <div className="flex items-center justify-between">
                     <CardTitle>
                       Question {currentQuestionIndex + 1} of {questions.length}
                     </CardTitle>
-                     <div className="flex items-center gap-2">
-                        <Clock className="h-5 w-5" />
-                        <span className="font-mono text-lg">{Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}</span>
+                    <div className="flex items-center gap-2">
+                      <Clock className="h-5 w-5" />
+                      <span className="font-mono text-lg">
+                        {Math.floor(timeLeft / 60)}:
+                        {(timeLeft % 60).toString().padStart(2, '0')}
+                      </span>
                     </div>
                   </div>
-                  <Progress value={(timeLeft / timeLimit) * 100} className="w-full" />
+                  <Progress
+                    value={(timeLeft / timeLimit) * 100}
+                    className="w-full"
+                  />
                   <CardDescription>
-                    <div className="flex justify-between items-center mt-2">
+                    <div className="mt-2 flex items-center justify-between">
                       <Badge variant="outline">{currentQuestion.subject}</Badge>
                     </div>
                     <div className="prose prose-sm max-w-none p-4 dark:prose-invert md:prose-base md:p-6">
-                      <ReactMarkdown remarkPlugins={[remarkMath, remarkGfm]} rehypePlugins={[rehypeKatex]}>
+                      <ReactMarkdown
+                        remarkPlugins={[[remarkMath, { singleDollarTextMath: true }], remarkGfm]}
+                        rehypePlugins={[rehypeKatex]}
+                      >
                         {currentQuestion.question}
                       </ReactMarkdown>
                     </div>
@@ -317,7 +346,10 @@ export default function TestPage() {
                         </FormControl>
                         <FormLabel className="w-full cursor-pointer font-normal">
                            <div className="prose prose-sm max-w-none dark:prose-invert">
-                            <ReactMarkdown remarkPlugins={[remarkMath, remarkGfm]} rehypePlugins={[rehypeKatex]}>
+                            <ReactMarkdown
+                              remarkPlugins={[[remarkMath, { singleDollarTextMath: true }], remarkGfm]}
+                              rehypePlugins={[rehypeKatex]}
+                            >
                               {option}
                             </ReactMarkdown>
                           </div>
@@ -327,11 +359,18 @@ export default function TestPage() {
                   </RadioGroup>
                 </CardContent>
                 <CardFooter className="justify-between">
-                  <Button type="button" variant="outline" onClick={handlePreviousQuestion} disabled={currentQuestionIndex === 0}>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handlePreviousQuestion}
+                    disabled={currentQuestionIndex === 0}
+                  >
                     Previous
                   </Button>
                   <Button type="button" onClick={handleNextQuestion}>
-                    {currentQuestionIndex < questions.length - 1 ? 'Next' : 'Finish Test'}
+                    {currentQuestionIndex < questions.length - 1
+                      ? 'Next'
+                      : 'Finish Test'}
                   </Button>
                 </CardFooter>
               </Card>
@@ -339,9 +378,12 @@ export default function TestPage() {
           </Form>
         );
       case 'finished':
-        const subjectScores: Record<string, { correct: number; total: number }> = {};
-        
-        questions.forEach(q => {
+        const subjectScores: Record<
+          string,
+          { correct: number; total: number }
+        > = {};
+
+        questions.forEach((q) => {
           if (!subjectScores[q.subject]) {
             subjectScores[q.subject] = { correct: 0, total: 0 };
           }
@@ -350,13 +392,18 @@ export default function TestPage() {
           }
           subjectScores[q.subject].total++;
         });
-        const totalCorrect = Object.values(subjectScores).reduce((acc, curr) => acc + curr.correct, 0);
+        const totalCorrect = Object.values(subjectScores).reduce(
+          (acc, curr) => acc + curr.correct,
+          0
+        );
 
         if (isReviewing) {
           return (
             <Card className="w-full max-w-4xl">
               <CardHeader>
-                <CardTitle className="font-headline text-3xl">Review Your Answers</CardTitle>
+                <CardTitle className="font-headline text-3xl">
+                  Review Your Answers
+                </CardTitle>
                 <CardDescription>
                   Your final score was {totalCorrect} / {questions.length}.
                 </CardDescription>
@@ -368,32 +415,45 @@ export default function TestPage() {
                     const correct = q.correctAnswer;
                     const isCorrect = q.isCorrect;
                     const isUnattempted = q.isUnattempted;
-                    
+
                     return (
                       <AccordionItem value={`item-${index}`} key={index}>
                         <AccordionTrigger>
                           <div className="flex items-center gap-4">
                             {isUnattempted ? (
-                                <EyeOff className="h-5 w-5 flex-shrink-0 text-muted-foreground" />
+                              <EyeOff className="h-5 w-5 flex-shrink-0 text-muted-foreground" />
                             ) : isCorrect ? (
                               <CheckCircle2 className="h-5 w-5 flex-shrink-0 text-green-500" />
                             ) : (
                               <XCircle className="h-5 w-5 flex-shrink-0 text-red-500" />
                             )}
-                            <span className="text-left">Question {index + 1}</span>
+                            <span className="text-left">
+                              Question {index + 1}
+                            </span>
                             <Badge variant="outline">{q.subject}</Badge>
                           </div>
                         </AccordionTrigger>
                         <AccordionContent>
                           <div className="space-y-6 p-2">
-                            <div className="prose prose-sm max-w-none dark:prose-invert md:prose-base"><ReactMarkdown remarkPlugins={[remarkMath, remarkGfm]} rehypePlugins={[rehypeKatex]}>{q.question}</ReactMarkdown></div>
+                            <div className="prose prose-sm max-w-none dark:prose-invert md:prose-base">
+                              <ReactMarkdown
+                                remarkPlugins={[[remarkMath, { singleDollarTextMath: true }], remarkGfm]}
+                                rehypePlugins={[rehypeKatex]}
+                              >
+                                {q.question}
+                              </ReactMarkdown>
+                            </div>
                             <div className="space-y-2">
                               {q.options.map((option, i) => (
                                 <div
                                   key={i}
-                                  className={cn('flex items-start gap-3 rounded-md border p-3 text-sm',
-                                    i === correct && 'border-green-500 bg-green-500/10',
-                                    i === selected && !isCorrect && 'border-red-500 bg-red-500/10'
+                                  className={cn(
+                                    'flex items-start gap-3 rounded-md border p-3 text-sm',
+                                    i === correct &&
+                                      'border-green-500 bg-green-500/10',
+                                    i === selected &&
+                                      !isCorrect &&
+                                      'border-red-500 bg-red-500/10'
                                   )}
                                 >
                                   {i === correct ? (
@@ -403,14 +463,26 @@ export default function TestPage() {
                                   ) : (
                                     <div className="mt-0.5 h-4 w-4 flex-shrink-0" />
                                   )}
-                                  <div className="prose prose-sm max-w-none dark:prose-invert"><ReactMarkdown remarkPlugins={[remarkMath, remarkGfm]} rehypePlugins={[rehypeKatex]}>{option}</ReactMarkdown></div>
+                                  <div className="prose prose-sm max-w-none dark:prose-invert">
+                                    <ReactMarkdown
+                                      remarkPlugins={[[remarkMath, { singleDollarTextMath: true }], remarkGfm]}
+                                      rehypePlugins={[rehypeKatex]}
+                                    >
+                                      {option}
+                                    </ReactMarkdown>
+                                  </div>
                                 </div>
                               ))}
                             </div>
                             <div>
                               <Badge>Explanation</Badge>
                               <div className="prose prose-sm mt-2 max-w-none rounded-md border bg-secondary/50 p-4 dark:prose-invert md:prose-base">
-                                <ReactMarkdown remarkPlugins={[remarkMath, remarkGfm]} rehypePlugins={[rehypeKatex]}>{q.explanation}</ReactMarkdown>
+                                <ReactMarkdown
+                                  remarkPlugins={[[remarkMath, { singleDollarTextMath: true }], remarkGfm]}
+                                  rehypePlugins={[rehypeKatex]}
+                                >
+                                  {q.explanation}
+                                </ReactMarkdown>
                               </div>
                             </div>
                           </div>
@@ -421,37 +493,62 @@ export default function TestPage() {
                 </Accordion>
               </CardContent>
               <CardFooter className="flex-col gap-4">
-                <Button onClick={() => setIsReviewing(false)} className="w-full">Back to Score</Button>
-                <Button onClick={handleRestart} variant="secondary" className="w-full">Take Another Test</Button>
+                <Button
+                  onClick={() => setIsReviewing(false)}
+                  className="w-full"
+                >
+                  Back to Score
+                </Button>
+                <Button
+                  onClick={handleRestart}
+                  variant="secondary"
+                  className="w-full"
+                >
+                  Take Another Test
+                </Button>
               </CardFooter>
             </Card>
           );
         }
 
         return (
-          <Card className="text-center w-full max-w-md">
+          <Card className="w-full max-w-md text-center">
             <CardHeader>
-              <CardTitle className="font-headline text-3xl">Test Complete!</CardTitle>
+              <CardTitle className="font-headline text-3xl">
+                Test Complete!
+              </CardTitle>
               <CardDescription>Here's how you did.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
                 <p className="text-sm text-muted-foreground">Total Score</p>
-                <p className="text-5xl font-bold">{totalCorrect} / {questions.length}</p>
+                <p className="text-5xl font-bold">
+                  {totalCorrect} / {questions.length}
+                </p>
               </div>
               <div className="space-y-2 rounded-md border p-4">
                 <h3 className="font-medium">Subject-wise Score</h3>
                 {Object.entries(subjectScores).map(([subject, score]) => (
                   <div key={subject} className="flex justify-between text-sm">
                     <span className="text-muted-foreground">{subject}:</span>
-                    <span className="font-semibold">{score.correct} / {score.total}</span>
+                    <span className="font-semibold">
+                      {score.correct} / {score.total}
+                    </span>
                   </div>
                 ))}
               </div>
             </CardContent>
             <CardFooter className="flex-col gap-4">
-              <Button onClick={() => setIsReviewing(true)} className="w-full"><BookOpen className="mr-2" /> Review Answers</Button>
-              <Button onClick={handleRestart} variant="secondary" className="w-full">Take Another Test</Button>
+              <Button onClick={() => setIsReviewing(true)} className="w-full">
+                <BookOpen className="mr-2" /> Review Answers
+              </Button>
+              <Button
+                onClick={handleRestart}
+                variant="secondary"
+                className="w-full"
+              >
+                Take Another Test
+              </Button>
             </CardFooter>
           </Card>
         );
@@ -459,11 +556,17 @@ export default function TestPage() {
         return (
           <Card className="text-center">
             <CardHeader>
-              <CardTitle className="font-headline text-3xl text-destructive">Something Went Wrong</CardTitle>
-              <CardDescription>We couldn't generate the test. Please try again.</CardDescription>
+              <CardTitle className="font-headline text-3xl text-destructive">
+                Something Went Wrong
+              </CardTitle>
+              <CardDescription>
+                We couldn't generate the test. Please try again.
+              </CardDescription>
             </CardHeader>
             <CardContent>
-              <Button onClick={handleRestart} className="w-full">Try Again</Button>
+              <Button onClick={handleRestart} className="w-full">
+                Try Again
+              </Button>
             </CardContent>
           </Card>
         );
@@ -472,7 +575,9 @@ export default function TestPage() {
         return (
           <Card className="w-full max-w-2xl">
             <CardHeader>
-              <CardTitle className="font-headline text-3xl">Configure Your Test</CardTitle>
+              <CardTitle className="font-headline text-3xl">
+                Configure Your Test
+              </CardTitle>
               <CardDescription>Set up your mock test parameters.</CardDescription>
             </CardHeader>
             <Form {...form}>
@@ -484,12 +589,27 @@ export default function TestPage() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Subject Group</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
+                        <Select
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                          </FormControl>
                           <SelectContent>
-                            {Object.keys(subjectGroups).filter(g => g !== 'PCMB' || subjectGroups[g as keyof typeof subjectGroups].length === 4).map((group) => (
-                              <SelectItem key={group} value={group}>{group}</SelectItem>
-                            ))}
+                            {Object.keys(subjectGroups)
+                              .filter(
+                                (g) =>
+                                  g !== 'PCMB' ||
+                                  subjectGroups[g as keyof typeof subjectGroups]
+                                    .length === 4
+                              ).filter(g => g !== 'PCB').map((group) => (
+                                <SelectItem key={group} value={group}>
+                                  {group}
+                                </SelectItem>
+                              ))}
                           </SelectContent>
                         </Select>
                         <FormMessage />
@@ -502,15 +622,27 @@ export default function TestPage() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Total Questions</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
-                          <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
+                        <Select
+                          onValueChange={field.onChange}
+                          value={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                          </FormControl>
                           <SelectContent>
                             {availableQuestionCounts.map((count) => (
-                              <SelectItem key={count} value={count}>{count} Questions</SelectItem>
+                              <SelectItem key={count} value={count}>
+                                {count} Questions
+                              </SelectItem>
                             ))}
                           </SelectContent>
                         </Select>
-                        <FormDescription>Must be divisible by the number of subjects in the selected group.</FormDescription>
+                        <FormDescription>
+                          Must be divisible by the number of subjects in the
+                          selected group.
+                        </FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -521,11 +653,20 @@ export default function TestPage() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Time Limit</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
+                        <Select
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                          </FormControl>
                           <SelectContent>
                             {timeLimits.map((limit) => (
-                              <SelectItem key={limit} value={limit}>{limit} Minutes</SelectItem>
+                              <SelectItem key={limit} value={limit}>
+                                {limit} Minutes
+                              </SelectItem>
                             ))}
                           </SelectContent>
                         </Select>
@@ -539,10 +680,21 @@ export default function TestPage() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Difficulty</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
+                        <Select
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                          </FormControl>
                           <SelectContent>
-                            {difficultyLevels.map((level) => (<SelectItem key={level} value={level}>{level}</SelectItem>))}
+                            {difficultyLevels.map((level) => (
+                              <SelectItem key={level} value={level}>
+                                {level}
+                              </SelectItem>
+                            ))}
                           </SelectContent>
                         </Select>
                         <FormMessage />
@@ -567,24 +719,29 @@ export default function TestPage() {
       <div className="container mx-auto">
         <div className="absolute top-4 left-4 md:top-8 md:left-8">
           <Button asChild variant="ghost">
-            <Link href="/"><ArrowLeft className="mr-2" /> Back to Home</Link>
+            <Link href="/">
+              <ArrowLeft className="mr-2" /> Back to Home
+            </Link>
           </Button>
         </div>
         <div className="flex min-h-[80vh] items-center justify-center">
           {renderContent()}
         </div>
-         <AlertDialog open={isTimeUp} onOpenChange={setIsTimeUp}>
-            <AlertDialogContent>
-                <AlertDialogHeader>
-                    <AlertDialogTitle>Time's Up!</AlertDialogTitle>
-                    <AlertDialogDescription>
-                        Your time for the test has expired. Your test has been automatically submitted. Let's see your results.
-                    </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                    <AlertDialogAction onClick={() => setIsTimeUp(false)}>View Results</AlertDialogAction>
-                </AlertDialogFooter>
-            </AlertDialogContent>
+        <AlertDialog open={isTimeUp} onOpenChange={setIsTimeUp}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Time's Up!</AlertDialogTitle>
+              <AlertDialogDescription>
+                Your time for the test has expired. Your test has been
+                automatically submitted. Let's see your results.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogAction onClick={() => setIsTimeUp(false)}>
+                View Results
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
         </AlertDialog>
       </div>
     </main>
