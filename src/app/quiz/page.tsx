@@ -53,7 +53,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 
 const subjectGroups = {
   PCM: ['Physics', 'Chemistry', 'Mathematics'],
-  PCMB: ['Physics', 'Chemistry', 'Mathematics', 'Chemistry'],
+  PCMB: ['Physics', 'Chemistry', 'Mathematics', 'Biology'],
 };
 
 const difficultyLevels = ['Easy', 'Medium', 'Hard', 'Expert'] as const;
