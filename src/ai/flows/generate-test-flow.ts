@@ -45,7 +45,9 @@ const prompt = ai.definePrompt({
   name: 'generateTestPrompt',
   input: { schema: GenerateTestInputSchema },
   output: { schema: GenerateTestOutputSchema },
-  system: "You are an expert educator. Your primary task is to create accurate, multi-subject tests. For every single question you generate, you MUST include the 'subject' field that corresponds to the question's topic. Do not omit the 'subject' field from any question object.",
+  system: `You are an expert educator. Your primary task is to create accurate, multi-subject tests.
+You MUST generate the exact number of questions for each subject as specified in the input. Do not generate more or fewer questions than requested.
+For every single question you generate, you MUST include the 'subject' field that corresponds to the question's topic. Do not omit the 'subject' field from any question object.`,
   prompt: `You are an expert educator responsible for creating challenging and accurate multi-subject tests.
 
 Generate a test with the specified number of questions for each subject and difficulty level.
