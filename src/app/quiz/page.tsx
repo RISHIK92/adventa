@@ -241,9 +241,11 @@ export default function QuizPage() {
                           <RadioGroupItem value={index.toString()} />
                         </FormControl>
                         <FormLabel className="w-full cursor-pointer font-normal">
-                           <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]} className="prose prose-sm max-w-none dark:prose-invert">
-                            {option}
-                          </ReactMarkdown>
+                           <div className="prose prose-sm max-w-none dark:prose-invert">
+                            <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>
+                              {option}
+                            </ReactMarkdown>
+                          </div>
                         </FormLabel>
                       </FormItem>
                     ))}
@@ -299,7 +301,7 @@ export default function QuizPage() {
                         </AccordionTrigger>
                         <AccordionContent>
                           <div className="space-y-6 p-2">
-                            <div className="prose prose-sm max-w-none dark:prose-invert">
+                            <div className="prose prose-sm max-w-none dark:prose-invert md:prose-base">
                               <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>
                                 {q.question}
                               </ReactMarkdown>
@@ -327,16 +329,18 @@ export default function QuizPage() {
                                     ) : (
                                       <div className="mt-0.5 h-4 w-4 flex-shrink-0" />
                                     )}
-                                    <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]} className="prose prose-sm max-w-none dark:prose-invert">
-                                      {option}
-                                    </ReactMarkdown>
+                                    <div className="prose prose-sm max-w-none dark:prose-invert">
+                                      <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>
+                                        {option}
+                                      </ReactMarkdown>
+                                    </div>
                                   </div>
                                 );
                               })}
                             </div>
                             <div>
                               <Badge>Explanation</Badge>
-                              <div className="prose prose-sm mt-2 max-w-none rounded-md border bg-secondary/50 p-4 dark:prose-invert">
+                              <div className="prose prose-sm mt-2 max-w-none rounded-md border bg-secondary/50 p-4 dark:prose-invert md:prose-base">
                                 <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>
                                   {q.explanation}
                                 </ReactMarkdown>
