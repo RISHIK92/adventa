@@ -151,12 +151,20 @@ export default {
             '--tw-prose-invert-th-borders': theme('colors.border'),
             '--tw-prose-invert-td-borders': theme('colors.border'),
             // This prevents prose from styling KaTeX elements
-            '.math': {
-              all: 'unset',
+            '.katex-display, .katex': {
+              '--tw-prose-code': 'inherit',
+              '--tw-prose-pre-code': 'inherit',
+              '--tw-prose-pre-bg': 'transparent',
+              'background-color': 'transparent',
+              'font-size': 'inherit',
+              'line-height': 'inherit',
+              'margin': '0',
+              'padding': '0',
             },
-            '.katex': {
-              fontSize: '1.1em',
-            }
+            'p > .katex-display': {
+              'margin-top': '0 !important',
+              'margin-bottom': '0 !important',
+            },
           },
         },
       }),
@@ -164,3 +172,5 @@ export default {
   },
   plugins: [require('tailwindcss-animate'), require('@tailwindcss/typography')],
 } satisfies Config;
+
+    

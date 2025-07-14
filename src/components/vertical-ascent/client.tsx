@@ -509,14 +509,14 @@ function LessonDetailView({
             </TabsList>
             <TabsContent value="cheatsheet">
                <Card className="mt-4">
-                  <CardContent className="p-4 md:p-6 prose dark:prose-invert max-w-none">
+                  <CardContent className="prose prose-sm max-w-none p-4 dark:prose-invert md:prose-base md:p-6">
                     {renderContent(cheatsheetContent)}
                   </CardContent>
                 </Card>
             </TabsContent>
             <TabsContent value="formulasheet">
                <Card className="mt-4">
-                  <CardContent className="p-4 md:p-6 prose dark:prose-invert max-w-none">
+                  <CardContent className="prose prose-sm max-w-none p-4 dark:prose-invert md:prose-base md:p-6">
                     {renderContent(formulasheetContent)}
                   </CardContent>
                 </Card>
@@ -613,3 +613,5 @@ function AiSuggestions({
     </div>
   );
 }
+
+    
