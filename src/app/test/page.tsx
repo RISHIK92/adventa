@@ -26,6 +26,7 @@ import {
   type GenerateTestInput,
   type TestQuestion,
 } from '@/ai/flows/generate-test-flow';
+import { saveTestResult } from '@/app/actions';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -52,6 +53,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/use-auth';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import {
   Accordion,
@@ -71,6 +73,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { useRouter } from 'next/navigation';
 
 const subjectGroups = {
   MPC: ['Mathematics', 'Physics', 'Chemistry'],
@@ -122,20 +125,25 @@ type AnsweredQuestion = TestQuestion & {
 };
 
 export default function TestPage() {
+  const { user, loading: authLoading } = useAuth();
+  const router = useRouter();
   const [testState, setTestState] = React.useState<TestState>('configuring');
   const [questions, setQuestions] = React.useState<AnsweredQuestion[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = React.useState(0);
   const [timeLeft, setTimeLeft] = React.useState(0);
   const [isReviewing, setIsReviewing] = React.useState(false);
   const [isTimeUp, setIsTimeUp] = React.useState(false);
-  const [testConfig, setTestConfig] = React.useState<{
-    timeLimit: number;
-    questionCount: number;
-  } | null>(null);
+  const [testConfig, setTestConfig] = React.useState<TestFormValues | null>(null);
 
   const timerIntervalRef = React.useRef<NodeJS.Timeout>();
 
   const { toast } = useToast();
+
+  React.useEffect(() => {
+    if (!authLoading && !user) {
+      router.push('/login');
+    }
+  }, [user, authLoading, router]);
 
   const form = useForm<TestFormValues>({
     resolver: zodResolver(formSchema),
@@ -162,16 +170,45 @@ export default function TestPage() {
     setTestState((prevState) => {
       if (prevState !== 'testing') return prevState;
 
-      setQuestions((currentQuestions) =>
-        currentQuestions.map((q) => ({
-          ...q,
-          isCorrect: q.userAnswer === q.correctAnswer,
-          isUnattempted: q.userAnswer === undefined,
-        }))
-      );
+      const scoredQuestions = questions.map((q) => ({
+        ...q,
+        isCorrect: q.userAnswer === q.correctAnswer,
+        isUnattempted: q.userAnswer === undefined,
+      }));
+      setQuestions(scoredQuestions);
+
+      if (user && testConfig) {
+        const subjectScores: Record<string, { correct: number; total: number }> = {};
+        scoredQuestions.forEach((q) => {
+          if (!subjectScores[q.subject]) {
+            subjectScores[q.subject] = { correct: 0, total: 0 };
+          }
+          if (q.isCorrect) {
+            subjectScores[q.subject].correct++;
+          }
+          subjectScores[q.subject].total++;
+        });
+        const totalCorrect = Object.values(subjectScores).reduce(
+          (acc, curr) => acc + curr.correct,
+          0
+        );
+        const subjects = subjectGroups[testConfig.subjectGroup];
+        const questionsPerSubject = Number(testConfig.questionCount) / subjects.length;
+
+        saveTestResult({
+          userId: user.uid,
+          difficulty: testConfig.difficulty,
+          totalQuestions: Number(testConfig.questionCount),
+          timeLimit: Number(testConfig.timeLimit),
+          subjects: subjects.map((s) => ({ subject: s, count: questionsPerSubject })),
+          score: totalCorrect,
+          subjectWiseScores: subjectScores,
+        });
+      }
+
       return 'finished';
     });
-  }, []);
+  }, [questions, testConfig, user]);
 
   React.useEffect(() => {
     if (testState === 'testing' && timeLeft > 0) {
@@ -192,9 +229,9 @@ export default function TestPage() {
 
   const handleGenerateTest = async (values: TestFormValues) => {
     setTestState('loading');
+    setTestConfig(values);
     const questionCount = Number(values.questionCount);
     const timeLimit = Number(values.timeLimit);
-    setTestConfig({ questionCount, timeLimit });
 
     const subjects = subjectGroups[values.subjectGroup];
     const questionsPerSubject = questionCount / subjects.length;
@@ -281,6 +318,14 @@ export default function TestPage() {
     });
   };
 
+  if (authLoading || !user) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <Loader2 className="h-12 w-12 animate-spin text-primary" />
+      </div>
+    );
+  }
+
   const renderContent = () => {
     switch (testState) {
       case 'loading':
@@ -293,7 +338,7 @@ export default function TestPage() {
           </div>
         );
       case 'testing':
-        const timeLimit = (testConfig?.timeLimit || 0) * 60;
+        const timeLimitInSeconds = (Number(testConfig?.timeLimit) || 0) * 60;
         return (
           <Form {...form}>
             <form>
@@ -312,7 +357,7 @@ export default function TestPage() {
                     </div>
                   </div>
                   <Progress
-                    value={(timeLeft / timeLimit) * 100}
+                    value={(timeLeft / timeLimitInSeconds) * 100}
                     className="w-full"
                   />
                   <CardDescription>
@@ -605,7 +650,7 @@ export default function TestPage() {
                                   g !== 'PCMB' ||
                                   subjectGroups[g as keyof typeof subjectGroups]
                                     .length === 4
-                              ).filter(g => g !== 'PCB').map((group) => (
+                              ).map((group) => (
                                 <SelectItem key={group} value={group}>
                                   {group}
                                 </SelectItem>

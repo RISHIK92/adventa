@@ -26,6 +26,7 @@ import {
   type GenerateQuizInput,
   type QuizQuestion,
 } from '@/ai/flows/generate-quiz-flow';
+import { saveQuizResult } from '@/app/actions';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -52,6 +53,7 @@ import {
 } from '@/components/ui/select';
 import { subjects as allSubjects } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/use-auth';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import {
   Accordion,
@@ -61,6 +63,7 @@ import {
 } from '@/components/ui/accordion';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
+import { useRouter } from 'next/navigation';
 
 const subjectGroups = {
   PCM: ['Physics', 'Chemistry', 'Mathematics'],
@@ -86,6 +89,8 @@ type QuizState =
   | 'error';
 
 export default function QuizPage() {
+  const { user, loading: authLoading } = useAuth();
+  const router = useRouter();
   const [quizState, setQuizState] = React.useState<QuizState>('configuring');
   const [questions, setQuestions] = React.useState<QuizQuestion[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = React.useState(0);
@@ -96,6 +101,13 @@ export default function QuizPage() {
   const [finalScore, setFinalScore] = React.useState(0);
   const [isReviewing, setIsReviewing] = React.useState(false);
   const { toast } = useToast();
+  const [quizConfig, setQuizConfig] = React.useState<GenerateQuizInput | null>(null);
+
+  React.useEffect(() => {
+    if (!authLoading && !user) {
+      router.push('/login');
+    }
+  }, [user, authLoading, router]);
 
   const form = useForm<QuizFormValues>({
     resolver: zodResolver(formSchema),
@@ -116,6 +128,7 @@ export default function QuizPage() {
 
   const handleGenerateQuiz = async (values: GenerateQuizInput) => {
     setQuizState('loading');
+    setQuizConfig(values);
     try {
       const result = await generateQuiz(values);
       if (result && result.questions?.length > 0) {
@@ -179,14 +192,23 @@ export default function QuizPage() {
   const handleNextQuestion = () => {
     const isCorrect =
       selectedAnswers[currentQuestionIndex] === currentQuestion.correctAnswer;
-    const currentScore = isCorrect ? score + 1 : score;
-    setScore(currentScore);
+    const newScore = isCorrect ? score + 1 : score;
+    setScore(newScore);
 
     if (currentQuestionIndex < questions.length - 1) {
       setCurrentQuestionIndex((prev) => prev + 1);
     } else {
-      setFinalScore(currentScore);
+      setFinalScore(newScore);
       setQuizState('finished');
+      if (user && quizConfig) {
+        saveQuizResult({
+          userId: user.uid,
+          subject: quizConfig.subject,
+          difficulty: quizConfig.difficulty,
+          score: newScore,
+          totalQuestions: questions.length,
+        });
+      }
     }
   };
 
@@ -194,6 +216,15 @@ export default function QuizPage() {
     setQuizState('configuring');
     form.reset();
   };
+  
+  if (authLoading || !user) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <Loader2 className="h-12 w-12 animate-spin text-primary" />
+      </div>
+    );
+  }
+
 
   const renderContent = () => {
     switch (quizState) {
@@ -529,7 +560,7 @@ export default function QuizPage() {
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue placeholder="Select a difficulty" />
-                            </SelectTrigger>
+                            </Trigger>
                           </FormControl>
                           <SelectContent>
                             {difficultyLevels.map((level) => (

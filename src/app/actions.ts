@@ -3,6 +3,10 @@
 
 import { suggestAdjacentSubjects } from '@/ai/flows/suggest-adjacent-subjects';
 import type { SuggestAdjacentSubjectsInput } from '@/ai/flows/suggest-adjacent-subjects';
+import type { QuizQuestion } from '@/ai/flows/generate-quiz-flow';
+import type { TestQuestion } from '@/ai/flows/generate-test-flow';
+import { db } from '@/lib/firebase';
+import { collection, addDoc, serverTimestamp, getDocs, query, where, orderBy } from 'firebase/firestore';
 
 export async function getSuggestions(input: SuggestAdjacentSubjectsInput) {
   const validatedInput = { ...input, depth: 1 };
@@ -16,5 +20,91 @@ export async function getSuggestions(input: SuggestAdjacentSubjectsInput) {
   } catch (error) {
     console.error('Error fetching suggestions:', error);
     return { success: false, error: 'An unexpected error occurred while fetching suggestions.' };
+  }
+}
+
+export type QuizResult = {
+  userId: string;
+  subject: string;
+  difficulty: string;
+  score: number;
+  totalQuestions: number;
+  timestamp?: any;
+};
+
+export async function saveQuizResult(result: QuizResult) {
+  try {
+    await addDoc(collection(db, 'quizResults'), {
+      ...result,
+      timestamp: serverTimestamp(),
+    });
+    return { success: true };
+  } catch (error) {
+    console.error('Error saving quiz result:', error);
+    return { success: false, error: 'Failed to save quiz result.' };
+  }
+}
+
+export type TestResult = {
+  userId: string;
+  difficulty: string;
+  totalQuestions: number;
+  timeLimit: number;
+  subjects: { subject: string; count: number }[];
+  score: number;
+  subjectWiseScores: Record<string, { correct: number; total: number }>;
+  timestamp?: any;
+};
+
+export async function saveTestResult(result: TestResult) {
+  try {
+    await addDoc(collection(db, 'testResults'), {
+      ...result,
+      timestamp: serverTimestamp(),
+    });
+    return { success: true };
+  } catch (error) {
+    console.error('Error saving test result:', error);
+    return { success: false, error: 'Failed to save test result.' };
+  }
+}
+
+export async function getQuizResults(userId: string) {
+  try {
+    const q = query(collection(db, 'quizResults'), where('userId', '==', userId), orderBy('timestamp', 'desc'));
+    const querySnapshot = await getDocs(q);
+    const results: any[] = [];
+    querySnapshot.forEach((doc) => {
+      const data = doc.data();
+      results.push({
+        id: doc.id,
+        ...data,
+        timestamp: data.timestamp?.toDate().toISOString(),
+      });
+    });
+    return { success: true, data: results };
+  } catch (error) {
+    console.error('Error fetching quiz results:', error);
+    return { success: false, error: 'Failed to fetch quiz results.' };
+  }
+}
+
+export async function getTestResults(userId: string) {
+  try {
+    const q = query(collection(db, 'testResults'), where('userId', '==', userId), orderBy('timestamp', 'desc'));
+    const querySnapshot = await getDocs(q);
+    const results: any[] = [];
+    querySnapshot.forEach((doc) => {
+       const data = doc.data();
+      results.push({
+        id: doc.id,
+        ...data,
+        timestamp: data.timestamp?.toDate().toISOString(),
+      });
+    });
+    return { success: true, data: results };
+  } catch (error) {
+    console.error('Error fetching test results:', error);
+    return { success: false, error: 'Failed to fetch test results.' };
   }
 }
