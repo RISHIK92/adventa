@@ -99,11 +99,11 @@ export function VerticalAscentClient({ subjects: initialSubjects }: VerticalAsce
 
   return (
     <div
-      className="relative min-h-screen w-full overflow-hidden p-4 md:p-8"
+      className="relative min-h-screen w-full overflow-x-hidden p-4 md:p-8"
       data-view-state={viewState}
     >
       <div className="absolute inset-0 -z-10 bg-background" />
-      <div className="absolute inset-0 -z-10 bg-primary/10 [mask-image:radial-gradient(100%_100%_at_50%_0,white,transparent)]" />
+      <div className="absolute top-0 left-0 w-full h-full -z-10 bg-gradient-to-br from-primary/10 via-background to-background" />
       
       <div className="container mx-auto">
         <div className="flex flex-col items-center">
@@ -111,7 +111,7 @@ export function VerticalAscentClient({ subjects: initialSubjects }: VerticalAsce
               className={cn(
                 'transition-all duration-700 ease-in-out',
                 viewState !== 'subjects'
-                  ? 'opacity-100 scale-100 mb-8'
+                  ? 'opacity-100 scale-100 mb-4'
                   : 'opacity-0 scale-90 pointer-events-none'
               )}
             >
@@ -120,7 +120,7 @@ export function VerticalAscentClient({ subjects: initialSubjects }: VerticalAsce
             
             <div
               className={cn(
-                'transition-all duration-500 ease-in-out',
+                'transition-all duration-500 ease-in-out w-full',
                 viewState !== 'subjects' ? 'opacity-0 pointer-events-none absolute' : 'opacity-100'
               )}
             >
@@ -133,7 +133,7 @@ export function VerticalAscentClient({ subjects: initialSubjects }: VerticalAsce
                 size="sm"
                 onClick={handleBack}
                 className={cn(
-                  'absolute -top-16 left-0 transition-opacity duration-300 flex items-center gap-2',
+                  'absolute -top-14 left-0 transition-opacity duration-300 flex items-center gap-2',
                    viewState === 'subjects' ? 'opacity-0 pointer-events-none' : 'opacity-100'
                 )}
               >
@@ -143,7 +143,7 @@ export function VerticalAscentClient({ subjects: initialSubjects }: VerticalAsce
 
               <div
                 className={cn(
-                  'transition-all duration-700 ease-in-out',
+                  'transition-all duration-700 ease-in-out w-full',
                   viewState === 'lessons'
                     ? 'opacity-100'
                     : 'opacity-0 pointer-events-none absolute'
@@ -189,13 +189,13 @@ function SubjectsView({ subjects, onSelectSubject }: { subjects: Subject[], onSe
           <Card
             key={subject.id}
             onClick={() => onSelectSubject(subject)}
-            className="cursor-pointer hover:shadow-lg hover:border-primary transition-all duration-300 group"
+            className="cursor-pointer hover:shadow-xl hover:border-primary/50 transition-all duration-300 group bg-card/80 backdrop-blur-sm"
           >
             <CardHeader className="items-center">
               <div className="p-3 bg-primary/10 rounded-full group-hover:bg-primary group-hover:text-primary-foreground transition-colors duration-300">
                 <SubjectIcon name={subject.iconName} className="h-8 w-8 text-primary group-hover:text-primary-foreground transition-colors duration-300" />
               </div>
-              <CardTitle className="font-headline">{subject.title}</CardTitle>
+              <CardTitle className="font-headline text-xl">{subject.title}</CardTitle>
             </CardHeader>
             <CardContent>
               <CardDescription>{subject.description}</CardDescription>
@@ -209,7 +209,7 @@ function SubjectsView({ subjects, onSelectSubject }: { subjects: Subject[], onSe
 
 function SubjectHeader({ subject }: { subject: Subject }) {
     return (
-        <div className="flex items-center gap-4 p-2 rounded-full bg-card shadow-sm border">
+        <div className="flex items-center gap-4 p-2 pr-4 rounded-full bg-card/80 backdrop-blur-sm shadow-sm border">
             <div className="p-2 bg-primary/10 rounded-full">
               <SubjectIcon name={subject.iconName} className="h-6 w-6 text-primary" />
             </div>
@@ -222,101 +222,108 @@ function LessonsView({ subject, onSelectLesson }: { subject: Subject, onSelectLe
   const containerRef = React.useRef<HTMLDivElement>(null);
   const [svgDimensions, setSvgDimensions] = React.useState({ width: 0, height: 0 });
 
-  const PADDING = 20;
-  const NODE_WIDTH = 160;
-  const NODE_HEIGHT = 80;
-  const H_SPACING = 60;
+  const PADDING_X = 50;
+  const PADDING_Y = 20;
+  const NODE_WIDTH = 180;
+  const NODE_HEIGHT = 60;
+  const H_SPACING = 40;
   const V_SPACING = 40;
+  const ITEMS_PER_ROW = 4;
   
   const nodes = React.useMemo(() => {
     return subject.lessons.map((lesson, i) => {
-      const side = i % 2 === 0 ? -1 : 1;
-      const level = Math.floor(i / 2);
-      const x = (NODE_WIDTH / 2 + H_SPACING) * side;
-      const y = level * (NODE_HEIGHT + V_SPACING);
-      return { ...lesson, x, y };
+      const rowIndex = Math.floor(i / ITEMS_PER_ROW);
+      const colIndex = i % ITEMS_PER_ROW;
+      
+      const effectiveColIndex = rowIndex % 2 === 0 ? colIndex : (ITEMS_PER_ROW - 1 - colIndex);
+      
+      const x = effectiveColIndex * (NODE_WIDTH + H_SPACING) + PADDING_X;
+      const y = rowIndex * (NODE_HEIGHT + V_SPACING) + PADDING_Y;
+      
+      return { ...lesson, x, y, rowIndex };
     });
   }, [subject.lessons]);
   
   React.useEffect(() => {
     function updateSize() {
       if (containerRef.current) {
-        const trunkHeight = nodes.length > 0 ? nodes[nodes.length - 1].y + NODE_HEIGHT + PADDING : 0;
-        const width = containerRef.current.offsetWidth;
-        setSvgDimensions({ width: width, height: trunkHeight });
+        const numRows = Math.ceil(subject.lessons.length / ITEMS_PER_ROW);
+        const totalHeight = numRows * (NODE_HEIGHT + V_SPACING) + PADDING_Y;
+        const totalWidth = ITEMS_PER_ROW * (NODE_WIDTH + H_SPACING) + PADDING_X;
+        setSvgDimensions({ width: totalWidth, height: totalHeight });
       }
     }
-    window.addEventListener('resize', updateSize);
     updateSize();
+    window.addEventListener('resize', updateSize);
     return () => window.removeEventListener('resize', updateSize);
-  }, [nodes]);
+  }, [subject.lessons, nodes]);
 
   const { width, height } = svgDimensions;
-  const centerX = width / 2;
 
   return (
-    <div ref={containerRef} className="relative w-full" style={{ height: `${height}px` }}>
+    <div ref={containerRef} className="relative w-full flex justify-center items-center" style={{ height: `${height}px` }}>
       {width > 0 && (
         <>
           <svg width={width} height={height} className="absolute inset-0">
-            <defs>
-              <linearGradient id="trunkGradient" x1="0.5" y1="0" x2="0.5" y2="1">
-                <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0" />
-                <stop offset="100%" stopColor="hsl(var(--primary))" />
+             <defs>
+              <linearGradient id="branchGradient" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0%" stopColor="hsl(var(--primary) / 0.1)" />
+                <stop offset="50%" stopColor="hsl(var(--primary) / 0.8)" />
+                <stop offset="100%" stopColor="hsl(var(--primary) / 0.1)" />
               </linearGradient>
             </defs>
-            {/* Trunk */}
-            <line
-              x1={centerX}
-              y1={0}
-              x2={centerX}
-              y2={height - PADDING}
-              stroke="url(#trunkGradient)"
-              strokeWidth="3"
-              className="[animation-delay:0s] animate-stroke-draw"
-              strokeDasharray={height}
-              strokeDashoffset={height}
-            />
-            {/* Branches */}
-            {nodes.map((node, i) => {
-              const startX = centerX;
-              const startY = node.y + NODE_HEIGHT / 2;
-              const endX = centerX + node.x;
-              const path = `M ${startX},${startY} C ${startX + (endX - startX) / 2},${startY} ${startX + (endX - startX) / 2},${startY} ${endX},${startY}`;
-              const pathLength = Math.abs(endX-startX);
-              return (
-                <path
-                  key={`branch-${node.id}`}
-                  d={path}
-                  stroke="hsl(var(--primary) / 0.6)"
-                  strokeWidth="2"
-                  fill="none"
-                  className="animate-stroke-draw"
-                  strokeDasharray={pathLength}
-                  strokeDashoffset={pathLength}
-                  style={{ animationDelay: `${0.1 + i * 0.05}s` }}
-                />
-              );
-            })}
+            <g>
+              {nodes.map((node, i) => {
+                const nextNode = nodes[i + 1];
+                if (!nextNode) return null;
+
+                const startX = node.x + NODE_WIDTH / 2;
+                const startY = node.y + NODE_HEIGHT / 2;
+                const endX = nextNode.x + NODE_WIDTH / 2;
+                const endY = nextNode.y + NODE_HEIGHT / 2;
+
+                let pathData;
+                if (node.rowIndex === nextNode.rowIndex) {
+                  // Horizontal connection
+                  pathData = `M ${startX} ${startY} L ${endX} ${endY}`;
+                } else {
+                  // Vertical/Turning connection
+                  const controlY = startY + V_SPACING * 0.7;
+                  pathData = `M ${startX} ${startY} C ${startX} ${controlY}, ${endX} ${startY}, ${endX} ${endY}`;
+                }
+
+                return (
+                  <path
+                    key={`branch-${node.id}`}
+                    d={pathData}
+                    stroke="url(#branchGradient)"
+                    strokeWidth="2.5"
+                    fill="none"
+                    className="animate-stroke-draw"
+                    strokeDasharray="500"
+                    strokeDashoffset="500"
+                    style={{ animationDelay: `${0.1 + i * 0.05}s` }}
+                  />
+                );
+              })}
+            </g>
           </svg>
 
-          {/* Lesson Nodes */}
           {nodes.map((node, i) => (
             <div
               key={node.id}
               className="absolute transition-transform duration-300 ease-in-out animate-fade-in-up"
               style={{
                 top: `${node.y}px`,
-                left: `calc(50% + ${node.x}px)`,
+                left: `${node.x}px`,
                 width: `${NODE_WIDTH}px`,
                 height: `${NODE_HEIGHT}px`,
-                transform: `translateX(-50%)`,
                 animationDelay: `${0.2 + i * 0.05}s`
               }}
             >
               <Card
                 onClick={() => onSelectLesson(node)}
-                className="w-full h-full flex items-center justify-center text-center p-2 cursor-pointer hover:bg-accent/20 hover:border-accent transition-all duration-300 shadow-lg hover:shadow-primary/30 z-10"
+                className="w-full h-full flex items-center justify-center text-center p-2 cursor-pointer bg-card/60 backdrop-blur-sm border-2 border-transparent hover:border-primary/80 transition-all duration-300 shadow-lg hover:shadow-primary/20"
               >
                 <CardTitle className="text-sm font-medium">{node.title}</CardTitle>
               </Card>
@@ -332,7 +339,7 @@ function LessonsView({ subject, onSelectLesson }: { subject: Subject, onSelectLe
 function LessonDetailView({ subject, lesson, toast }: { subject: Subject; lesson: Lesson, toast: any }) {
   return (
     <div className="max-w-4xl mx-auto">
-      <Card className="mb-8">
+      <Card className="mb-8 bg-card/80 backdrop-blur-sm">
         <CardHeader>
           <CardTitle className="text-3xl font-bold font-headline">{lesson.title}</CardTitle>
           <CardDescription>From the subject: {subject.title}</CardDescription>
@@ -345,7 +352,7 @@ function LessonDetailView({ subject, lesson, toast }: { subject: Subject; lesson
             </TabsList>
             <TabsContent value="cheatsheet">
               <Card className="mt-4">
-                <CardContent className="p-6 text-base leading-relaxed">
+                <CardContent className="p-6 text-base leading-relaxed prose dark:prose-invert">
                   {lesson.content.cheatsheet}
                 </CardContent>
               </Card>
@@ -393,9 +400,9 @@ function AiSuggestions({ subject, lesson, toast }: { subject: Subject; lesson: L
 
     if (hasFetched) {
         return (
-            <Card>
+            <Card className="bg-card/80 backdrop-blur-sm">
                 <CardHeader>
-                    <CardTitle className="flex items-center gap-2"><Lightbulb className="text-primary"/> Related Subjects</CardTitle>
+                    <CardTitle className="flex items-center gap-2 font-headline"><Lightbulb className="text-primary"/> Related Subjects</CardTitle>
                     <CardDescription>Broaden your knowledge with these related topics.</CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -406,7 +413,7 @@ function AiSuggestions({ subject, lesson, toast }: { subject: Subject; lesson: L
                     ) : (
                         <div className="flex flex-wrap gap-2">
                             {suggestions.map((suggestion, index) => (
-                                <Badge key={index} variant="secondary" className="text-base px-3 py-1">{suggestion}</Badge>
+                                <Badge key={index} variant="secondary" className="text-base px-3 py-1 cursor-default">{suggestion}</Badge>
                             ))}
                         </div>
                     )}
