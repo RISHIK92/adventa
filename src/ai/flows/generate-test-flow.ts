@@ -62,6 +62,14 @@ Subjects and Question Counts:
 
 Provide the output in the specified JSON format.
 `,
+  config: {
+    safetySettings: [
+        {
+            category: 'HARM_CATEGORY_DANGEROUS_CONTENT',
+            threshold: 'BLOCK_NONE'
+        }
+    ]
+  }
 });
 
 
