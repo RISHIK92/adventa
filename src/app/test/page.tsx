@@ -9,6 +9,7 @@ import {
   BrainCircuit,
   CheckCircle2,
   Clock,
+  EyeOff,
   Loader2,
   XCircle,
 } from 'lucide-react';
@@ -155,12 +156,12 @@ export default function TestPage() {
     setTestState(prevState => {
       if (prevState !== 'testing') return prevState;
       
-      setQuestions(currentQuestions => {
-        return currentQuestions.map(q => ({
+      setQuestions(currentQuestions =>
+        currentQuestions.map(q => ({
           ...q,
           isCorrect: q.userAnswer === q.correctAnswer,
-        }));
-      });
+        }))
+      );
       return 'finished';
     });
   }, []);
@@ -335,7 +336,12 @@ export default function TestPage() {
         );
       case 'finished':
         const subjectScores: Record<string, { correct: number; total: number }> = {};
-        questions.forEach(q => {
+        const scoredQuestions = questions.map(q => ({
+          ...q,
+          isCorrect: q.userAnswer === q.correctAnswer,
+        }))
+
+        scoredQuestions.forEach(q => {
           if (!subjectScores[q.subject]) {
             subjectScores[q.subject] = { correct: 0, total: 0 };
           }
@@ -357,15 +363,19 @@ export default function TestPage() {
               </CardHeader>
               <CardContent>
                 <Accordion type="single" collapsible className="w-full">
-                  {questions.map((q, index) => {
+                  {scoredQuestions.map((q, index) => {
                     const selected = q.userAnswer;
                     const correct = q.correctAnswer;
                     const isCorrect = q.isCorrect;
+                    const isUnattempted = selected === undefined;
+                    
                     return (
                       <AccordionItem value={`item-${index}`} key={index}>
                         <AccordionTrigger>
                           <div className="flex items-center gap-4">
-                            {isCorrect ? (
+                            {isUnattempted ? (
+                                <EyeOff className="h-5 w-5 flex-shrink-0 text-muted-foreground" />
+                            ) : isCorrect ? (
                               <CheckCircle2 className="h-5 w-5 flex-shrink-0 text-green-500" />
                             ) : (
                               <XCircle className="h-5 w-5 flex-shrink-0 text-red-500" />
@@ -479,7 +489,7 @@ export default function TestPage() {
                         <Select onValueChange={field.onChange} defaultValue={field.value}>
                           <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
                           <SelectContent>
-                            {Object.keys(subjectGroups).map((group) => (
+                            {Object.keys(subjectGroups).filter(g => g !== 'PCMB' || subjectGroups[g].length === 4).map((group) => (
                               <SelectItem key={group} value={group}>{group}</SelectItem>
                             ))}
                           </SelectContent>
