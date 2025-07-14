@@ -112,7 +112,7 @@ export function VerticalAscentClient({ subjects: initialSubjects }: VerticalAsce
               className={cn(
                 'transition-all duration-700 ease-in-out',
                 viewState !== 'subjects'
-                  ? 'opacity-100 scale-100 mb-8'
+                  ? 'opacity-100 scale-100 mb-4'
                   : 'opacity-0 scale-90 pointer-events-none'
               )}
             >
@@ -134,7 +134,7 @@ export function VerticalAscentClient({ subjects: initialSubjects }: VerticalAsce
                 size="sm"
                 onClick={handleBack}
                 className={cn(
-                  'absolute -top-16 left-0 transition-opacity duration-300 flex items-center gap-2',
+                  'absolute -top-12 left-0 transition-opacity duration-300 flex items-center gap-2',
                    viewState === 'subjects' ? 'opacity-0 pointer-events-none' : 'opacity-100'
                 )}
               >
@@ -231,35 +231,51 @@ function LessonsView({ subject, onSelectLesson }: { subject: Subject, onSelectLe
   }, [subject.lessons]);
 
   return (
-    <div className="flex flex-col items-center gap-0 w-full">
+    <div className="flex flex-col items-center gap-0 w-full max-w-4xl mx-auto">
       {lessonRows.map((row, rowIndex) => {
         const isReversed = rowIndex % 2 !== 0;
         const lessonsInRow = isReversed ? [...row].reverse() : row;
 
         return (
           <React.Fragment key={rowIndex}>
-            {/* Horizontal connections */}
-            <div className={cn("grid gap-4 items-center", `grid-cols-${row.length}`)}>
+            <div className={cn("grid w-full items-center gap-x-4", `grid-cols-${LESSONS_PER_ROW}`)}>
               {lessonsInRow.map((lesson, lessonIndex) => (
-                <div key={lesson.id} className="relative flex justify-center items-center">
-                  {/* Horizontal line */}
-                  {lessonIndex < lessonsInRow.length - 1 && (
-                    <div className="absolute left-1/2 w-full h-1 bg-transparent border-t border-dashed border-primary/50 z-0" />
-                  )}
+                <div key={lesson.id} className="relative flex justify-center items-center h-32">
+                  {/* Horizontal line - only if not the last item in the original row direction */}
+                   {(isReversed ? lessonIndex > 0 : lessonIndex < lessonsInRow.length - 1) && (
+                     <div className="absolute left-1/2 w-full h-px bg-primary/50 border-t border-dashed border-primary/50 z-0" />
+                   )}
+                   {(lessonsInRow.length < LESSONS_PER_ROW && !isReversed && lessonIndex === lessonsInRow.length - 1) && (
+                     <div className="absolute left-1/2 w-1/2 h-px bg-primary/50 border-t border-dashed border-primary/50 z-0" />
+                   )}
+                   {(lessonsInRow.length < LESSONS_PER_ROW && isReversed && lessonIndex === 0) && (
+                     <div className="absolute right-1/2 w-1/2 h-px bg-primary/50 border-t border-dashed border-primary/50 z-0" />
+                   )}
                   <Card
                     onClick={() => onSelectLesson(lesson)}
-                    className="w-48 h-24 flex items-center justify-center text-center p-4 cursor-pointer hover:bg-accent/20 hover:border-accent transition-all duration-300 shadow-md z-10"
+                    className="w-40 h-24 flex items-center justify-center text-center p-2 cursor-pointer hover:bg-accent/20 hover:border-accent transition-all duration-300 shadow-md z-10"
                   >
-                    <CardTitle className="text-base font-medium">{lesson.title}</CardTitle>
+                    <CardTitle className="text-sm font-medium">{lesson.title}</CardTitle>
                   </Card>
                 </div>
               ))}
+              {/* Fill in empty grid cells to maintain layout */}
+              {Array.from({ length: LESSONS_PER_ROW - lessonsInRow.length }).map((_, i) => <div key={`placeholder-${i}`} />)}
             </div>
 
             {/* Vertical connector */}
             {rowIndex < lessonRows.length - 1 && (
-              <div className={cn("w-full h-8 flex", isReversed ? "justify-start" : "justify-end")}>
-                <div className="w-[calc(100%/8)] h-full border-l border-b border-dashed border-primary/50 rounded-bl-xl" style={isReversed ? { borderRight: '1px dashed hsl(var(--primary)/0.5)', borderLeft: 'none', borderRadius: '0 0 0.75rem 0' } : {}}/>
+              <div className={cn("w-full h-8 flex relative", isReversed ? "justify-start" : "justify-end")}>
+                <div 
+                   className={cn(
+                     "w-1/8 h-full border-dashed",
+                     isReversed 
+                       ? "border-r border-b rounded-br-xl" 
+                       : "border-l border-b rounded-bl-xl",
+                     "border-primary/50"
+                   )}
+                   style={{width: `calc(100% / ${LESSONS_PER_ROW * 2})`}}
+                 />
               </div>
             )}
           </React.Fragment>
