@@ -73,7 +73,6 @@ import {
 
 const subjectGroups = {
   MPC: ['Mathematics', 'Physics', 'Chemistry'],
-  PCB: ['Physics', 'Chemistry', 'Biology'],
   BPC: ['Biology', 'Physics', 'Chemistry'],
   PCMB: ['Physics', 'Chemistry', 'Mathematics', 'Biology'],
 };
@@ -83,13 +82,12 @@ const timeLimits = ['15', '30', '45', '60', '90', '120', '180'] as const;
 
 const questionCountOptions: Record<keyof typeof subjectGroups, string[]> = {
     MPC: ['30', '60', '90'],
-    PCB: ['30', '60', '90'],
     BPC: ['60', '90', '180'],
     PCMB: ['40', '80', '120'],
 }
 
 const formSchema = z.object({
-  subjectGroup: z.enum(['MPC', 'PCB', 'BPC', 'PCMB']),
+  subjectGroup: z.enum(['MPC', 'BPC', 'PCMB']),
   questionCount: z.string(),
   timeLimit: z.enum(timeLimits),
   difficulty: z.enum(difficultyLevels),
