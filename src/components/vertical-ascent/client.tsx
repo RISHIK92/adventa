@@ -438,21 +438,37 @@ function LessonDetailView({
   lesson: Lesson;
   toast: any;
 }) {
-  const [content, setContent] = React.useState<string | null>(null);
+  const [cheatsheetContent, setCheatsheetContent] = React.useState<string | null>(null);
+  const [formulasheetContent, setFormulasheetContent] = React.useState<string | null>(null);
   const [isLoading, setIsLoading] = React.useState(true);
+  const [activeTab, setActiveTab] = React.useState('cheatsheet');
 
   React.useEffect(() => {
     async function loadContent() {
       setIsLoading(true);
       try {
-        const response = await fetch(`/content/${lesson.id}.md`);
-        if (!response.ok) {
-          throw new Error('Content not found');
+        const [csResponse, fsResponse] = await Promise.all([
+          fetch(`/content/${lesson.id}.cs.md`),
+          fetch(`/content/${lesson.id}.fs.md`),
+        ]);
+
+        if (csResponse.ok) {
+          const text = await csResponse.text();
+          setCheatsheetContent(text);
+        } else {
+          setCheatsheetContent('### Cheatsheet not available\n\nCould not load the cheatsheet content.');
         }
-        const text = await response.text();
-        setContent(text);
+
+        if (fsResponse.ok) {
+          const text = await fsResponse.text();
+          setFormulasheetContent(text);
+        } else {
+          setFormulasheetContent('### Formula sheet not available\n\nCould not load the formula sheet content.');
+        }
+
       } catch (error) {
-        setContent('### Content not available\n\nCould not load the lesson content. Please make sure a corresponding `.md` file exists in the `public/content` directory.');
+        setCheatsheetContent('### Content not available\n\nAn error occurred while fetching content.');
+        setFormulasheetContent('### Content not available\n\nAn error occurred while fetching content.');
         console.error('Failed to fetch lesson content:', error);
       } finally {
         setIsLoading(false);
@@ -460,6 +476,19 @@ function LessonDetailView({
     }
     loadContent();
   }, [lesson.id]);
+  
+  const renderContent = (content: string | null) => {
+    if (isLoading) {
+      return (
+        <div className="space-y-4">
+          <Skeleton className="h-4 w-3/4" />
+          <Skeleton className="h-4 w-1/2" />
+          <Skeleton className="h-4 w-5/6" />
+        </div>
+      );
+    }
+    return <ReactMarkdown remarkPlugins={[remarkGfm]}>{content || ''}</ReactMarkdown>
+  }
 
   return (
     <div className="mx-auto max-w-4xl">
@@ -471,21 +500,26 @@ function LessonDetailView({
           <CardDescription>From the subject: {subject.title}</CardDescription>
         </CardHeader>
         <CardContent>
-           <Card className="mt-4">
-              <CardContent className="p-4 md:p-6 prose dark:prose-invert max-w-none">
-                {isLoading ? (
-                  <div className="space-y-4">
-                    <Skeleton className="h-4 w-3/4" />
-                    <Skeleton className="h-4 w-1/2" />
-                    <Skeleton className="h-4 w-5/6" />
-                  </div>
-                ) : (
-                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                    {content || ''}
-                  </ReactMarkdown>
-                )}
-              </CardContent>
-            </Card>
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="cheatsheet">Cheatsheet</TabsTrigger>
+              <TabsTrigger value="formulasheet">Formula Sheet</TabsTrigger>
+            </TabsList>
+            <TabsContent value="cheatsheet">
+               <Card className="mt-4">
+                  <CardContent className="p-4 md:p-6 prose dark:prose-invert max-w-none">
+                    {renderContent(cheatsheetContent)}
+                  </CardContent>
+                </Card>
+            </TabsContent>
+            <TabsContent value="formulasheet">
+               <Card className="mt-4">
+                  <CardContent className="p-4 md:p-6 prose dark:prose-invert max-w-none">
+                    {renderContent(formulasheetContent)}
+                  </CardContent>
+                </Card>
+            </TabsContent>
+          </Tabs>
         </CardContent>
       </Card>
       <AiSuggestions subject={subject} lesson={lesson} toast={toast} />
@@ -577,3 +611,5 @@ function AiSuggestions({
     </div>
   );
 }
+
+    
