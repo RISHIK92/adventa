@@ -17,6 +17,8 @@ import {
 import type { Lesson, Subject } from '@/lib/types';
 import { getSuggestions } from '@/app/actions';
 import { useIsMobile } from '@/hooks/use-mobile';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -378,8 +380,10 @@ function LessonDetailView({ subject, lesson, toast }: { subject: Subject; lesson
             </TabsList>
             <TabsContent value="cheatsheet">
               <Card className="mt-4">
-                <CardContent className="p-4 md:p-6 text-base leading-relaxed prose dark:prose-invert max-w-none">
-                  {lesson.content.cheatsheet}
+                <CardContent className="p-4 md:p-6 prose dark:prose-invert max-w-none">
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                    {lesson.content.cheatsheet}
+                  </ReactMarkdown>
                 </CardContent>
               </Card>
             </TabsContent>
