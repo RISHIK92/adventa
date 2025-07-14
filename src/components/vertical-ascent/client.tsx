@@ -56,7 +56,7 @@ function SubjectIcon({
 
 export function VerticalAscentClient({ subjects: initialSubjects }: VerticalAscentClientProps) {
   const subjects = React.useMemo(() => initialSubjects.map(s => ({...s, iconName: s.iconName || 'Atom' })), [initialSubjects]);
-
+  const isMobile = useIsMobile();
   const [viewState, setViewState] = React.useState<ViewState>('subjects');
   const [selectedSubject, setSelectedSubject] = React.useState<Subject | null>(
     null
@@ -112,7 +112,7 @@ export function VerticalAscentClient({ subjects: initialSubjects }: VerticalAsce
               className={cn(
                 'transition-all duration-700 ease-in-out',
                 viewState !== 'subjects'
-                  ? 'opacity-100 scale-100 mb-8'
+                  ? 'opacity-100 scale-100 mb-4'
                   : 'opacity-0 scale-90 pointer-events-none'
               )}
             >
@@ -134,12 +134,12 @@ export function VerticalAscentClient({ subjects: initialSubjects }: VerticalAsce
                 size="sm"
                 onClick={handleBack}
                 className={cn(
-                  'absolute -top-16 left-0 transition-opacity duration-300 flex items-center gap-2',
+                  'absolute -top-12 left-0 transition-opacity duration-300 flex items-center gap-2',
                    viewState === 'subjects' ? 'opacity-0 pointer-events-none' : 'opacity-100'
                 )}
               >
                 <ArrowLeft className="h-4 w-4" />
-                {backButtonText}
+                <span className="hidden md:inline">{backButtonText}</span>
               </Button>
 
               <div
@@ -456,5 +456,3 @@ function AiSuggestions({ subject, lesson, toast }: { subject: Subject; lesson: L
         </div>
     );
 }
-
-    
