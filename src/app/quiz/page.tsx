@@ -65,12 +65,13 @@ import { Badge } from '@/components/ui/badge';
 const subjectGroups = {
   PCM: ['Physics', 'Chemistry', 'Mathematics'],
   PCMB: ['Physics', 'Chemistry', 'Mathematics', 'Biology'],
+  BPC: ['Biology', 'Physics', 'Chemistry'],
 };
 
 const difficultyLevels = ['Easy', 'Medium', 'Hard', 'Expert'] as const;
 
 const formSchema = z.object({
-  subjectGroup: z.enum(['PCM', 'PCMB']),
+  subjectGroup: z.enum(['PCM', 'PCMB', 'BPC']),
   subject: z.string().min(1, 'Please select a subject.'),
   difficulty: z.enum(difficultyLevels),
 });
@@ -148,7 +149,8 @@ export default function QuizPage() {
   };
 
   const handleRandomQuiz = () => {
-    const randomGroup = Math.random() < 0.5 ? 'PCM' : 'PCMB';
+    const groups: Array<keyof typeof subjectGroups> = ['PCM', 'PCMB', 'BPC'];
+    const randomGroup = groups[Math.floor(Math.random() * groups.length)];
     const randomSubjects = subjectGroups[randomGroup];
     const randomSubject =
       randomSubjects[Math.floor(Math.random() * randomSubjects.length)];
@@ -432,7 +434,7 @@ export default function QuizPage() {
                           <RadioGroup
                             onValueChange={field.onChange}
                             defaultValue={field.value}
-                            className="flex space-x-4"
+                            className="flex flex-wrap gap-x-4"
                           >
                             <FormItem className="flex items-center space-x-2 space-y-0">
                               <FormControl>
@@ -448,6 +450,14 @@ export default function QuizPage() {
                               </FormControl>
                               <FormLabel className="font-normal">
                                 PCMB
+                              </FormLabel>
+                            </FormItem>
+                             <FormItem className="flex items-center space-x-2 space-y-0">
+                              <FormControl>
+                                <RadioGroupItem value="BPC" />
+                              </FormControl>
+                              <FormLabel className="font-normal">
+                                BPC
                               </FormLabel>
                             </FormItem>
                           </RadioGroup>
