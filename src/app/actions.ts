@@ -6,7 +6,7 @@ import type { SuggestAdjacentSubjectsInput } from '@/ai/flows/suggest-adjacent-s
 import type { QuizQuestion } from '@/ai/flows/generate-quiz-flow';
 import type { TestQuestion } from '@/ai/flows/generate-test-flow';
 import { db } from '@/lib/firebase';
-import { collection, addDoc, serverTimestamp, getDocs, query, orderBy } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, getDocs, query, orderBy, doc } from 'firebase/firestore';
 
 export async function getSuggestions(input: SuggestAdjacentSubjectsInput) {
   const validatedInput = { ...input, depth: 1 };
@@ -34,7 +34,9 @@ export type QuizResult = {
 
 export async function saveQuizResult(result: QuizResult) {
   try {
-    await addDoc(collection(db, 'quizResults'), {
+    if (!result.userId) throw new Error("User ID is required to save quiz result.");
+    const resultsCollectionRef = collection(db, 'users', result.userId, 'quizResults');
+    await addDoc(resultsCollectionRef, {
       ...result,
       timestamp: serverTimestamp(),
     });
@@ -58,7 +60,9 @@ export type TestResult = {
 
 export async function saveTestResult(result: TestResult) {
   try {
-    await addDoc(collection(db, 'testResults'), {
+    if (!result.userId) throw new Error("User ID is required to save test result.");
+    const resultsCollectionRef = collection(db, 'users', result.userId, 'testResults');
+    await addDoc(resultsCollectionRef, {
       ...result,
       timestamp: serverTimestamp(),
     });
@@ -71,18 +75,18 @@ export async function saveTestResult(result: TestResult) {
 
 export async function getQuizResults(userId: string) {
   try {
-    const q = query(collection(db, 'quizResults'), orderBy('timestamp', 'desc'));
+    if (!userId) return { success: true, data: [] };
+    const resultsCollectionRef = collection(db, 'users', userId, 'quizResults');
+    const q = query(resultsCollectionRef, orderBy('timestamp', 'desc'));
     const querySnapshot = await getDocs(q);
     const results: any[] = [];
     querySnapshot.forEach((doc) => {
       const data = doc.data();
-      if (data.userId === userId) {
-        results.push({
-          id: doc.id,
-          ...data,
-          timestamp: data.timestamp?.toDate().toISOString(),
-        });
-      }
+      results.push({
+        id: doc.id,
+        ...data,
+        timestamp: data.timestamp?.toDate().toISOString(),
+      });
     });
     return { success: true, data: results };
   } catch (error) {
@@ -93,18 +97,18 @@ export async function getQuizResults(userId: string) {
 
 export async function getTestResults(userId: string) {
   try {
-    const q = query(collection(db, 'testResults'), orderBy('timestamp', 'desc'));
+    if (!userId) return { success: true, data: [] };
+    const resultsCollectionRef = collection(db, 'users', userId, 'testResults');
+    const q = query(resultsCollectionRef, orderBy('timestamp', 'desc'));
     const querySnapshot = await getDocs(q);
     const results: any[] = [];
     querySnapshot.forEach((doc) => {
        const data = doc.data();
-       if (data.userId === userId) {
-        results.push({
-          id: doc.id,
-          ...data,
-          timestamp: data.timestamp?.toDate().toISOString(),
-        });
-      }
+       results.push({
+         id: doc.id,
+         ...data,
+         timestamp: data.timestamp?.toDate().toISOString(),
+       });
     });
     return { success: true, data: results };
   } catch (error) {
