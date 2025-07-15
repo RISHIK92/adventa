@@ -150,7 +150,6 @@ export default function ProfilePage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-background">
-      <Header />
       <main className="container mx-auto p-4 md:p-8">
         <div className="mb-8">
           <h1 className="font-headline text-4xl font-bold">Welcome, {user.displayName || 'User'}!</h1>
