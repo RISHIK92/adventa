@@ -5,7 +5,7 @@ import * as React from 'react';
 import { useAuth } from '@/hooks/use-auth';
 import { useRouter } from 'next/navigation';
 import { Loader2, BookCheck, ClipboardCheck, Clock, Lightbulb, TrendingUp, TrendingDown, Target, BrainCircuit } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { getQuizResults, getTestResults, type QuizResult, type TestResult } from '@/app/actions';
 import { Header } from '@/components/header';
 import { formatDistanceToNow } from 'date-fns';
@@ -18,7 +18,8 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { analyzePerformance, type AnalyzePerformanceOutput } from '@/ai/flows/analyze-performance-flow';
+import { analyzePerformance } from '@/ai/flows/analyze-performance-flow';
+import { AnalyzePerformanceOutput } from '@/ai/flows/analyze-performance-types';
 
 type EnrichedQuizResult = Omit<QuizResult, 'timestamp'> & { id: string; timestamp: string };
 type EnrichedTestResult = Omit<TestResult, 'timestamp'> & { id: string; timestamp: string };
@@ -147,20 +148,20 @@ export default function ProfilePage() {
                    <div className="space-y-2">
                      <h4 className="flex items-center gap-2 font-semibold"><TrendingUp className="h-5 w-5 text-green-500" /> Strengths</h4>
                      <ul className="list-disc list-inside space-y-1 text-muted-foreground">
-                       {analysis.strengths.map((item, i) => <li key={`strength-${i}`}>{item}</li>)}
+                       {analysis.strengths.map((item: string | number | bigint | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | Promise<React.AwaitedReactNode> | null | undefined, i: any) => <li key={`strength-${i}`}>{item}</li>)}
                      </ul>
                    </div>
                    <div className="space-y-2">
                      <h4 className="flex items-center gap-2 font-semibold"><TrendingDown className="h-5 w-5 text-red-500" /> Weaknesses</h4>
                      <ul className="list-disc list-inside space-y-1 text-muted-foreground">
-                       {analysis.weaknesses.map((item, i) => <li key={`weakness-${i}`}>{item}</li>)}
+                       {analysis.weaknesses.map((item: string | number | bigint | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | Promise<React.AwaitedReactNode> | null | undefined, i: any) => <li key={`weakness-${i}`}>{item}</li>)}
                      </ul>
                    </div>
                  </div>
                  <div>
                    <h4 className="flex items-center gap-2 font-semibold"><Target className="h-5 w-5 text-blue-500" /> Recommendations</h4>
                    <ul className="list-disc list-inside space-y-1 text-muted-foreground">
-                     {analysis.recommendations.map((item, i) => <li key={`rec-${i}`}>{item}</li>)}
+                     {analysis.recommendations.map((item: string | number | bigint | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | Promise<React.AwaitedReactNode> | null | undefined, i: any) => <li key={`rec-${i}`}>{item}</li>)}
                    </ul>
                  </div>
                </div>

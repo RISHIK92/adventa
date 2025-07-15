@@ -1,7 +1,6 @@
+"use client";
 
-'use client';
-
-import * as React from 'react';
+import * as React from "react";
 import {
   ArrowLeft,
   Atom,
@@ -12,33 +11,32 @@ import {
   Lightbulb,
   Loader2,
   Sigma,
-} from 'lucide-react';
-import { useIsMobile } from '@/hooks/use-mobile';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import remarkMath from 'remark-math';
-import rehypeKatex from 'rehype-katex';
+} from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import remarkMath from "remark-math";
+import rehypeKatex from "rehype-katex";
 
-import type { Lesson, Subject } from '@/lib/types';
-import { getSuggestions } from '@/app/actions';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import type { Lesson, Subject } from "@/lib/types";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useToast } from '@/hooks/use-toast';
-import { cn } from '@/lib/utils';
+} from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
 
-type ViewState = 'subjects' | 'lessons' | 'lesson_detail';
+type ViewState = "subjects" | "lessons" | "lesson_detail";
 
 interface VerticalAscentClientProps {
-  subjects: Omit<Subject, 'iconName'>[];
+  subjects: Omit<Subject, "iconName">[];
 }
 
 const iconMap = {
@@ -51,7 +49,7 @@ function SubjectIcon({
   name,
   className,
 }: {
-  name: Subject['iconName'];
+  name: Subject["iconName"];
   className?: string;
 }) {
   const Icon = iconMap[name];
@@ -63,11 +61,14 @@ export function VerticalAscentClient({
 }: VerticalAscentClientProps) {
   const subjects = React.useMemo(
     () =>
-      initialSubjects.map((s) => ({ ...s, iconName: s.iconName || 'Atom' })),
+      initialSubjects.map((s: any) => ({
+        ...s,
+        iconName: s.iconName || "Atom",
+      })),
     [initialSubjects]
   );
   const isMobile = useIsMobile();
-  const [viewState, setViewState] = React.useState<ViewState>('subjects');
+  const [viewState, setViewState] = React.useState<ViewState>("subjects");
   const [selectedSubject, setSelectedSubject] = React.useState<Subject | null>(
     null
   );
@@ -79,33 +80,34 @@ export function VerticalAscentClient({
   const handleSelectSubject = (subject: Subject) => {
     React.startTransition(() => {
       setSelectedSubject(subject);
-      setViewState('lessons');
+      setViewState("lessons");
     });
   };
 
   const handleSelectLesson = (lesson: Lesson) => {
     React.startTransition(() => {
       setSelectedLesson(lesson);
-      setViewState('lesson_detail');
+      setViewState("lesson_detail");
     });
   };
 
   const handleBack = () => {
     React.startTransition(() => {
-      if (viewState === 'lesson_detail') {
+      if (viewState === "lesson_detail") {
         setSelectedLesson(null);
-        setViewState('lessons');
-      } else if (viewState === 'lessons') {
+        setViewState("lessons");
+      } else if (viewState === "lessons") {
         setSelectedSubject(null);
-        setViewState('subjects');
+        setViewState("subjects");
       }
     });
   };
 
   const backButtonText = React.useMemo(() => {
-    if (viewState === 'lesson_detail') return `Back to ${selectedSubject?.title}`;
-    if (viewState === 'lessons') return 'Back to Subjects';
-    return '';
+    if (viewState === "lesson_detail")
+      return `Back to ${selectedSubject?.title}`;
+    if (viewState === "lessons") return "Back to Subjects";
+    return "";
   }, [viewState, selectedSubject]);
 
   return (
@@ -120,10 +122,10 @@ export function VerticalAscentClient({
         <div className="flex flex-col items-center">
           <div
             className={cn(
-              'mb-4 transition-all duration-700 ease-in-out',
-              viewState !== 'subjects'
-                ? 'scale-100 opacity-100'
-                : 'pointer-events-none scale-90 opacity-0'
+              "mb-4 transition-all duration-700 ease-in-out",
+              viewState !== "subjects"
+                ? "scale-100 opacity-100"
+                : "pointer-events-none scale-90 opacity-0"
             )}
           >
             {selectedSubject && <SubjectHeader subject={selectedSubject} />}
@@ -131,10 +133,10 @@ export function VerticalAscentClient({
 
           <div
             className={cn(
-              'w-full transition-all duration-500 ease-in-out',
-              viewState !== 'subjects'
-                ? 'pointer-events-none absolute opacity-0'
-                : 'opacity-100'
+              "w-full transition-all duration-500 ease-in-out",
+              viewState !== "subjects"
+                ? "pointer-events-none absolute opacity-0"
+                : "opacity-100"
             )}
           >
             <SubjectsView
@@ -145,8 +147,8 @@ export function VerticalAscentClient({
 
           <div
             className={cn(
-              'relative w-full max-w-5xl',
-              viewState === 'subjects' ? 'hidden' : 'block'
+              "relative w-full max-w-5xl",
+              viewState === "subjects" ? "hidden" : "block"
             )}
           >
             <Button
@@ -154,10 +156,10 @@ export function VerticalAscentClient({
               size="sm"
               onClick={handleBack}
               className={cn(
-                'absolute -top-12 left-0 z-10 flex items-center gap-2 transition-opacity duration-300',
-                viewState === 'subjects'
-                  ? 'pointer-events-none opacity-0'
-                  : 'opacity-100'
+                "absolute -top-12 left-0 z-10 flex items-center gap-2 transition-opacity duration-300",
+                viewState === "subjects"
+                  ? "pointer-events-none opacity-0"
+                  : "opacity-100"
               )}
             >
               <ArrowLeft className="h-4 w-4" />
@@ -166,10 +168,10 @@ export function VerticalAscentClient({
 
             <div
               className={cn(
-                'w-full transition-all duration-700 ease-in-out',
-                viewState === 'lessons'
-                  ? 'opacity-100'
-                  : 'pointer-events-none absolute opacity-0'
+                "w-full transition-all duration-700 ease-in-out",
+                viewState === "lessons"
+                  ? "opacity-100"
+                  : "pointer-events-none absolute opacity-0"
               )}
             >
               {selectedSubject && (
@@ -182,10 +184,10 @@ export function VerticalAscentClient({
 
             <div
               className={cn(
-                'transition-all duration-700 ease-in-out',
-                viewState === 'lesson_detail'
-                  ? 'opacity-100'
-                  : 'pointer-events-none -translate-y-4 opacity-0'
+                "transition-all duration-700 ease-in-out",
+                viewState === "lesson_detail"
+                  ? "opacity-100"
+                  : "pointer-events-none -translate-y-4 opacity-0"
               )}
             >
               {selectedSubject && selectedLesson && (
@@ -310,8 +312,8 @@ function LessonsView({
       }
     }
     updateSize();
-    window.addEventListener('resize', updateSize);
-    return () => window.removeEventListener('resize', updateSize);
+    window.addEventListener("resize", updateSize);
+    return () => window.removeEventListener("resize", updateSize);
   }, [
     subject.lessons,
     isMobile,
@@ -440,10 +442,14 @@ function LessonDetailView({
   lesson: Lesson;
   toast: any;
 }) {
-  const [cheatsheetContent, setCheatsheetContent] = React.useState<string | null>(null);
-  const [formulasheetContent, setFormulasheetContent] = React.useState<string | null>(null);
+  const [cheatsheetContent, setCheatsheetContent] = React.useState<
+    string | null
+  >(null);
+  const [formulasheetContent, setFormulasheetContent] = React.useState<
+    string | null
+  >(null);
   const [isLoading, setIsLoading] = React.useState(true);
-  const [activeTab, setActiveTab] = React.useState('cheatsheet');
+  const [activeTab, setActiveTab] = React.useState("cheatsheet");
 
   React.useEffect(() => {
     async function loadContent() {
@@ -458,27 +464,34 @@ function LessonDetailView({
           const text = await csResponse.text();
           setCheatsheetContent(text);
         } else {
-          setCheatsheetContent('### Cheatsheet not available\n\nCould not load the cheatsheet content.');
+          setCheatsheetContent(
+            "### Cheatsheet not available\n\nCould not load the cheatsheet content."
+          );
         }
 
         if (fsResponse.ok) {
           const text = await fsResponse.text();
           setFormulasheetContent(text);
         } else {
-          setFormulasheetContent('### Formula sheet not available\n\nCould not load the formula sheet content.');
+          setFormulasheetContent(
+            "### Formula sheet not available\n\nCould not load the formula sheet content."
+          );
         }
-
       } catch (error) {
-        setCheatsheetContent('### Content not available\n\nAn error occurred while fetching content.');
-        setFormulasheetContent('### Content not available\n\nAn error occurred while fetching content.');
-        console.error('Failed to fetch lesson content:', error);
+        setCheatsheetContent(
+          "### Content not available\n\nAn error occurred while fetching content."
+        );
+        setFormulasheetContent(
+          "### Content not available\n\nAn error occurred while fetching content."
+        );
+        console.error("Failed to fetch lesson content:", error);
       } finally {
         setIsLoading(false);
       }
     }
     loadContent();
   }, [lesson.id]);
-  
+
   const renderContent = (content: string | null) => {
     if (isLoading) {
       return (
@@ -489,8 +502,15 @@ function LessonDetailView({
         </div>
       );
     }
-    return <ReactMarkdown remarkPlugins={[remarkMath, remarkGfm]} rehypePlugins={[rehypeKatex]}>{content || ''}</ReactMarkdown>
-  }
+    return (
+      <ReactMarkdown
+        remarkPlugins={[remarkMath, remarkGfm]}
+        rehypePlugins={[rehypeKatex]}
+      >
+        {content || ""}
+      </ReactMarkdown>
+    );
+  };
 
   return (
     <div className="mx-auto max-w-4xl">
@@ -502,114 +522,118 @@ function LessonDetailView({
           <CardDescription>From the subject: {subject.title}</CardDescription>
         </CardHeader>
         <CardContent>
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <Tabs
+            value={activeTab}
+            onValueChange={setActiveTab}
+            className="w-full"
+          >
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="cheatsheet">Cheatsheet</TabsTrigger>
               <TabsTrigger value="formulasheet">Formula Sheet</TabsTrigger>
             </TabsList>
             <TabsContent value="cheatsheet">
-               <Card className="mt-4">
-                  <CardContent className="prose prose-sm max-w-none p-4 dark:prose-invert md:prose-base md:p-6">
-                    {renderContent(cheatsheetContent)}
-                  </CardContent>
-                </Card>
+              <Card className="mt-4">
+                <CardContent className="prose prose-sm max-w-none p-4 dark:prose-invert md:prose-base md:p-6">
+                  {renderContent(cheatsheetContent)}
+                </CardContent>
+              </Card>
             </TabsContent>
             <TabsContent value="formulasheet">
-               <Card className="mt-4">
-                  <CardContent className="prose prose-sm max-w-none p-4 dark:prose-invert md:prose-base md:p-6">
-                    {renderContent(formulasheetContent)}
-                  </CardContent>
-                </Card>
+              <Card className="mt-4">
+                <CardContent className="prose prose-sm max-w-none p-4 dark:prose-invert md:prose-base md:p-6">
+                  {renderContent(formulasheetContent)}
+                </CardContent>
+              </Card>
             </TabsContent>
           </Tabs>
         </CardContent>
       </Card>
-      <AiSuggestions subject={subject} lesson={lesson} toast={toast} />
+      {/* <AiSuggestions subject={subject} lesson={lesson} toast={toast} /> */}
     </div>
   );
 }
 
-function AiSuggestions({
-  subject,
-  lesson,
-  toast,
-}: {
-  subject: Subject;
-  lesson: Lesson;
-  toast: any;
-}) {
-  const [suggestions, setSuggestions] = React.useState<string[]>([]);
-  const [isLoading, setIsLoading] = React.useState(false);
-  const [hasFetched, setHasFetched] = React.useState(false);
+// function AiSuggestions({
+//   subject,
+//   lesson,
+//   toast,
+// }: {
+//   subject: Subject;
+//   lesson: Lesson;
+//   toast: any;
+// }) {
+//   const [suggestions, setSuggestions] = React.useState<string[]>([]);
+//   const [isLoading, setIsLoading] = React.useState(false);
+//   const [hasFetched, setHasFetched] = React.useState(false);
 
-  const handleFetchSuggestions = async () => {
-    setIsLoading(true);
-    setHasFetched(true);
-    const result = await getSuggestions({
-      currentSubject: subject.title,
-      currentLesson: lesson.title,
-      depth: 1,
-    });
+//   const handleFetchSuggestions = async () => {
+//     setIsLoading(true);
+//     setHasFetched(true);
+//     const result = await getSuggestions({
+//       currentSubject: subject.title,
+//       currentLesson: lesson.title,
+//       depth: 1,
+//     });
 
-    if (result.success && result.suggestions) {
-      setSuggestions(result.suggestions);
-    } else {
-      toast({
-        variant: 'destructive',
-        title: 'Suggestion Error',
-        description: result.error || 'Failed to get suggestions.',
-      });
-    }
-    setIsLoading(false);
-  };
+//     if (result.success && result.suggestions) {
+//       setSuggestions(result.suggestions);
+//     } else {
+//       toast({
+//         variant: "destructive",
+//         title: "Suggestion Error",
+//         description: result.error || "Failed to get suggestions.",
+//       });
+//     }
+//     setIsLoading(false);
+//   };
 
-  if (hasFetched) {
-    return (
-      <Card className="bg-card/80 backdrop-blur-sm">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 font-headline text-xl md:text-2xl">
-            <Lightbulb className="text-primary" /> Related Subjects
-          </CardTitle>
-          <CardDescription>
-            Broaden your knowledge with these related topics.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {isLoading ? (
-            <div className="flex items-center justify-center p-8">
-              <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            </div>
-          ) : (
-            <div className="flex flex-wrap gap-2">
-              {suggestions.map((suggestion, index) => (
-                <Badge
-                  key={index}
-                  variant="secondary"
-                  className="cursor-default px-3 py-1 text-sm md:text-base"
-                >
-                  {suggestion}
-                </Badge>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
-    );
-  }
+//   if (hasFetched) {
+//     return (
+//       <Card className="bg-card/80 backdrop-blur-sm">
+//         <CardHeader>
+//           <CardTitle className="flex items-center gap-2 font-headline text-xl md:text-2xl">
+//             <Lightbulb className="text-primary" /> Related Subjects
+//           </CardTitle>
+//           <CardDescription>
+//             Broaden your knowledge with these related topics.
+//           </CardDescription>
+//         </CardHeader>
+//         <CardContent>
+//           {isLoading ? (
+//             <div className="flex items-center justify-center p-8">
+//               <Loader2 className="h-8 w-8 animate-spin text-primary" />
+//             </div>
+//           ) : (
+//             <div className="flex flex-wrap gap-2">
+//               {suggestions.map((suggestion, index) => (
+//                 <Badge
+//                   key={index}
+//                   variant="secondary"
+//                   className="cursor-default px-3 py-1 text-sm md:text-base"
+//                 >
+//                   {suggestion}
+//                 </Badge>
+//               ))}
+//             </div>
+//           )}
+//         </CardContent>
+//       </Card>
+//     );
+//   }
 
-  return (
-    <div className="py-4 text-center">
-      <Button onClick={handleFetchSuggestions} disabled={isLoading}>
-        {isLoading ? (
-          <>
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Thinking...
-          </>
-        ) : (
-          <>
-            <Lightbulb className="mr-2 h-4 w-4" /> Get Smart Suggestions
-          </>
-        )}
-      </Button>
-    </div>
-  );
-}
+//   return (
+//     <div className="py-4 text-center">
+//       <Button onClick={handleFetchSuggestions} disabled={isLoading}>
+//         {isLoading ? (
+//           <>
+//             <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Thinking...
+//           </>
+//         ) : (
+//           <>
+//             <Lightbulb className="mr-2 h-4 w-4" /> Get Smart Suggestions
+//           </>
+//         )}
+//       </Button>
+//     </div>
+//   );
+// }

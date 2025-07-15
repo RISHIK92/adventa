@@ -53,9 +53,10 @@ export async function saveQuizResult(result: QuizResult) {
       throw new Error("User must be authenticated to save quiz result.");
     }
 
-    const quizResultsRef = collection(db, "users", user.uid, "quizResults");
+    const quizResultsRef = collection(db, "quizResults");
     await addDoc(quizResultsRef, {
       ...result,
+      userId: user.uid, // ensure userId is set
       timestamp: serverTimestamp(),
     });
     
@@ -71,7 +72,7 @@ export async function saveTestResult(result: TestResult & { testAttemptId: strin
     const user = auth.currentUser;
     if (!user) throw new Error("User must be authenticated to save test result.");
 
-    const testResultRef = doc(db, "users", user.uid, "testResults", result.testAttemptId);
+    const testResultRef = doc(db, "testResults", result.testAttemptId);
 
     await setDoc(testResultRef, {
       ...result,
@@ -93,8 +94,8 @@ export async function getQuizResults(userId: string) {
       throw new Error("User must be authenticated to fetch their quiz results.");
     }
     
-    const resultsCollectionRef = collection(db, "users", userId, "quizResults");
-    const q = query(resultsCollectionRef, orderBy("timestamp", "desc"));
+    const resultsCollectionRef = collection(db, "quizResults");
+    const q = query(resultsCollectionRef, where("userId", "==", userId), orderBy("timestamp", "desc"));
     
     const querySnapshot = await getDocs(q);
     const results: any[] = [];
@@ -122,8 +123,8 @@ export async function getTestResults(userId: string) {
       throw new Error("User must be authenticated to fetch their test results.");
     }
 
-    const resultsCollectionRef = collection(db, "users", userId, "testResults");
-    const q = query(resultsCollectionRef, orderBy("timestamp", "desc"));
+    const resultsCollectionRef = collection(db, "testResults");
+    const q = query(resultsCollectionRef, where("userId", "==", userId), orderBy("timestamp", "desc"));
 
     const querySnapshot = await getDocs(q);
     const results: any[] = [];
