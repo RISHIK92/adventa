@@ -136,6 +136,7 @@ export default function TestPage() {
   const [testConfig, setTestConfig] = React.useState<TestFormValues | null>(null);
 
   const timerIntervalRef = React.useRef<NodeJS.Timeout>();
+  const hasFinished = React.useRef(false);
 
   const { toast } = useToast();
 
@@ -166,6 +167,9 @@ export default function TestPage() {
   const currentQuestion = questions[currentQuestionIndex];
 
   const finishTest = React.useCallback(() => {
+    if (hasFinished.current) return;
+    hasFinished.current = true;
+    
     clearInterval(timerIntervalRef.current);
     setTestState((prevState) => {
       if (prevState !== 'testing') return prevState;
@@ -262,6 +266,7 @@ export default function TestPage() {
         setCurrentQuestionIndex(0);
         setTimeLeft(timeLimit * 60);
         setIsReviewing(false);
+        hasFinished.current = false;
         setTestState('testing');
       } else {
         throw new Error('Incorrect number of questions were generated.');
@@ -732,7 +737,7 @@ export default function TestPage() {
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue />
-                            </SelectTrigger>
+                            </Trigger>
                           </FormControl>
                           <SelectContent>
                             {difficultyLevels.map((level) => (
