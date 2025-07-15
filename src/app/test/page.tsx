@@ -1,4 +1,3 @@
-
 "use client";
 
 import * as React from "react";
@@ -85,7 +84,7 @@ const difficultyLevels = ["Easy", "Medium", "Hard", "Expert"] as const;
 const timeLimits = ["15", "30", "45", "60", "90", "120", "180"] as const;
 
 const questionCountOptions: Record<keyof typeof subjectGroups, string[]> = {
-  MPC: ["30", "60", "90"],
+  MPC: ["3", "60", "90"],
   BPC: ["60", "90", "180"],
   PCMB: ["40", "80", "120"],
 };
@@ -167,12 +166,12 @@ export default function TestPage() {
   const finishTest = React.useCallback(async () => {
     if (hasFinished.current) return;
     hasFinished.current = true;
-  
+
     clearInterval(timerIntervalRef.current);
-    
+
     // This state update now only transitions the view
     setTestState("finished");
-  
+
     const scoredQuestions = questions.map((q) => ({
       ...q,
       isCorrect: q.userAnswer === q.correctAnswer,
@@ -180,9 +179,10 @@ export default function TestPage() {
     }));
     // We update the state with scored questions for the review screen
     setQuestions(scoredQuestions);
-  
+
     if (user && testConfig && testAttemptId) {
-      const subjectScores: Record<string, { correct: number; total: number }> = {};
+      const subjectScores: Record<string, { correct: number; total: number }> =
+        {};
       scoredQuestions.forEach((q) => {
         if (!subjectScores[q.subject]) {
           subjectScores[q.subject] = { correct: 0, total: 0 };
@@ -192,26 +192,29 @@ export default function TestPage() {
         }
         subjectScores[q.subject].total++;
       });
-  
+
       const totalCorrect = Object.values(subjectScores).reduce(
         (acc, curr) => acc + curr.correct,
         0
       );
-  
+
       const subjects = subjectGroups[testConfig.subjectGroup];
-      const questionsPerSubject = Number(testConfig.questionCount) / subjects.length;
-      
+      const questionsPerSubject =
+        Number(testConfig.questionCount) / subjects.length;
+
       // Prepare detailed question records for saving
-      const questionRecords: TestQuestionRecord[] = scoredQuestions.map(q => ({
-        question: q.question,
-        options: q.options,
-        correctAnswer: q.correctAnswer,
-        explanation: q.explanation,
-        subject: q.subject,
-        userAnswer: q.userAnswer,
-        isCorrect: q.isCorrect,
-      }));
-  
+      const questionRecords: TestQuestionRecord[] = scoredQuestions.map(
+        (q) => ({
+          question: q.question,
+          options: q.options,
+          correctAnswer: q.correctAnswer,
+          explanation: q.explanation,
+          subject: q.subject,
+          userAnswer: q.userAnswer,
+          isCorrect: q.isCorrect,
+        })
+      );
+
       await saveTestResult({
         testAttemptId: testAttemptId,
         userId: user.uid,
@@ -306,7 +309,9 @@ export default function TestPage() {
   const handleAnswerSelect = (answerIndex: number) => {
     setQuestions((prev) =>
       prev.map((q, i) =>
-        i === currentQuestionIndex ? { ...q, userAnswer: answerIndex, isUnattempted: false } : q
+        i === currentQuestionIndex
+          ? { ...q, userAnswer: answerIndex, isUnattempted: false }
+          : q
       )
     );
   };
