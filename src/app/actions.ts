@@ -8,6 +8,8 @@ import {
   query,
   orderBy,
   where,
+  setDoc,
+  doc,
 } from "firebase/firestore";
 
 export type QuizResult = {
@@ -57,23 +59,20 @@ export async function saveQuizResult(result: QuizResult) {
   }
 }
 
-export async function saveTestResult(result: TestResult) {
+export async function saveTestResult(result: TestResult & { testAttemptId: string }) {
   try {
     const user = auth.currentUser;
-    if (!user) {
-      throw new Error("User must be authenticated to save test result.");
-    }
-
-    if (result.userId !== user.uid) {
-      throw new Error("User ID mismatch.");
-    }
+    if (!user) throw new Error("User must be authenticated to save test result.");
+    if (result.userId !== user.uid) throw new Error("User ID mismatch.");
 
     const resultsCollectionRef = collection(db, "testResults");
+    const docRef = doc(resultsCollectionRef, result.testAttemptId);
 
-    await addDoc(resultsCollectionRef, {
+    await setDoc(docRef, {
       ...result,
       timestamp: serverTimestamp(),
     });
+
     return { success: true };
   } catch (error) {
     console.error("Error saving test result:", error);

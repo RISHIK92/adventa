@@ -1,8 +1,7 @@
+"use client";
 
-'use client';
-
-import * as React from 'react';
-import Link from 'next/link';
+import * as React from "react";
+import Link from "next/link";
 import {
   ArrowLeft,
   BookOpen,
@@ -12,22 +11,22 @@ import {
   EyeOff,
   Loader2,
   XCircle,
-} from 'lucide-react';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
-import { z } from 'zod';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import remarkMath from 'remark-math';
-import rehypeKatex from 'rehype-katex';
+} from "lucide-react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import remarkMath from "remark-math";
+import rehypeKatex from "rehype-katex";
 
 import {
   generateTest,
   type GenerateTestInput,
   type TestQuestion,
-} from '@/ai/flows/generate-test-flow';
-import { saveTestResult } from '@/app/actions';
-import { Button } from '@/components/ui/button';
+} from "@/ai/flows/generate-test-flow";
+import { saveTestResult } from "@/app/actions";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -35,7 +34,7 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
+} from "@/components/ui/card";
 import {
   Form,
   FormControl,
@@ -44,26 +43,26 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/components/ui/form';
+} from "@/components/ui/form";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { useToast } from '@/hooks/use-toast';
-import { useAuth } from '@/hooks/use-auth';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+} from "@/components/ui/select";
+import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/use-auth";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from '@/components/ui/accordion';
-import { cn } from '@/lib/utils';
-import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
+} from "@/components/ui/accordion";
+import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -72,27 +71,27 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import { useRouter } from 'next/navigation';
+} from "@/components/ui/alert-dialog";
+import { useRouter } from "next/navigation";
 
 const subjectGroups = {
-  MPC: ['Mathematics', 'Physics', 'Chemistry'],
-  BPC: ['Biology', 'Physics', 'Chemistry'],
-  PCMB: ['Physics', 'Chemistry', 'Mathematics', 'Biology'],
+  MPC: ["Mathematics", "Physics", "Chemistry"],
+  BPC: ["Biology", "Physics", "Chemistry"],
+  PCMB: ["Physics", "Chemistry", "Mathematics", "Biology"],
 };
 
-const difficultyLevels = ['Easy', 'Medium', 'Hard', 'Expert'] as const;
-const timeLimits = ['15', '30', '45', '60', '90', '120', '180'] as const;
+const difficultyLevels = ["Easy", "Medium", "Hard", "Expert"] as const;
+const timeLimits = ["15", "30", "45", "60", "90", "120", "180"] as const;
 
 const questionCountOptions: Record<keyof typeof subjectGroups, string[]> = {
-  MPC: ['30', '60', '90'],
-  BPC: ['60', '90', '180'],
-  PCMB: ['40', '80', '120'],
+  MPC: ["30", "60", "90"],
+  BPC: ["60", "90", "180"],
+  PCMB: ["40", "80", "120"],
 };
 
 const formSchema = z
   .object({
-    subjectGroup: z.enum(['MPC', 'BPC', 'PCMB']),
+    subjectGroup: z.enum(["MPC", "BPC", "PCMB"]),
     questionCount: z.string(),
     timeLimit: z.enum(timeLimits),
     difficulty: z.enum(difficultyLevels),
@@ -104,19 +103,14 @@ const formSchema = z
     },
     {
       message:
-        'Question count must be divisible by the number of subjects in the group.',
-      path: ['questionCount'],
+        "Question count must be divisible by the number of subjects in the group.",
+      path: ["questionCount"],
     }
   );
 
 type TestFormValues = z.infer<typeof formSchema>;
 
-type TestState =
-  | 'configuring'
-  | 'loading'
-  | 'testing'
-  | 'finished'
-  | 'error';
+type TestState = "configuring" | "loading" | "testing" | "finished" | "error";
 
 type AnsweredQuestion = TestQuestion & {
   userAnswer?: number;
@@ -127,13 +121,16 @@ type AnsweredQuestion = TestQuestion & {
 export default function TestPage() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
-  const [testState, setTestState] = React.useState<TestState>('configuring');
+  const [testState, setTestState] = React.useState<TestState>("configuring");
   const [questions, setQuestions] = React.useState<AnsweredQuestion[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = React.useState(0);
   const [timeLeft, setTimeLeft] = React.useState(0);
   const [isReviewing, setIsReviewing] = React.useState(false);
   const [isTimeUp, setIsTimeUp] = React.useState(false);
-  const [testConfig, setTestConfig] = React.useState<TestFormValues | null>(null);
+  const [testConfig, setTestConfig] = React.useState<TestFormValues | null>(
+    null
+  );
+  const [testAttemptId, setTestAttemptId] = React.useState<string | null>(null);
 
   const timerIntervalRef = React.useRef<NodeJS.Timeout>();
   const hasFinished = React.useRef(false);
@@ -142,26 +139,26 @@ export default function TestPage() {
 
   React.useEffect(() => {
     if (!authLoading && !user) {
-      router.push('/login');
+      router.push("/login");
     }
   }, [user, authLoading, router]);
 
   const form = useForm<TestFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      subjectGroup: 'MPC',
-      questionCount: '30',
-      timeLimit: '30',
-      difficulty: 'Medium',
+      subjectGroup: "MPC",
+      questionCount: "30",
+      timeLimit: "30",
+      difficulty: "Medium",
     },
   });
 
-  const subjectGroup = form.watch('subjectGroup');
+  const subjectGroup = form.watch("subjectGroup");
   const availableQuestionCounts = questionCountOptions[subjectGroup];
 
   React.useEffect(() => {
     const defaultCount = questionCountOptions[subjectGroup][0];
-    form.setValue('questionCount', defaultCount);
+    form.setValue("questionCount", defaultCount);
   }, [subjectGroup, form]);
 
   const currentQuestion = questions[currentQuestionIndex];
@@ -169,10 +166,10 @@ export default function TestPage() {
   const finishTest = React.useCallback(() => {
     if (hasFinished.current) return;
     hasFinished.current = true;
-    
+
     clearInterval(timerIntervalRef.current);
     setTestState((prevState) => {
-      if (prevState !== 'testing') return prevState;
+      if (prevState !== "testing") return prevState;
 
       const scoredQuestions = questions.map((q) => ({
         ...q,
@@ -182,7 +179,10 @@ export default function TestPage() {
       setQuestions(scoredQuestions);
 
       if (user && testConfig) {
-        const subjectScores: Record<string, { correct: number; total: number }> = {};
+        const subjectScores: Record<
+          string,
+          { correct: number; total: number }
+        > = {};
         scoredQuestions.forEach((q) => {
           if (!subjectScores[q.subject]) {
             subjectScores[q.subject] = { correct: 0, total: 0 };
@@ -197,25 +197,30 @@ export default function TestPage() {
           0
         );
         const subjects = subjectGroups[testConfig.subjectGroup];
-        const questionsPerSubject = Number(testConfig.questionCount) / subjects.length;
+        const questionsPerSubject =
+          Number(testConfig.questionCount) / subjects.length;
 
         saveTestResult({
           userId: user.uid,
           difficulty: testConfig.difficulty,
           totalQuestions: Number(testConfig.questionCount),
           timeLimit: Number(testConfig.timeLimit),
-          subjects: subjects.map((s) => ({ subject: s, count: questionsPerSubject })),
+          subjects: subjects.map((s) => ({
+            subject: s,
+            count: questionsPerSubject,
+          })),
           score: totalCorrect,
           subjectWiseScores: subjectScores,
+          testAttemptId: testAttemptId!, // pass the unique ID
         });
       }
 
-      return 'finished';
+      return "finished";
     });
-  }, [questions, testConfig, user]);
+  }, [questions, testConfig, user, testAttemptId]);
 
   React.useEffect(() => {
-    if (testState === 'testing' && timeLeft > 0) {
+    if (testState === "testing" && timeLeft > 0) {
       timerIntervalRef.current = setInterval(() => {
         setTimeLeft((prev) => {
           if (prev <= 1) {
@@ -232,7 +237,7 @@ export default function TestPage() {
   }, [testState, timeLeft, finishTest]);
 
   const handleGenerateTest = async (values: TestFormValues) => {
-    setTestState('loading');
+    setTestState("loading");
     setTestConfig(values);
     const questionCount = Number(values.questionCount);
     const timeLimit = Number(values.timeLimit);
@@ -267,19 +272,20 @@ export default function TestPage() {
         setTimeLeft(timeLimit * 60);
         setIsReviewing(false);
         hasFinished.current = false;
-        setTestState('testing');
+        setTestState("testing");
+        setTestAttemptId(crypto.randomUUID());
       } else {
-        throw new Error('Incorrect number of questions were generated.');
+        throw new Error("Incorrect number of questions were generated.");
       }
     } catch (error) {
-      console.error('Test generation failed:', error);
+      console.error("Test generation failed:", error);
       toast({
-        variant: 'destructive',
-        title: 'Test Generation Error',
+        variant: "destructive",
+        title: "Test Generation Error",
         description:
-          'Could not generate test questions. Please try again later.',
+          "Could not generate test questions. Please try again later.",
       });
-      setTestState('error');
+      setTestState("error");
     }
   };
 
@@ -314,12 +320,12 @@ export default function TestPage() {
   };
 
   const handleRestart = () => {
-    setTestState('configuring');
+    setTestState("configuring");
     form.reset({
-      subjectGroup: 'MPC',
-      questionCount: '30',
-      timeLimit: '30',
-      difficulty: 'Medium',
+      subjectGroup: "MPC",
+      questionCount: "30",
+      timeLimit: "30",
+      difficulty: "Medium",
     });
   };
 
@@ -333,7 +339,7 @@ export default function TestPage() {
 
   const renderContent = () => {
     switch (testState) {
-      case 'loading':
+      case "loading":
         return (
           <div className="flex flex-col items-center justify-center gap-4 py-16">
             <Loader2 className="h-12 w-12 animate-spin text-primary" />
@@ -342,7 +348,7 @@ export default function TestPage() {
             </p>
           </div>
         );
-      case 'testing':
+      case "testing":
         const timeLimitInSeconds = (Number(testConfig?.timeLimit) || 0) * 60;
         return (
           <Form {...form}>
@@ -357,7 +363,7 @@ export default function TestPage() {
                       <Clock className="h-5 w-5" />
                       <span className="font-mono text-lg">
                         {Math.floor(timeLeft / 60)}:
-                        {(timeLeft % 60).toString().padStart(2, '0')}
+                        {(timeLeft % 60).toString().padStart(2, "0")}
                       </span>
                     </div>
                   </div>
@@ -371,7 +377,10 @@ export default function TestPage() {
                     </div>
                     <div className="prose prose-sm max-w-none p-4 dark:prose-invert md:prose-base md:p-6">
                       <ReactMarkdown
-                        remarkPlugins={[[remarkMath, { singleDollarTextMath: true }], remarkGfm]}
+                        remarkPlugins={[
+                          [remarkMath, { singleDollarTextMath: true }],
+                          remarkGfm,
+                        ]}
                         rehypePlugins={[rehypeKatex]}
                       >
                         {currentQuestion.question}
@@ -395,9 +404,12 @@ export default function TestPage() {
                           <RadioGroupItem value={index.toString()} />
                         </FormControl>
                         <FormLabel className="w-full cursor-pointer font-normal">
-                           <div className="prose prose-sm max-w-none dark:prose-invert">
+                          <div className="prose prose-sm max-w-none dark:prose-invert">
                             <ReactMarkdown
-                              remarkPlugins={[[remarkMath, { singleDollarTextMath: true }], remarkGfm]}
+                              remarkPlugins={[
+                                [remarkMath, { singleDollarTextMath: true }],
+                                remarkGfm,
+                              ]}
                               rehypePlugins={[rehypeKatex]}
                             >
                               {option}
@@ -419,15 +431,15 @@ export default function TestPage() {
                   </Button>
                   <Button type="button" onClick={handleNextQuestion}>
                     {currentQuestionIndex < questions.length - 1
-                      ? 'Next'
-                      : 'Finish Test'}
+                      ? "Next"
+                      : "Finish Test"}
                   </Button>
                 </CardFooter>
               </Card>
             </form>
           </Form>
         );
-      case 'finished':
+      case "finished":
         const subjectScores: Record<
           string,
           { correct: number; total: number }
@@ -487,7 +499,10 @@ export default function TestPage() {
                           <div className="space-y-6 p-2">
                             <div className="prose prose-sm max-w-none dark:prose-invert md:prose-base">
                               <ReactMarkdown
-                                remarkPlugins={[[remarkMath, { singleDollarTextMath: true }], remarkGfm]}
+                                remarkPlugins={[
+                                  [remarkMath, { singleDollarTextMath: true }],
+                                  remarkGfm,
+                                ]}
                                 rehypePlugins={[rehypeKatex]}
                               >
                                 {q.question}
@@ -498,12 +513,12 @@ export default function TestPage() {
                                 <div
                                   key={i}
                                   className={cn(
-                                    'flex items-start gap-3 rounded-md border p-3 text-sm',
+                                    "flex items-start gap-3 rounded-md border p-3 text-sm",
                                     i === correct &&
-                                      'border-green-500 bg-green-500/10',
+                                      "border-green-500 bg-green-500/10",
                                     i === selected &&
                                       !isCorrect &&
-                                      'border-red-500 bg-red-500/10'
+                                      "border-red-500 bg-red-500/10"
                                   )}
                                 >
                                   {i === correct ? (
@@ -515,7 +530,13 @@ export default function TestPage() {
                                   )}
                                   <div className="prose prose-sm max-w-none dark:prose-invert">
                                     <ReactMarkdown
-                                      remarkPlugins={[[remarkMath, { singleDollarTextMath: true }], remarkGfm]}
+                                      remarkPlugins={[
+                                        [
+                                          remarkMath,
+                                          { singleDollarTextMath: true },
+                                        ],
+                                        remarkGfm,
+                                      ]}
                                       rehypePlugins={[rehypeKatex]}
                                     >
                                       {option}
@@ -528,7 +549,13 @@ export default function TestPage() {
                               <Badge>Explanation</Badge>
                               <div className="prose prose-sm mt-2 max-w-none rounded-md border bg-secondary/50 p-4 dark:prose-invert md:prose-base">
                                 <ReactMarkdown
-                                  remarkPlugins={[[remarkMath, { singleDollarTextMath: true }], remarkGfm]}
+                                  remarkPlugins={[
+                                    [
+                                      remarkMath,
+                                      { singleDollarTextMath: true },
+                                    ],
+                                    remarkGfm,
+                                  ]}
                                   rehypePlugins={[rehypeKatex]}
                                 >
                                   {q.explanation}
@@ -602,7 +629,7 @@ export default function TestPage() {
             </CardFooter>
           </Card>
         );
-      case 'error':
+      case "error":
         return (
           <Card className="text-center">
             <CardHeader>
@@ -620,7 +647,7 @@ export default function TestPage() {
             </CardContent>
           </Card>
         );
-      case 'configuring':
+      case "configuring":
       default:
         return (
           <Card className="w-full max-w-2xl">
@@ -628,7 +655,9 @@ export default function TestPage() {
               <CardTitle className="font-headline text-3xl">
                 Configure Your Test
               </CardTitle>
-              <CardDescription>Set up your mock test parameters.</CardDescription>
+              <CardDescription>
+                Set up your mock test parameters.
+              </CardDescription>
             </CardHeader>
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onFormSubmit)}>
@@ -652,10 +681,11 @@ export default function TestPage() {
                             {Object.keys(subjectGroups)
                               .filter(
                                 (g) =>
-                                  g !== 'PCMB' ||
+                                  g !== "PCMB" ||
                                   subjectGroups[g as keyof typeof subjectGroups]
                                     .length === 4
-                              ).map((group) => (
+                              )
+                              .map((group) => (
                                 <SelectItem key={group} value={group}>
                                   {group}
                                 </SelectItem>
@@ -737,7 +767,7 @@ export default function TestPage() {
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue />
-                            </Trigger>
+                            </SelectTrigger>
                           </FormControl>
                           <SelectContent>
                             {difficultyLevels.map((level) => (
