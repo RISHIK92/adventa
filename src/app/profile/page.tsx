@@ -4,7 +4,7 @@
 import * as React from 'react';
 import { useAuth } from '@/hooks/use-auth';
 import { useRouter } from 'next/navigation';
-import { Loader2, BookCheck, ClipboardCheck, Clock, CheckCircle2, XCircle } from 'lucide-react';
+import { Loader2, BookCheck, ClipboardCheck, Clock, Lightbulb, TrendingUp, TrendingDown, Target, BrainCircuit } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { getQuizResults, getTestResults, type QuizResult, type TestResult } from '@/app/actions';
 import { Header } from '@/components/header';
@@ -16,6 +16,9 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { useToast } from '@/hooks/use-toast';
+import { analyzePerformance, type AnalyzePerformanceOutput } from '@/ai/flows/analyze-performance-flow';
 
 type EnrichedQuizResult = Omit<QuizResult, 'timestamp'> & { id: string; timestamp: string };
 type EnrichedTestResult = Omit<TestResult, 'timestamp'> & { id: string; timestamp: string };
@@ -23,9 +26,12 @@ type EnrichedTestResult = Omit<TestResult, 'timestamp'> & { id: string; timestam
 export default function ProfilePage() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
+  const { toast } = useToast();
   const [quizResults, setQuizResults] = React.useState<EnrichedQuizResult[]>([]);
   const [testResults, setTestResults] = React.useState<EnrichedTestResult[]>([]);
   const [loadingResults, setLoadingResults] = React.useState(true);
+  const [isAnalyzing, setIsAnalyzing] = React.useState(false);
+  const [analysis, setAnalysis] = React.useState<AnalyzePerformanceOutput | null>(null);
 
   React.useEffect(() => {
     if (!authLoading && !user) {
@@ -52,6 +58,45 @@ export default function ProfilePage() {
       fetchResults();
     }
   }, [user]);
+  
+  const handleAnalyzePerformance = async () => {
+    if (testResults.length === 0) {
+      toast({
+        variant: 'destructive',
+        title: 'Not enough data',
+        description: 'You need to complete at least one mock test to get a performance analysis.',
+      });
+      return;
+    }
+    
+    setIsAnalyzing(true);
+    setAnalysis(null);
+    try {
+      // We only need to send a subset of data to the AI
+      const analysisInput = testResults.map(res => ({
+        difficulty: res.difficulty,
+        score: res.score,
+        totalQuestions: res.totalQuestions,
+        questions: res.questions.map(q => ({
+          subject: q.subject,
+          isCorrect: q.isCorrect ?? (q.userAnswer === q.correctAnswer)
+        })),
+      }));
+
+      const result = await analyzePerformance({ testResults: analysisInput });
+      setAnalysis(result);
+
+    } catch (error) {
+      console.error('Performance analysis failed:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Analysis Error',
+        description: 'Could not generate performance analysis. Please try again later.',
+      });
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
 
   if (authLoading || !user) {
     return (
@@ -78,8 +123,72 @@ export default function ProfilePage() {
       <main className="container mx-auto p-4 md:p-8">
         <div className="mb-8">
           <h1 className="font-headline text-4xl font-bold">Welcome, {user.displayName || 'User'}!</h1>
-          <p className="text-muted-foreground">Here's a summary of your performance.</p>
+          <p className="text-muted-foreground">Here's a summary of your learning journey.</p>
         </div>
+        
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 font-headline text-2xl">
+              <BrainCircuit className="h-7 w-7 text-primary" />
+              AI Performance Analysis
+            </CardTitle>
+            <CardDescription>
+              Get personalized insights into your strengths and weaknesses based on your mock test history.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {analysis ? (
+               <div className="space-y-6">
+                 <div>
+                   <h3 className="font-semibold text-lg mb-2">Overall Summary</h3>
+                   <p className="text-muted-foreground">{analysis.overallSummary}</p>
+                 </div>
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                   <div className="space-y-2">
+                     <h4 className="flex items-center gap-2 font-semibold"><TrendingUp className="h-5 w-5 text-green-500" /> Strengths</h4>
+                     <ul className="list-disc list-inside space-y-1 text-muted-foreground">
+                       {analysis.strengths.map((item, i) => <li key={`strength-${i}`}>{item}</li>)}
+                     </ul>
+                   </div>
+                   <div className="space-y-2">
+                     <h4 className="flex items-center gap-2 font-semibold"><TrendingDown className="h-5 w-5 text-red-500" /> Weaknesses</h4>
+                     <ul className="list-disc list-inside space-y-1 text-muted-foreground">
+                       {analysis.weaknesses.map((item, i) => <li key={`weakness-${i}`}>{item}</li>)}
+                     </ul>
+                   </div>
+                 </div>
+                 <div>
+                   <h4 className="flex items-center gap-2 font-semibold"><Target className="h-5 w-5 text-blue-500" /> Recommendations</h4>
+                   <ul className="list-disc list-inside space-y-1 text-muted-foreground">
+                     {analysis.recommendations.map((item, i) => <li key={`rec-${i}`}>{item}</li>)}
+                   </ul>
+                 </div>
+               </div>
+            ) : isAnalyzing ? (
+              <div className="flex items-center justify-center p-8">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                <p className="ml-4 text-muted-foreground">Analyzing your performance...</p>
+              </div>
+            ) : (
+               <p className="text-sm text-muted-foreground">Click the button to generate your analysis.</p>
+            )}
+          </CardContent>
+          <CardFooter>
+            <Button onClick={handleAnalyzePerformance} disabled={isAnalyzing || loadingResults}>
+              {isAnalyzing ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Analyzing...
+                </>
+              ) : (
+                 <>
+                  <Lightbulb className="mr-2 h-4 w-4" />
+                  {analysis ? 'Re-analyze Performance' : 'Analyze My Performance'}
+                </>
+              )}
+            </Button>
+          </CardFooter>
+        </Card>
 
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
           <Card>

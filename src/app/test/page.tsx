@@ -1,3 +1,4 @@
+
 "use client";
 
 import * as React from "react";
@@ -25,7 +26,7 @@ import {
   type GenerateTestInput,
   type TestQuestion,
 } from "@/ai/flows/generate-test-flow";
-import { saveTestResult } from "@/app/actions";
+import { saveTestResult, type TestQuestionRecord } from "@/app/actions";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -163,60 +164,69 @@ export default function TestPage() {
 
   const currentQuestion = questions[currentQuestionIndex];
 
-  const finishTest = React.useCallback(() => {
+  const finishTest = React.useCallback(async () => {
     if (hasFinished.current) return;
     hasFinished.current = true;
-
+  
     clearInterval(timerIntervalRef.current);
-    setTestState((prevState) => {
-      if (prevState !== "testing") return prevState;
-
-      const scoredQuestions = questions.map((q) => ({
-        ...q,
-        isCorrect: q.userAnswer === q.correctAnswer,
-        isUnattempted: q.userAnswer === undefined,
+    
+    // This state update now only transitions the view
+    setTestState("finished");
+  
+    const scoredQuestions = questions.map((q) => ({
+      ...q,
+      isCorrect: q.userAnswer === q.correctAnswer,
+      isUnattempted: q.userAnswer === undefined,
+    }));
+    // We update the state with scored questions for the review screen
+    setQuestions(scoredQuestions);
+  
+    if (user && testConfig && testAttemptId) {
+      const subjectScores: Record<string, { correct: number; total: number }> = {};
+      scoredQuestions.forEach((q) => {
+        if (!subjectScores[q.subject]) {
+          subjectScores[q.subject] = { correct: 0, total: 0 };
+        }
+        if (q.isCorrect) {
+          subjectScores[q.subject].correct++;
+        }
+        subjectScores[q.subject].total++;
+      });
+  
+      const totalCorrect = Object.values(subjectScores).reduce(
+        (acc, curr) => acc + curr.correct,
+        0
+      );
+  
+      const subjects = subjectGroups[testConfig.subjectGroup];
+      const questionsPerSubject = Number(testConfig.questionCount) / subjects.length;
+      
+      // Prepare detailed question records for saving
+      const questionRecords: TestQuestionRecord[] = scoredQuestions.map(q => ({
+        question: q.question,
+        options: q.options,
+        correctAnswer: q.correctAnswer,
+        explanation: q.explanation,
+        subject: q.subject,
+        userAnswer: q.userAnswer,
+        isCorrect: q.isCorrect,
       }));
-      setQuestions(scoredQuestions);
-
-      if (user && testConfig) {
-        const subjectScores: Record<
-          string,
-          { correct: number; total: number }
-        > = {};
-        scoredQuestions.forEach((q) => {
-          if (!subjectScores[q.subject]) {
-            subjectScores[q.subject] = { correct: 0, total: 0 };
-          }
-          if (q.isCorrect) {
-            subjectScores[q.subject].correct++;
-          }
-          subjectScores[q.subject].total++;
-        });
-        const totalCorrect = Object.values(subjectScores).reduce(
-          (acc, curr) => acc + curr.correct,
-          0
-        );
-        const subjects = subjectGroups[testConfig.subjectGroup];
-        const questionsPerSubject =
-          Number(testConfig.questionCount) / subjects.length;
-
-        saveTestResult({
-          userId: user.uid,
-          difficulty: testConfig.difficulty,
-          totalQuestions: Number(testConfig.questionCount),
-          timeLimit: Number(testConfig.timeLimit),
-          subjects: subjects.map((s) => ({
-            subject: s,
-            count: questionsPerSubject,
-          })),
-          score: totalCorrect,
-          subjectWiseScores: subjectScores,
-          testAttemptId: testAttemptId!, // pass the unique ID
-        });
-      }
-
-      return "finished";
-    });
+  
+      await saveTestResult({
+        testAttemptId: testAttemptId,
+        userId: user.uid,
+        difficulty: testConfig.difficulty,
+        totalQuestions: Number(testConfig.questionCount),
+        timeLimit: Number(testConfig.timeLimit),
+        subjects: subjects.map((s) => ({
+          subject: s,
+          count: questionsPerSubject,
+        })),
+        score: totalCorrect,
+        subjectWiseScores: subjectScores,
+        questions: questionRecords, // Save the detailed questions
+      });
+    }
   }, [questions, testConfig, user, testAttemptId]);
 
   React.useEffect(() => {
@@ -260,6 +270,7 @@ export default function TestPage() {
         result.questions?.length > 0 &&
         result.questions.length === questionCount
       ) {
+        setTestAttemptId(crypto.randomUUID());
         setQuestions(
           result.questions.map((q) => ({
             ...q,
@@ -273,7 +284,6 @@ export default function TestPage() {
         setIsReviewing(false);
         hasFinished.current = false;
         setTestState("testing");
-        setTestAttemptId(crypto.randomUUID());
       } else {
         throw new Error("Incorrect number of questions were generated.");
       }
@@ -293,14 +303,10 @@ export default function TestPage() {
     handleGenerateTest(values);
   };
 
-  const handleTimeUp = () => {
-    setIsTimeUp(true);
-  };
-
   const handleAnswerSelect = (answerIndex: number) => {
     setQuestions((prev) =>
       prev.map((q, i) =>
-        i === currentQuestionIndex ? { ...q, userAnswer: answerIndex } : q
+        i === currentQuestionIndex ? { ...q, userAnswer: answerIndex, isUnattempted: false } : q
       )
     );
   };

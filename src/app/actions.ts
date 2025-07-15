@@ -10,6 +10,7 @@ import {
   where,
   setDoc,
   doc,
+  collectionGroup,
 } from "firebase/firestore";
 
 export type QuizResult = {
@@ -21,6 +22,17 @@ export type QuizResult = {
   timestamp?: any;
 };
 
+// Represents a single question within a saved test result
+export type TestQuestionRecord = {
+  question: string;
+  options: string[];
+  correctAnswer: number;
+  explanation: string;
+  subject: string;
+  userAnswer?: number; // User's selected answer index
+  isCorrect?: boolean;
+};
+
 export type TestResult = {
   userId: string;
   difficulty: string;
@@ -29,8 +41,10 @@ export type TestResult = {
   subjects: { subject: string; count: number }[];
   score: number;
   subjectWiseScores: Record<string, { correct: number; total: number }>;
+  questions: TestQuestionRecord[];
   timestamp?: any;
 };
+
 
 export async function saveQuizResult(result: QuizResult) {
   try {
@@ -39,20 +53,13 @@ export async function saveQuizResult(result: QuizResult) {
       throw new Error("User must be authenticated to save quiz result.");
     }
 
-    if (result.userId !== user.uid) {
-      throw new Error("User ID mismatch.");
-    }
-
-    const resultsCollectionRef = collection(db, "quizResults");
-    console.log("Collection ref:", resultsCollectionRef);
-    console.log("Saving result for userId:", result.userId);
-
-    const res = await addDoc(resultsCollectionRef, {
+    const quizResultsRef = collection(db, "users", user.uid, "quizResults");
+    await addDoc(quizResultsRef, {
       ...result,
       timestamp: serverTimestamp(),
     });
-    console.log("Document saved with ID:", res.id);
-    return { res, success: true };
+    
+    return { success: true };
   } catch (error) {
     console.error("Error saving quiz result:", error);
     return { success: false, error: "Failed to save quiz result." };
@@ -63,13 +70,12 @@ export async function saveTestResult(result: TestResult & { testAttemptId: strin
   try {
     const user = auth.currentUser;
     if (!user) throw new Error("User must be authenticated to save test result.");
-    if (result.userId !== user.uid) throw new Error("User ID mismatch.");
 
-    const resultsCollectionRef = collection(db, "testResults");
-    const docRef = doc(resultsCollectionRef, result.testAttemptId);
+    const testResultRef = doc(db, "users", user.uid, "testResults", result.testAttemptId);
 
-    await setDoc(docRef, {
+    await setDoc(testResultRef, {
       ...result,
+      userId: user.uid, // ensure userId is set
       timestamp: serverTimestamp(),
     });
 
@@ -82,33 +88,16 @@ export async function saveTestResult(result: TestResult & { testAttemptId: strin
 
 export async function getQuizResults(userId: string) {
   try {
-    // Check if user is authenticated
     const user = auth.currentUser;
-    if (!user) {
-      throw new Error("User must be authenticated to fetch quiz results.");
+    if (!user || user.uid !== userId) {
+      throw new Error("User must be authenticated to fetch their quiz results.");
     }
-
-    // Ensure the userId matches the authenticated user
-    if (userId !== user.uid) {
-      throw new Error("User ID mismatch.");
-    }
-
-    if (!userId) return { success: true, data: [] };
-    console.log(userId);
-
-    const resultsCollectionRef = collection(db, "quizResults");
-    console.log(resultsCollectionRef, "refabc");
-
-    const q = query(
-      resultsCollectionRef,
-      where("userId", "==", userId),
-      orderBy("timestamp", "desc")
-    );
-    console.log(q, "qbcd");
-
+    
+    const resultsCollectionRef = collection(db, "users", userId, "quizResults");
+    const q = query(resultsCollectionRef, orderBy("timestamp", "desc"));
+    
     const querySnapshot = await getDocs(q);
     const results: any[] = [];
-    console.log(results, "results");
 
     querySnapshot.forEach((doc) => {
       const data = doc.data();
@@ -118,6 +107,7 @@ export async function getQuizResults(userId: string) {
         timestamp: data.timestamp?.toDate().toISOString(),
       });
     });
+
     return { success: true, data: results };
   } catch (error) {
     console.error("Error fetching quiz results:", error);
@@ -127,26 +117,13 @@ export async function getQuizResults(userId: string) {
 
 export async function getTestResults(userId: string) {
   try {
-    // Check if user is authenticated
     const user = auth.currentUser;
-    if (!user) {
-      throw new Error("User must be authenticated to fetch test results.");
+    if (!user || user.uid !== userId) {
+      throw new Error("User must be authenticated to fetch their test results.");
     }
 
-    // Ensure the userId matches the authenticated user
-    if (userId !== user.uid) {
-      throw new Error("User ID mismatch.");
-    }
-
-    if (!userId) return { success: true, data: [] };
-
-    const resultsCollectionRef = collection(db, "testResults");
-
-    const q = query(
-      resultsCollectionRef,
-      where("userId", "==", userId),
-      orderBy("timestamp", "desc")
-    );
+    const resultsCollectionRef = collection(db, "users", userId, "testResults");
+    const q = query(resultsCollectionRef, orderBy("timestamp", "desc"));
 
     const querySnapshot = await getDocs(q);
     const results: any[] = [];
