@@ -6,7 +6,7 @@ import type { SuggestAdjacentSubjectsInput } from '@/ai/flows/suggest-adjacent-s
 import type { QuizQuestion } from '@/ai/flows/generate-quiz-flow';
 import type { TestQuestion } from '@/ai/flows/generate-test-flow';
 import { db } from '@/lib/firebase';
-import { collection, addDoc, serverTimestamp, getDocs, query, where, orderBy } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, getDocs, query, orderBy } from 'firebase/firestore';
 
 export async function getSuggestions(input: SuggestAdjacentSubjectsInput) {
   const validatedInput = { ...input, depth: 1 };
@@ -71,16 +71,18 @@ export async function saveTestResult(result: TestResult) {
 
 export async function getQuizResults(userId: string) {
   try {
-    const q = query(collection(db, 'quizResults'), where('userId', '==', userId), orderBy('timestamp', 'desc'));
+    const q = query(collection(db, 'quizResults'), orderBy('timestamp', 'desc'));
     const querySnapshot = await getDocs(q);
     const results: any[] = [];
     querySnapshot.forEach((doc) => {
       const data = doc.data();
-      results.push({
-        id: doc.id,
-        ...data,
-        timestamp: data.timestamp?.toDate().toISOString(),
-      });
+      if (data.userId === userId) {
+        results.push({
+          id: doc.id,
+          ...data,
+          timestamp: data.timestamp?.toDate().toISOString(),
+        });
+      }
     });
     return { success: true, data: results };
   } catch (error) {
@@ -91,16 +93,18 @@ export async function getQuizResults(userId: string) {
 
 export async function getTestResults(userId: string) {
   try {
-    const q = query(collection(db, 'testResults'), where('userId', '==', userId), orderBy('timestamp', 'desc'));
+    const q = query(collection(db, 'testResults'), orderBy('timestamp', 'desc'));
     const querySnapshot = await getDocs(q);
     const results: any[] = [];
     querySnapshot.forEach((doc) => {
        const data = doc.data();
-      results.push({
-        id: doc.id,
-        ...data,
-        timestamp: data.timestamp?.toDate().toISOString(),
-      });
+       if (data.userId === userId) {
+        results.push({
+          id: doc.id,
+          ...data,
+          timestamp: data.timestamp?.toDate().toISOString(),
+        });
+      }
     });
     return { success: true, data: results };
   } catch (error) {
