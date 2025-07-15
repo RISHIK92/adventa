@@ -1,8 +1,7 @@
+"use client";
 
-'use client';
-
-import * as React from 'react';
-import Link from 'next/link';
+import * as React from "react";
+import Link from "next/link";
 import {
   ArrowLeft,
   BookOpen,
@@ -12,22 +11,22 @@ import {
   Loader2,
   Shuffle,
   XCircle,
-} from 'lucide-react';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
-import { z } from 'zod';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import remarkMath from 'remark-math';
-import rehypeKatex from 'rehype-katex';
+} from "lucide-react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import remarkMath from "remark-math";
+import rehypeKatex from "rehype-katex";
 
 import {
   generateQuiz,
   type GenerateQuizInput,
   type QuizQuestion,
-} from '@/ai/flows/generate-quiz-flow';
-import { saveQuizResult } from '@/app/actions';
-import { Button } from '@/components/ui/button';
+} from "@/ai/flows/generate-quiz-flow";
+import { saveQuizResult } from "@/app/actions";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -35,7 +34,7 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
+} from "@/components/ui/card";
 import {
   Form,
   FormControl,
@@ -43,55 +42,55 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/components/ui/form';
+} from "@/components/ui/form";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { subjects as allSubjects } from '@/lib/data';
-import { useToast } from '@/hooks/use-toast';
-import { useAuth } from '@/hooks/use-auth';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+} from "@/components/ui/select";
+import { subjects as allSubjects } from "@/lib/data";
+import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/use-auth";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from '@/components/ui/accordion';
-import { cn } from '@/lib/utils';
-import { Badge } from '@/components/ui/badge';
-import { useRouter } from 'next/navigation';
+} from "@/components/ui/accordion";
+import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
+import { useRouter } from "next/navigation";
 
 const subjectGroups = {
-  PCM: ['Physics', 'Chemistry', 'Mathematics'],
-  PCMB: ['Physics', 'Chemistry', 'Mathematics', 'Biology'],
-  BPC: ['Biology', 'Physics', 'Chemistry'],
+  PCM: ["Physics", "Chemistry", "Mathematics"],
+  PCMB: ["Physics", "Chemistry", "Mathematics", "Biology"],
+  BPC: ["Biology", "Physics", "Chemistry"],
 };
 
-const difficultyLevels = ['Easy', 'Medium', 'Hard', 'Expert'] as const;
+const difficultyLevels = ["Easy", "Medium", "Hard", "Expert"] as const;
 
 const formSchema = z.object({
-  subjectGroup: z.enum(['PCM', 'PCMB', 'BPC']),
-  subject: z.string().min(1, 'Please select a subject.'),
+  subjectGroup: z.enum(["PCM", "PCMB", "BPC"]),
+  subject: z.string().min(1, "Please select a subject."),
   difficulty: z.enum(difficultyLevels),
 });
 
 type QuizFormValues = z.infer<typeof formSchema>;
 
 type QuizState =
-  | 'configuring'
-  | 'loading'
-  | 'displaying'
-  | 'finished'
-  | 'error';
+  | "configuring"
+  | "loading"
+  | "displaying"
+  | "finished"
+  | "error";
 
 export default function QuizPage() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
-  const [quizState, setQuizState] = React.useState<QuizState>('configuring');
+  const [quizState, setQuizState] = React.useState<QuizState>("configuring");
   const [questions, setQuestions] = React.useState<QuizQuestion[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = React.useState(0);
   const [score, setScore] = React.useState(0);
@@ -101,33 +100,35 @@ export default function QuizPage() {
   const [finalScore, setFinalScore] = React.useState(0);
   const [isReviewing, setIsReviewing] = React.useState(false);
   const { toast } = useToast();
-  const [quizConfig, setQuizConfig] = React.useState<GenerateQuizInput | null>(null);
+  const [quizConfig, setQuizConfig] = React.useState<GenerateQuizInput | null>(
+    null
+  );
 
   React.useEffect(() => {
     if (!authLoading && !user) {
-      router.push('/login');
+      router.push("/login");
     }
   }, [user, authLoading, router]);
 
   const form = useForm<QuizFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      subjectGroup: 'PCM',
-      subject: '',
-      difficulty: 'Medium',
+      subjectGroup: "PCM",
+      subject: "",
+      difficulty: "Medium",
     },
   });
 
-  const subjectGroup = form.watch('subjectGroup');
+  const subjectGroup = form.watch("subjectGroup");
   const availableSubjects = subjectGroup ? subjectGroups[subjectGroup] : [];
   const currentQuestion = questions[currentQuestionIndex];
 
   React.useEffect(() => {
-    form.resetField('subject', { defaultValue: '' });
+    form.resetField("subject", { defaultValue: "" });
   }, [subjectGroup, form]);
 
   const handleGenerateQuiz = async (values: GenerateQuizInput) => {
-    setQuizState('loading');
+    setQuizState("loading");
     setQuizConfig(values);
     try {
       const result = await generateQuiz(values);
@@ -138,19 +139,19 @@ export default function QuizPage() {
         setSelectedAnswers({});
         setFinalScore(0);
         setIsReviewing(false);
-        setQuizState('displaying');
+        setQuizState("displaying");
       } else {
-        throw new Error('No questions were generated.');
+        throw new Error("No questions were generated.");
       }
     } catch (error) {
-      console.error('Quiz generation failed:', error);
+      console.error("Quiz generation failed:", error);
       toast({
-        variant: 'destructive',
-        title: 'Quiz Generation Error',
+        variant: "destructive",
+        title: "Quiz Generation Error",
         description:
-          'Could not generate quiz questions. Please try again later.',
+          "Could not generate quiz questions. Please try again later.",
       });
-      setQuizState('error');
+      setQuizState("error");
     }
   };
 
@@ -162,7 +163,7 @@ export default function QuizPage() {
   };
 
   const handleRandomQuiz = () => {
-    const groups: Array<keyof typeof subjectGroups> = ['PCM', 'PCMB', 'BPC'];
+    const groups: Array<keyof typeof subjectGroups> = ["PCM", "PCMB", "BPC"];
     const randomGroup = groups[Math.floor(Math.random() * groups.length)];
     const randomSubjects = subjectGroups[randomGroup];
     const randomSubject =
@@ -199,7 +200,7 @@ export default function QuizPage() {
       setCurrentQuestionIndex((prev) => prev + 1);
     } else {
       setFinalScore(newScore);
-      setQuizState('finished');
+      setQuizState("finished");
       if (user && quizConfig) {
         saveQuizResult({
           userId: user.uid,
@@ -213,10 +214,10 @@ export default function QuizPage() {
   };
 
   const handleRestart = () => {
-    setQuizState('configuring');
+    setQuizState("configuring");
     form.reset();
   };
-  
+
   if (authLoading || !user) {
     return (
       <div className="flex min-h-screen items-center justify-center">
@@ -225,10 +226,9 @@ export default function QuizPage() {
     );
   }
 
-
   const renderContent = () => {
     switch (quizState) {
-      case 'loading':
+      case "loading":
         return (
           <div className="flex flex-col items-center justify-center gap-4 py-16">
             <Loader2 className="h-12 w-12 animate-spin text-primary" />
@@ -237,7 +237,7 @@ export default function QuizPage() {
             </p>
           </div>
         );
-      case 'displaying':
+      case "displaying":
         return (
           <Form {...form}>
             <form>
@@ -249,7 +249,10 @@ export default function QuizPage() {
                   <CardDescription>
                     <div className="prose prose-sm max-w-none p-4 dark:prose-invert md:prose-base md:p-6">
                       <ReactMarkdown
-                        remarkPlugins={[[remarkMath, { singleDollarTextMath: true }], remarkGfm]}
+                        remarkPlugins={[
+                          [remarkMath, { singleDollarTextMath: true }],
+                          remarkGfm,
+                        ]}
                         rehypePlugins={[rehypeKatex]}
                       >
                         {currentQuestion.question}
@@ -262,7 +265,8 @@ export default function QuizPage() {
                     key={currentQuestionIndex}
                     onValueChange={(value) => handleAnswerSelect(Number(value))}
                     value={
-                      selectedAnswers[currentQuestionIndex]?.toString() ?? undefined
+                      selectedAnswers[currentQuestionIndex]?.toString() ??
+                      undefined
                     }
                     className="space-y-4"
                   >
@@ -277,7 +281,10 @@ export default function QuizPage() {
                         <FormLabel className="w-full cursor-pointer font-normal">
                           <div className="prose prose-sm max-w-none dark:prose-invert">
                             <ReactMarkdown
-                              remarkPlugins={[[remarkMath, { singleDollarTextMath: true }], remarkGfm]}
+                              remarkPlugins={[
+                                [remarkMath, { singleDollarTextMath: true }],
+                                remarkGfm,
+                              ]}
                               rehypePlugins={[rehypeKatex]}
                             >
                               {option}
@@ -291,20 +298,22 @@ export default function QuizPage() {
                 <CardFooter>
                   <Button
                     onClick={handleNextQuestion}
-                    disabled={selectedAnswers[currentQuestionIndex] === undefined}
+                    disabled={
+                      selectedAnswers[currentQuestionIndex] === undefined
+                    }
                     className="w-full"
                     type="button"
                   >
                     {currentQuestionIndex < questions.length - 1
-                      ? 'Next Question'
-                      : 'Finish Quiz'}
+                      ? "Next Question"
+                      : "Finish Quiz"}
                   </Button>
                 </CardFooter>
               </Card>
             </form>
           </Form>
         );
-      case 'finished':
+      case "finished":
         if (isReviewing) {
           return (
             <Card className="w-full max-w-4xl">
@@ -340,7 +349,10 @@ export default function QuizPage() {
                           <div className="space-y-6 p-2">
                             <div className="prose prose-sm max-w-none dark:prose-invert md:prose-base">
                               <ReactMarkdown
-                                remarkPlugins={[[remarkMath, { singleDollarTextMath: true }], remarkGfm]}
+                                remarkPlugins={[
+                                  [remarkMath, { singleDollarTextMath: true }],
+                                  remarkGfm,
+                                ]}
                                 rehypePlugins={[rehypeKatex]}
                               >
                                 {q.question}
@@ -354,12 +366,12 @@ export default function QuizPage() {
                                   <div
                                     key={i}
                                     className={cn(
-                                      'flex items-start gap-3 rounded-md border p-3 text-sm',
+                                      "flex items-start gap-3 rounded-md border p-3 text-sm",
                                       isCorrectAnswer &&
-                                        'border-green-500 bg-green-500/10',
+                                        "border-green-500 bg-green-500/10",
                                       isSelected &&
                                         !isCorrectAnswer &&
-                                        'border-red-500 bg-red-500/10'
+                                        "border-red-500 bg-red-500/10"
                                     )}
                                   >
                                     {isCorrectAnswer ? (
@@ -371,7 +383,13 @@ export default function QuizPage() {
                                     )}
                                     <div className="prose prose-sm max-w-none dark:prose-invert">
                                       <ReactMarkdown
-                                        remarkPlugins={[[remarkMath, { singleDollarTextMath: true }], remarkGfm]}
+                                        remarkPlugins={[
+                                          [
+                                            remarkMath,
+                                            { singleDollarTextMath: true },
+                                          ],
+                                          remarkGfm,
+                                        ]}
                                         rehypePlugins={[rehypeKatex]}
                                       >
                                         {option}
@@ -385,7 +403,13 @@ export default function QuizPage() {
                               <Badge>Explanation</Badge>
                               <div className="prose prose-sm mt-2 max-w-none rounded-md border bg-secondary/50 p-4 dark:prose-invert md:prose-base">
                                 <ReactMarkdown
-                                  remarkPlugins={[[remarkMath, { singleDollarTextMath: true }], remarkGfm]}
+                                  remarkPlugins={[
+                                    [
+                                      remarkMath,
+                                      { singleDollarTextMath: true },
+                                    ],
+                                    remarkGfm,
+                                  ]}
                                   rehypePlugins={[rehypeKatex]}
                                 >
                                   {q.explanation}
@@ -400,7 +424,10 @@ export default function QuizPage() {
                 </Accordion>
               </CardContent>
               <CardFooter className="flex-col gap-4">
-                <Button onClick={() => setIsReviewing(false)} className="w-full">
+                <Button
+                  onClick={() => setIsReviewing(false)}
+                  className="w-full"
+                >
                   Back to Score
                 </Button>
                 <Button
@@ -442,7 +469,7 @@ export default function QuizPage() {
             </CardFooter>
           </Card>
         );
-      case 'error':
+      case "error":
         return (
           <Card className="text-center">
             <CardHeader>
@@ -460,7 +487,7 @@ export default function QuizPage() {
             </CardContent>
           </Card>
         );
-      case 'configuring':
+      case "configuring":
       default:
         return (
           <Card className="w-full max-w-2xl">
@@ -491,9 +518,7 @@ export default function QuizPage() {
                               <FormControl>
                                 <RadioGroupItem value="PCM" />
                               </FormControl>
-                              <FormLabel className="font-normal">
-                                PCM
-                              </FormLabel>
+                              <FormLabel className="font-normal">PCM</FormLabel>
                             </FormItem>
                             <FormItem className="flex items-center space-x-2 space-y-0">
                               <FormControl>
@@ -503,13 +528,11 @@ export default function QuizPage() {
                                 PCMB
                               </FormLabel>
                             </FormItem>
-                             <FormItem className="flex items-center space-x-2 space-y-0">
+                            <FormItem className="flex items-center space-x-2 space-y-0">
                               <FormControl>
                                 <RadioGroupItem value="BPC" />
                               </FormControl>
-                              <FormLabel className="font-normal">
-                                BPC
-                              </FormLabel>
+                              <FormLabel className="font-normal">BPC</FormLabel>
                             </FormItem>
                           </RadioGroup>
                         </FormControl>
@@ -598,13 +621,6 @@ export default function QuizPage() {
   return (
     <main className="min-h-screen bg-gradient-to-br from-accent/10 via-background to-background p-4 md:p-8">
       <div className="container mx-auto">
-        <div className="absolute top-4 left-4 md:top-8 md:left-8">
-          <Button asChild variant="ghost">
-            <Link href="/">
-              <ArrowLeft className="mr-2" /> Back to Home
-            </Link>
-          </Button>
-        </div>
         <div className="flex min-h-[80vh] items-center justify-center">
           {renderContent()}
         </div>

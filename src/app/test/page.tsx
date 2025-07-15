@@ -72,7 +72,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { useRouter } from "next/navigation";
+import { useRouter } from 'next/navigation';
 
 const subjectGroups = {
   MPC: ["Mathematics", "Physics", "Chemistry"],
@@ -84,7 +84,7 @@ const difficultyLevels = ["Easy", "Medium", "Hard", "Expert"] as const;
 const timeLimits = ["15", "30", "45", "60", "90", "120", "180"] as const;
 
 const questionCountOptions: Record<keyof typeof subjectGroups, string[]> = {
-  MPC: ["3", "60", "90"],
+  MPC: ["3", "30", "60", "90"],
   BPC: ["60", "90", "180"],
   PCMB: ["40", "80", "120"],
 };
@@ -131,6 +131,7 @@ export default function TestPage() {
     null
   );
   const [testAttemptId, setTestAttemptId] = React.useState<string | null>(null);
+  const [loadingTime, setLoadingTime] = React.useState(0);
 
   const timerIntervalRef = React.useRef<NodeJS.Timeout>();
   const hasFinished = React.useRef(false);
@@ -249,6 +250,19 @@ export default function TestPage() {
     return () => clearInterval(timerIntervalRef.current);
   }, [testState, timeLeft, finishTest]);
 
+  React.useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (testState === "loading") {
+      setLoadingTime(0);
+      interval = setInterval(() => {
+        setLoadingTime((t) => t + 1);
+      }, 1000);
+    } else {
+      setLoadingTime(0);
+    }
+    return () => clearInterval(interval);
+  }, [testState]);
+
   const handleGenerateTest = async (values: TestFormValues) => {
     setTestState("loading");
     setTestConfig(values);
@@ -357,6 +371,16 @@ export default function TestPage() {
             <p className="text-lg text-muted-foreground">
               Generating your test. This may take a moment...
             </p>
+            {loadingTime >= 4 && loadingTime < 15 && (
+              <p className="text-sm text-muted-foreground">
+                It's taking longer than usual. Please wait...
+              </p>
+            )}
+            {loadingTime >= 15 && (
+              <p className="text-sm text-muted-foreground">
+                Due to high demand, this may take 1-2 minutes. Thank you for your patience!
+              </p>
+            )}
           </div>
         );
       case "testing":
@@ -808,13 +832,6 @@ export default function TestPage() {
   return (
     <main className="min-h-screen bg-gradient-to-br from-secondary/30 via-background to-background p-4 md:p-8">
       <div className="container mx-auto">
-        <div className="absolute top-4 left-4 md:top-8 md:left-8">
-          <Button asChild variant="ghost">
-            <Link href="/">
-              <ArrowLeft className="mr-2" /> Back to Home
-            </Link>
-          </Button>
-        </div>
         <div className="flex min-h-[80vh] items-center justify-center">
           {renderContent()}
         </div>

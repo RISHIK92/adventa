@@ -15,7 +15,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { BrainCircuit, LayoutDashboard, LogOut, User as UserIcon } from 'lucide-react';
+import { BrainCircuit, LogOut, User as UserIcon, Menu } from 'lucide-react';
 
 export function Header() {
   const { user, signOut } = useAuth();
@@ -37,15 +37,55 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-14 items-center">
-        <div className="mr-4 flex">
-          <Link href="/" className="mr-6 flex items-center space-x-2">
+      <div className="container relative flex h-14 items-center justify-center">
+        {/* Logo - left on desktop, centered on mobile */}
+        <div className="flex items-center w-full justify-center md:justify-start md:w-auto md:absolute md:left-0 md:top-0 md:h-full">
+          <Link href="/" className="flex items-center space-x-2">
             <BrainCircuit className="h-6 w-6 text-primary" />
             <span className="font-bold sm:inline-block">Vertical Ascent</span>
           </Link>
         </div>
-
-        <div className="flex flex-1 items-center justify-end space-x-4">
+        {/* Desktop Nav - centered */}
+        <div className="hidden md:flex items-center gap-2">
+          <Button asChild variant="ghost" size="sm">
+            <Link href="/">Home</Link>
+          </Button>
+          <Button asChild variant="ghost" size="sm">
+            <Link href="/learning">Cheatsheets</Link>
+          </Button>
+          <Button asChild variant="ghost" size="sm">
+            <Link href="/quiz">Quiz</Link>
+          </Button>
+          <Button asChild variant="ghost" size="sm">
+            <Link href="/test">Mock Tests</Link>
+          </Button>
+        </div>
+        {/* Mobile Hamburger - left on mobile */}
+        <div className="flex md:hidden items-center absolute left-0 top-0 h-full">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" aria-label="Open menu">
+                <Menu className="h-6 w-6" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem asChild>
+                <Link href="/">Home</Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/learning">Cheatsheets</Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/quiz">Quiz</Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/test">Mock Tests</Link>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+        {/* User menu - absolutely positioned right */}
+        <div className="absolute right-0 top-0 h-full flex items-center space-x-4">
           {user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -68,12 +108,6 @@ export function Header() {
                    <Link href="/profile">
                     <UserIcon className="mr-2 h-4 w-4" />
                     <span>Profile</span>
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/">
-                    <LayoutDashboard className="mr-2 h-4 w-4" />
-                    <span>Dashboard</span>
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />

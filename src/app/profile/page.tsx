@@ -20,6 +20,19 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { analyzePerformance } from '@/ai/flows/analyze-performance-flow';
 import { AnalyzePerformanceOutput } from '@/ai/flows/analyze-performance-types';
+import {
+  Dialog,
+  DialogTrigger,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogClose
+} from '@/components/ui/dialog';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import remarkMath from 'remark-math';
+import rehypeKatex from 'rehype-katex';
+import 'katex/dist/katex.min.css';
 
 type EnrichedQuizResult = Omit<QuizResult, 'timestamp'> & { id: string; timestamp: string };
 type EnrichedTestResult = Omit<TestResult, 'timestamp'> & { id: string; timestamp: string };
@@ -33,6 +46,10 @@ export default function ProfilePage() {
   const [loadingResults, setLoadingResults] = React.useState(true);
   const [isAnalyzing, setIsAnalyzing] = React.useState(false);
   const [analysis, setAnalysis] = React.useState<AnalyzePerformanceOutput | null>(null);
+  const [expandedTestId, setExpandedTestId] = React.useState<string | null>(null);
+  const [modalTestId, setModalTestId] = React.useState<string | null>(null);
+  const [modalTestResult, setModalTestResult] = React.useState<EnrichedTestResult | null>(null);
+  const [modalLoading, setModalLoading] = React.useState(false);
 
   React.useEffect(() => {
     if (!authLoading && !user) {
@@ -99,6 +116,19 @@ export default function ProfilePage() {
     }
   };
 
+  const handleOpenModal = async (testId: string) => {
+    setModalTestId(testId);
+    setModalLoading(true);
+    const result = testResults.find(t => t.id === testId) || null;
+    setModalTestResult(result);
+    setModalLoading(false);
+  };
+
+  const handleCloseModal = () => {
+    setModalTestId(null);
+    setModalTestResult(null);
+  };
+
   if (authLoading || !user) {
     return (
       <div className="flex h-screen w-full items-center justify-center">
@@ -148,13 +178,23 @@ export default function ProfilePage() {
                    <div className="space-y-2">
                      <h4 className="flex items-center gap-2 font-semibold"><TrendingUp className="h-5 w-5 text-green-500" /> Strengths</h4>
                      <ul className="list-disc list-inside space-y-1 text-muted-foreground">
-                       {analysis.strengths.map((item: string | number | bigint | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | Promise<React.AwaitedReactNode> | null | undefined, i: any) => <li key={`strength-${i}`}>{item}</li>)}
+                       {analysis.strengths.map((item, i) => (
+                         <li key={i}>
+                           <strong>{item.area}</strong> — Accuracy: {item.accuracy}%<br />
+                           {item.description}
+                         </li>
+                       ))}
                      </ul>
                    </div>
                    <div className="space-y-2">
                      <h4 className="flex items-center gap-2 font-semibold"><TrendingDown className="h-5 w-5 text-red-500" /> Weaknesses</h4>
                      <ul className="list-disc list-inside space-y-1 text-muted-foreground">
-                       {analysis.weaknesses.map((item: string | number | bigint | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | Promise<React.AwaitedReactNode> | null | undefined, i: any) => <li key={`weakness-${i}`}>{item}</li>)}
+                       {analysis.weaknesses.map((item, i) => (
+                         <li key={i}>
+                           <strong>{item.area}</strong> — Accuracy: {item.accuracy}%<br />
+                           {item.description}
+                         </li>
+                       ))}
                      </ul>
                    </div>
                  </div>
@@ -281,6 +321,14 @@ export default function ProfilePage() {
                              </div>
                            ))}
                         </div>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="mt-2"
+                          onClick={() => handleOpenModal(result.id)}
+                        >
+                          Check Answers
+                        </Button>
                       </AccordionContent>
                     </AccordionItem>
                   ))}
@@ -292,6 +340,51 @@ export default function ProfilePage() {
           </Card>
         </div>
       </main>
+      <Dialog open={!!modalTestId} onOpenChange={open => { if (!open) handleCloseModal(); }}>
+        <DialogContent className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Test Answers</DialogTitle>
+          </DialogHeader>
+          {modalLoading ? (
+            <div className="flex items-center justify-center p-8">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+          ) : modalTestResult ? (
+            <>
+              {modalTestResult.questions.map((q, i) => (
+                <div key={i} className="border rounded p-3 mb-4">
+                  <div className="font-semibold mb-1">
+                    Q{i + 1}: <ReactMarkdown remarkPlugins={[remarkMath, remarkGfm]} rehypePlugins={[rehypeKatex]} className="inline">{q.question}</ReactMarkdown>
+                  </div>
+                  <ul className="mb-1">
+                    {q.options.map((opt, idx) => {
+                      const isCorrect = idx === q.correctAnswer;
+                      const isUser = idx === q.userAnswer;
+                      const userGotItWrong = isUser && q.userAnswer !== q.correctAnswer;
+                      let optionClass = 'pl-2 ';
+                      if (isCorrect) optionClass += 'text-green-600 font-bold ';
+                      if (isUser && q.userAnswer === q.correctAnswer) optionClass += 'text-blue-600 underline ';
+                      if (userGotItWrong) optionClass += 'text-red-600 underline ';
+                      return (
+                        <li key={idx} className={optionClass}>
+                          <ReactMarkdown remarkPlugins={[remarkMath, remarkGfm]} rehypePlugins={[rehypeKatex]} className="inline">{opt}</ReactMarkdown>
+                          {isCorrect && ' (Correct)'}
+                          {isUser && !isCorrect && ' (Your Answer)'}
+                        </li>
+                      );
+                    })}
+                  </ul>
+                  <div className="text-xs text-muted-foreground">
+                    <ReactMarkdown remarkPlugins={[remarkMath, remarkGfm]} rehypePlugins={[rehypeKatex]}>{q.explanation}</ReactMarkdown>
+                  </div>
+                </div>
+              ))}
+            </>
+          ) : (
+            <div className="text-center text-muted-foreground">Test not found.</div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

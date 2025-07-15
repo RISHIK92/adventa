@@ -10,12 +10,10 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Header } from '@/components/header';
 
 export default function Home() {
   return (
     <div className="flex min-h-screen flex-col">
-      <Header />
       <main className="flex-grow">
         <div className="container mx-auto flex min-h-full flex-col items-center justify-center p-4 text-center">
           <BrainCircuit className="mb-4 h-16 w-16 text-primary" />

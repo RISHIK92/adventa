@@ -11,6 +11,7 @@ import {
   setDoc,
   doc,
   collectionGroup,
+  Timestamp,
 } from "firebase/firestore";
 
 export type QuizResult = {
@@ -42,9 +43,21 @@ export type TestResult = {
   score: number;
   subjectWiseScores: Record<string, { correct: number; total: number }>;
   questions: TestQuestionRecord[];
-  timestamp?: any;
+  timestamp?: Timestamp | string | null;
 };
 
+function removeUndefined(obj: any): any {
+  if (Array.isArray(obj)) {
+    return obj.map(removeUndefined);
+  } else if (obj && typeof obj === 'object') {
+    return Object.fromEntries(
+      Object.entries(obj)
+        .filter(([_, v]) => v !== undefined)
+        .map(([k, v]) => [k, removeUndefined(v)])
+    );
+  }
+  return obj;
+}
 
 export async function saveQuizResult(result: QuizResult) {
   try {
@@ -74,11 +87,13 @@ export async function saveTestResult(result: TestResult & { testAttemptId: strin
 
     const testResultRef = doc(db, "testResults", result.testAttemptId);
 
-    await setDoc(testResultRef, {
+    const cleaned = removeUndefined({
       ...result,
-      userId: user.uid, // ensure userId is set
+      userId: user.uid,
       timestamp: serverTimestamp(),
     });
+    console.log("Saving test result:", cleaned);
+    await setDoc(testResultRef, cleaned);
 
     return { success: true };
   } catch (error) {
@@ -105,7 +120,9 @@ export async function getQuizResults(userId: string) {
       results.push({
         id: doc.id,
         ...data,
-        timestamp: data.timestamp?.toDate().toISOString(),
+        timestamp: data.timestamp && typeof data.timestamp.toDate === 'function'
+          ? data.timestamp.toDate().toISOString()
+          : data.timestamp ?? null,
       });
     });
 
@@ -134,7 +151,9 @@ export async function getTestResults(userId: string) {
       results.push({
         id: doc.id,
         ...data,
-        timestamp: data.timestamp?.toDate().toISOString(),
+        timestamp: data.timestamp && typeof data.timestamp.toDate === 'function'
+          ? data.timestamp.toDate().toISOString()
+          : data.timestamp ?? null,
       });
     });
     return { success: true, data: results };

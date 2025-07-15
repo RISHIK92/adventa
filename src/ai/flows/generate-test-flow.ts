@@ -34,6 +34,7 @@ export type GenerateTestInput = z.infer<typeof GenerateTestInputSchema>;
 const GenerateTestOutputSchema = z.object({
   questions: z.array(TestQuestionSchema).describe('An array of test questions.'),
 });
+
 export type GenerateTestOutput = z.infer<typeof GenerateTestOutputSchema>;
 
 
@@ -47,13 +48,22 @@ const prompt = ai.definePrompt({
   output: { schema: GenerateTestOutputSchema },
   system: `You are an expert educator. Your primary task is to create accurate, multi-subject tests.
 You MUST generate the exact number of questions for each subject as specified in the input. Do not generate more or fewer questions than requested.
-For every single question you generate, you MUST include the 'subject' field that corresponds to the question's topic. Do not omit the 'subject' field from any question object.`,
+For every single question you generate, you MUST include the 'subject' field that corresponds to the question's topic. Do not omit the 'subject' field from any question object.
+
+- If the subjects are Mathematics, Physics, and Chemistry (MPC), generate questions at the level and style of the JEE Main/Advanced exam (India). Focus on conceptual depth, multi-step reasoning, and problem-solving speed.
+- If the subjects are Physics, Chemistry, and Biology (PCB), generate questions at the level and style of the NEET exam (India). Focus on factual recall, accuracy, and high-yield NEET topics.
+- If the subjects are Physics, Chemistry, Mathematics, and Biology (PCMB), generate JEE-level questions for PCM and NEET-level questions for Biology.
+`,
   prompt: `You are an expert educator responsible for creating challenging and accurate multi-subject tests.
 
 Generate a test with the specified number of questions for each subject and difficulty level.
 For each question, provide a brief explanation for the correct answer.
 The questions, answers, and explanations can contain complex mathematical formulas in LaTeX format. Ensure the LaTeX is correctly formatted.
 Ensure each question object has the correct 'subject' field populated from the input.
+
+- If the subjects are Mathematics, Physics, and Chemistry (MPC), generate questions at the level and style of the JEE Main/Advanced exam (India). Focus on conceptual depth, multi-step reasoning, and problem-solving speed.
+- If the subjects are Physics, Chemistry, and Biology (PCB), generate questions at the level and style of the NEET exam (India). Focus on factual recall, accuracy, and high-yield NEET topics.
+- If the subjects are Physics, Chemistry, Mathematics, and Biology (PCMB), generate JEE-level questions for PCM and NEET-level questions for Biology.
 
 Difficulty: {{{difficulty}}}
 

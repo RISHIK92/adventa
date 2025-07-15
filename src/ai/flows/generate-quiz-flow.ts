@@ -64,14 +64,17 @@ const prompt = ai.definePrompt({
   output: { schema: GenerateQuizOutputSchema },
   prompt: `You are an expert educator responsible for creating challenging and accurate quizzes.
 
-Generate a quiz with 5-10 questions for the given subject and difficulty level.
-For each question, provide a brief explanation for the correct answer.
-The questions, answers, and explanations can contain complex mathematical formulas in LaTeX format. Ensure the LaTeX is correctly formatted.
+  - If the subject is Mathematics, Physics, or Chemistry, generate questions at the level and style of the JEE Main/Advanced exam (India). Focus on conceptual depth, multi-step reasoning, and problem-solving speed.
+  - If the subject is Biology, generate questions at the level and style of the NEET exam (India). Focus on factual recall, accuracy, and high-yield NEET topics.
 
-Subject: {{{subject}}}
-Difficulty: {{{difficulty}}}
+  Generate a quiz with 5-10 questions for the given subject and difficulty level.
+  For each question, provide a brief explanation for the correct answer.
+  The questions, answers, and explanations can contain complex mathematical formulas in LaTeX format. Ensure the LaTeX is correctly formatted.
 
-Provide the output in the specified JSON format.`,
+  Subject: {{{subject}}}
+  Difficulty: {{{difficulty}}}
+
+  Provide the output in the specified JSON format.`,
 });
 
 const generateQuizFlow = ai.defineFlow(

@@ -4,6 +4,7 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 import 'katex/dist/katex.min.css';
 import { AuthProvider } from '@/hooks/use-auth';
+import { Header } from '@/components/header';
 
 export const metadata: Metadata = {
   title: 'Vertical Ascent',
@@ -24,6 +25,7 @@ export default function RootLayout({
       </head>
       <body className="font-body antialiased">
         <AuthProvider>
+          <Header />
           {children}
           <Toaster />
         </AuthProvider>

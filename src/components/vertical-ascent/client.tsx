@@ -17,6 +17,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
+import { useRouter } from 'next/navigation';
 
 import type { Lesson, Subject } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
@@ -59,6 +60,7 @@ function SubjectIcon({
 export function VerticalAscentClient({
   subjects: initialSubjects,
 }: VerticalAscentClientProps) {
+  const router = useRouter();
   const subjects = React.useMemo(
     () =>
       initialSubjects.map((s: any) => ({
