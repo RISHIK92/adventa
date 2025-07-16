@@ -62,7 +62,6 @@ export default function Home() {
           ∂f/∂x = dy/dx
         </div>
 
-        {/* Enhanced Physics Formulas */}
         <div className="absolute bottom-32 left-1/4 text-5xl font-serif text-primary/50 transform sm:block hidden rotate-15 select-none animate-pulse delay-400">
           E = mc²
         </div>
@@ -88,20 +87,19 @@ export default function Home() {
           C₆H₁₂O₆ + 6O₂ → 6CO₂ + 6H₂O
         </div>
 
-        {/* Enhanced Chemistry Formulas */}
-        <div className="absolute top-48 left-1/2 text-4xl font-serif text-primary/50 transform sm:block hidden rotate-5 select-none animate-pulse delay-400">
+        <div className="absolute top-48 left-3/4 text-2xl font-serif text-primary/50 transform sm:block hidden rotate-5 select-none animate-pulse delay-400">
           CH₄ + 2O₂ → CO₂ + 2H₂O
         </div>
         <div className="absolute bottom-48 right-20 text-3xl font-serif text-secondary/50 transform sm:block hidden -rotate-12 select-none animate-pulse delay-400">
           C₆H₁₂O₆ + 6O₂ → 6CO₂ + 6H₂O
         </div>
-        <div className="absolute top-80 right-10 text-3xl font-serif text-accent/50 transform sm:block hidden rotate-8 select-none animate-pulse delay-400">
+        <div className="absolute top-80 right-10 text-3xl font-serif text-accent/50 transform sm:block hidden rotate-12 select-none animate-pulse delay-400">
           pH = -log[H⁺]
         </div>
         <div className="absolute bottom-1/4 left-10 text-4xl font-serif text-primary/50 transform sm:block hidden -rotate-15 select-none animate-pulse delay-400">
           NaCl → Na⁺ + Cl⁻
         </div>
-        <div className="absolute top-72 right-1/2 text-3xl font-serif text-muted-foreground/50 transform sm:block hidden rotate-12 select-none animate-pulse delay-400">
+        <div className="absolute top-52 left-32 text-3xl font-serif text-muted-foreground/50 transform sm:block hidden -rotate-12 select-none animate-pulse delay-400">
           ΔG = ΔH - TΔS
         </div>
         <div className="absolute bottom-72 left-1/4 text-4xl font-serif text-secondary/50 transform sm:block hidden -rotate-8 select-none animate-pulse delay-400">
