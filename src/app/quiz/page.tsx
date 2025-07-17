@@ -63,6 +63,8 @@ import {
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { useRouter } from "next/navigation";
+import { TricolorSpinner } from "@/components/ui/tricolor-spinner";
+import { VerticalAdSlot } from "../ads/VerticalAds";
 
 const subjectGroups = {
   PCM: ["Physics", "Chemistry", "Mathematics"],
@@ -221,7 +223,7 @@ export default function QuizPage() {
   if (authLoading || !user) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <Loader2 className="h-12 w-12 animate-spin text-primary" />
+        <TricolorSpinner size={48} />
       </div>
     );
   }
@@ -231,7 +233,7 @@ export default function QuizPage() {
       case "loading":
         return (
           <div className="flex flex-col items-center justify-center gap-4 py-16">
-            <Loader2 className="h-12 w-12 animate-spin text-primary" />
+            <TricolorSpinner size={48} />
             <p className="text-lg text-muted-foreground">
               Generating your quiz...
             </p>
@@ -620,11 +622,27 @@ export default function QuizPage() {
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-accent/10 via-background to-background p-4 md:p-8">
-      <div className="container mx-auto">
-        <div className="flex min-h-[80vh] items-center justify-center">
-          {renderContent()}
+      <div className="flex justify-center gap-4">
+        <div className="hidden lg:block w-[160px]">
+          <VerticalAdSlot slot="5950843362" />
+        </div>
+
+        <div className="w-full max-w-2xl">{renderContent()}</div>
+
+        <div className="hidden lg:block w-[160px]">
+          <VerticalAdSlot slot="4637761697" />
         </div>
       </div>
     </main>
   );
 }
+
+// return (
+//   <main className="min-h-screen bg-gradient-to-br from-accent/10 via-background to-background p-4 md:p-8">
+//     <div className="container mx-auto">
+//       <div className="flex min-h-[80vh] items-center justify-center">
+//         {renderContent()}
+//       </div>
+//     </div>
+//   </main>
+// );

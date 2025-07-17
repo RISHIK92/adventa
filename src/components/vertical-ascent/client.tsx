@@ -17,7 +17,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
-import { useRouter } from 'next/navigation';
+import { useRouter } from "next/navigation";
 
 import type { Lesson, Subject } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
@@ -33,6 +33,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import GoogleAd from "@/app/ads/HeroToFeatures";
 
 type ViewState = "subjects" | "lessons" | "lesson_detail";
 
@@ -223,6 +224,11 @@ function SubjectsView({
       <p className="mb-8 mt-2 max-w-2xl text-md text-muted-foreground md:mb-12 md:text-lg">
         An interactive learning journey. Select a subject to begin your ascent.
       </p>
+
+      <div className="w-full">
+        <GoogleAd slot="4270752574" />
+      </div>
+
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
         {subjects.map((subject) => (
           <Card
@@ -332,23 +338,30 @@ function LessonsView({
     return (
       <div className="space-y-4">
         {subject.lessons.map((lesson, index) => (
-          <div
-            key={lesson.id}
-            className="relative flex items-center justify-center"
-          >
-            {index < subject.lessons.length - 1 && (
-              <div className="absolute left-1/2 top-full h-4 w-0.5 bg-primary/30" />
+          <React.Fragment key={lesson.id}>
+            <div className="relative flex items-center justify-center">
+              {index < subject.lessons.length - 1 && (
+                <div className="absolute left-1/2 top-full h-4 w-0.5 bg-primary/30" />
+              )}
+              <Card
+                onClick={() => onSelectLesson(lesson)}
+                className="w-full max-w-sm cursor-pointer border-2 border-transparent bg-card/60 p-2 text-center shadow-lg backdrop-blur-sm transition-all duration-300 hover:border-primary/80 hover:shadow-primary/20"
+                style={{ height: `${NODE_HEIGHT}px` }}
+              >
+                <CardTitle className="text-sm font-medium">
+                  {lesson.title}
+                </CardTitle>
+              </Card>
+            </div>
+
+            {index === Math.floor(subject.lessons.length / 2) && (
+              <GoogleAd
+                slot="7926270015"
+                className="my-4"
+                style={{ display: "block", textAlign: "center" }}
+              />
             )}
-            <Card
-              onClick={() => onSelectLesson(lesson)}
-              className="w-full max-w-sm cursor-pointer border-2 border-transparent bg-card/60 p-2 text-center shadow-lg backdrop-blur-sm transition-all duration-300 hover:border-primary/80 hover:shadow-primary/20"
-              style={{ height: `${NODE_HEIGHT}px` }}
-            >
-              <CardTitle className="text-sm font-medium">
-                {lesson.title}
-              </CardTitle>
-            </Card>
-          </div>
+          </React.Fragment>
         ))}
       </div>
     );
@@ -538,13 +551,20 @@ function LessonDetailView({
                 <CardContent className="prose prose-sm max-w-none p-4 dark:prose-invert md:prose-base md:p-6">
                   {renderContent(cheatsheetContent)}
                 </CardContent>
+                <div className="w-full">
+                  <GoogleAd slot="3013511226" />
+                </div>
               </Card>
             </TabsContent>
+
             <TabsContent value="formulasheet">
               <Card className="mt-4">
                 <CardContent className="prose prose-sm max-w-none p-4 dark:prose-invert md:prose-base md:p-6">
                   {renderContent(formulasheetContent)}
                 </CardContent>
+                <div className="w-full">
+                  <GoogleAd slot="8575122806" />
+                </div>
               </Card>
             </TabsContent>
           </Tabs>

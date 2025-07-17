@@ -33,6 +33,8 @@ import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 import 'katex/dist/katex.min.css';
+import clsx from 'clsx';
+import { TricolorSpinner } from '@/components/ui/tricolor-spinner';
 
 type EnrichedQuizResult = Omit<QuizResult, 'timestamp'> & { id: string; timestamp: string };
 type EnrichedTestResult = Omit<TestResult, 'timestamp'> & { id: string; timestamp: string };
@@ -132,7 +134,7 @@ export default function ProfilePage() {
   if (authLoading || !user) {
     return (
       <div className="flex h-screen w-full items-center justify-center">
-        <Loader2 className="h-12 w-12 animate-spin text-primary" />
+        <TricolorSpinner size={48} />
       </div>
     );
   }
@@ -206,7 +208,7 @@ export default function ProfilePage() {
                </div>
             ) : isAnalyzing ? (
               <div className="flex items-center justify-center p-8">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                <TricolorSpinner size={32} />
                 <p className="ml-4 text-muted-foreground">Analyzing your performance...</p>
               </div>
             ) : (
@@ -217,7 +219,7 @@ export default function ProfilePage() {
             <Button onClick={handleAnalyzePerformance} disabled={isAnalyzing || loadingResults}>
               {isAnalyzing ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <TricolorSpinner size={24} />
                   Analyzing...
                 </>
               ) : (
@@ -242,7 +244,7 @@ export default function ProfilePage() {
             <CardContent>
               {loadingResults ? (
                 <div className="flex items-center justify-center p-8">
-                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                  <TricolorSpinner size={24} />
                 </div>
               ) : quizResults.length > 0 ? (
                 <ul className="space-y-4">
@@ -282,7 +284,7 @@ export default function ProfilePage() {
             <CardContent>
               {loadingResults ? (
                 <div className="flex items-center justify-center p-8">
-                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                  <TricolorSpinner size={24} />
                 </div>
               ) : testResults.length > 0 ? (
                 <Accordion type="single" collapsible className="w-full">
@@ -346,7 +348,7 @@ export default function ProfilePage() {
           </DialogHeader>
           {modalLoading ? (
             <div className="flex items-center justify-center p-8">
-              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              <TricolorSpinner size={24} />
             </div>
           ) : modalTestResult ? (
             <>

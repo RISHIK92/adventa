@@ -19,6 +19,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
+import rehypeSanitize from "rehype-sanitize";
 
 import {
   generateTest,
@@ -72,7 +73,9 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { useRouter } from 'next/navigation';
+import { useRouter } from "next/navigation";
+import { TricolorSpinner } from "@/components/ui/tricolor-spinner";
+import { WideVerticalSlot } from "../ads/WideVerticalAds";
 
 const subjectGroups = {
   MPC: ["Mathematics", "Physics", "Chemistry"],
@@ -117,6 +120,14 @@ type AnsweredQuestion = TestQuestion & {
   isCorrect?: boolean;
   isUnattempted?: boolean;
 };
+
+function ensureLatex(str: string): string {
+  if (!str || typeof str !== "string") return str;
+  if (/\$.*\$|\$\$.*\$\$/.test(str)) return str;
+  if (/[=+\-^\\\\]/.test(str)) return `$${str}$`;
+  if (/(->|<=>|\ce\{.*\})/.test(str)) return `$${str}$`;
+  return str;
+}
 
 export default function TestPage() {
   const { user, loading: authLoading } = useAuth();
@@ -168,9 +179,10 @@ export default function TestPage() {
     if (hasFinished.current) return;
     hasFinished.current = true;
 
-    clearInterval(timerIntervalRef.current);
+    if (timerIntervalRef.current) {
+      clearInterval(timerIntervalRef.current);
+    }
 
-    // This state update now only transitions the view
     setTestState("finished");
 
     const scoredQuestions = questions.map((q) => ({
@@ -178,7 +190,7 @@ export default function TestPage() {
       isCorrect: q.userAnswer === q.correctAnswer,
       isUnattempted: q.userAnswer === undefined,
     }));
-    // We update the state with scored questions for the review screen
+
     setQuestions(scoredQuestions);
 
     if (user && testConfig && testAttemptId) {
@@ -203,7 +215,6 @@ export default function TestPage() {
       const questionsPerSubject =
         Number(testConfig.questionCount) / subjects.length;
 
-      // Prepare detailed question records for saving
       const questionRecords: TestQuestionRecord[] = scoredQuestions.map(
         (q) => ({
           question: q.question,
@@ -216,22 +227,32 @@ export default function TestPage() {
         })
       );
 
-      await saveTestResult({
-        testAttemptId: testAttemptId,
-        userId: user.uid,
-        difficulty: testConfig.difficulty,
-        totalQuestions: Number(testConfig.questionCount),
-        timeLimit: Number(testConfig.timeLimit),
-        subjects: subjects.map((s) => ({
-          subject: s,
-          count: questionsPerSubject,
-        })),
-        score: totalCorrect,
-        subjectWiseScores: subjectScores,
-        questions: questionRecords, // Save the detailed questions
-      });
+      try {
+        await saveTestResult({
+          testAttemptId: testAttemptId,
+          userId: user.uid,
+          difficulty: testConfig.difficulty,
+          totalQuestions: Number(testConfig.questionCount),
+          timeLimit: Number(testConfig.timeLimit),
+          subjects: subjects.map((s) => ({
+            subject: s,
+            count: questionsPerSubject,
+          })),
+          score: totalCorrect,
+          subjectWiseScores: subjectScores,
+          questions: questionRecords,
+        });
+      } catch (error) {
+        console.error("Failed to save test results:", error);
+        toast({
+          variant: "destructive",
+          title: "Save Error",
+          description:
+            "Could not save your test results. Your data may not be persisted.",
+        });
+      }
     }
-  }, [questions, testConfig, user, testAttemptId]);
+  }, [questions, testConfig, user, testAttemptId, toast]);
 
   React.useEffect(() => {
     if (testState === "testing" && timeLeft > 0) {
@@ -246,8 +267,12 @@ export default function TestPage() {
           return prev - 1;
         });
       }, 1000);
+      return () => {
+        if (timerIntervalRef.current) {
+          clearInterval(timerIntervalRef.current);
+        }
+      };
     }
-    return () => clearInterval(timerIntervalRef.current);
   }, [testState, timeLeft, finishTest]);
 
   React.useEffect(() => {
@@ -257,31 +282,34 @@ export default function TestPage() {
       interval = setInterval(() => {
         setLoadingTime((t) => t + 1);
       }, 1000);
-    } else {
-      setLoadingTime(0);
     }
-    return () => clearInterval(interval);
+    return () => {
+      if (interval) clearInterval(interval);
+    };
   }, [testState]);
 
   const handleGenerateTest = async (values: TestFormValues) => {
-    setTestState("loading");
-    setTestConfig(values);
-    const questionCount = Number(values.questionCount);
-    const timeLimit = Number(values.timeLimit);
-
-    const subjects = subjectGroups[values.subjectGroup];
-    const questionsPerSubject = questionCount / subjects.length;
-
-    const input: GenerateTestInput = {
-      subjects: subjects.map((subject) => ({
-        subject,
-        count: questionsPerSubject,
-      })),
-      difficulty: values.difficulty,
-    };
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 30000);
 
     try {
-      const result = await generateTest(input);
+      setTestState("loading");
+      setTestConfig(values);
+      const questionCount = Number(values.questionCount);
+      const timeLimit = Number(values.timeLimit);
+
+      const subjects = subjectGroups[values.subjectGroup];
+      const questionsPerSubject = questionCount / subjects.length;
+
+      const input: GenerateTestInput = {
+        subjects: subjects.map((subject) => ({
+          subject,
+          count: questionsPerSubject,
+        })),
+        difficulty: values.difficulty,
+      };
+
+      const result = await generateTest(input, { signal: controller.signal });
       if (
         result &&
         result.questions?.length > 0 &&
@@ -306,13 +334,17 @@ export default function TestPage() {
       }
     } catch (error) {
       console.error("Test generation failed:", error);
+      setTestState("error");
       toast({
         variant: "destructive",
         title: "Test Generation Error",
         description:
-          "Could not generate test questions. Please try again later.",
+          error instanceof Error
+            ? error.message
+            : "Could not generate test questions. Please try again later.",
       });
-      setTestState("error");
+    } finally {
+      clearTimeout(timeout);
     }
   };
 
@@ -357,7 +389,7 @@ export default function TestPage() {
   if (authLoading || !user) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <Loader2 className="h-12 w-12 animate-spin text-primary" />
+        <TricolorSpinner size={48} />
       </div>
     );
   }
@@ -367,7 +399,7 @@ export default function TestPage() {
       case "loading":
         return (
           <div className="flex flex-col items-center justify-center gap-4 py-16">
-            <Loader2 className="h-12 w-12 animate-spin text-primary" />
+            <TricolorSpinner size={48} />
             <p className="text-lg text-muted-foreground">
               Generating your test. This may take a moment...
             </p>
@@ -378,7 +410,8 @@ export default function TestPage() {
             )}
             {loadingTime >= 15 && (
               <p className="text-sm text-muted-foreground">
-                Due to high demand, this may take 1-2 minutes. Thank you for your patience!
+                Due to high demand, this may take 1-2 minutes. Thank you for
+                your patience!
               </p>
             )}
           </div>
@@ -395,7 +428,7 @@ export default function TestPage() {
                       Question {currentQuestionIndex + 1} of {questions.length}
                     </CardTitle>
                     <div className="flex items-center gap-2">
-                      <Clock className="h-5 w-5" />
+                      <Clock className="h-5 w-5" aria-hidden="true" />
                       <span className="font-mono text-lg">
                         {Math.floor(timeLeft / 60)}:
                         {(timeLeft % 60).toString().padStart(2, "0")}
@@ -405,6 +438,7 @@ export default function TestPage() {
                   <Progress
                     value={(timeLeft / timeLimitInSeconds) * 100}
                     className="w-full"
+                    aria-label="Time remaining progress"
                   />
                   <CardDescription>
                     <div className="mt-2 flex items-center justify-between">
@@ -416,9 +450,9 @@ export default function TestPage() {
                           [remarkMath, { singleDollarTextMath: true }],
                           remarkGfm,
                         ]}
-                        rehypePlugins={[rehypeKatex]}
+                        rehypePlugins={[rehypeKatex, rehypeSanitize]}
                       >
-                        {currentQuestion.question}
+                        {ensureLatex(currentQuestion.question)}
                       </ReactMarkdown>
                     </div>
                   </CardDescription>
@@ -429,6 +463,7 @@ export default function TestPage() {
                     onValueChange={(value) => handleAnswerSelect(Number(value))}
                     value={currentQuestion.userAnswer?.toString() ?? undefined}
                     className="space-y-4"
+                    aria-label="Question options"
                   >
                     {currentQuestion.options.map((option, index) => (
                       <FormItem
@@ -436,7 +471,10 @@ export default function TestPage() {
                         className="flex items-center space-x-3 space-y-0 rounded-md border p-4 transition-colors has-[:checked]:bg-secondary"
                       >
                         <FormControl>
-                          <RadioGroupItem value={index.toString()} />
+                          <RadioGroupItem
+                            value={index.toString()}
+                            aria-label={`Option ${index + 1}`}
+                          />
                         </FormControl>
                         <FormLabel className="w-full cursor-pointer font-normal">
                           <div className="prose prose-sm max-w-none dark:prose-invert">
@@ -445,9 +483,9 @@ export default function TestPage() {
                                 [remarkMath, { singleDollarTextMath: true }],
                                 remarkGfm,
                               ]}
-                              rehypePlugins={[rehypeKatex]}
+                              rehypePlugins={[rehypeKatex, rehypeSanitize]}
                             >
-                              {option}
+                              {ensureLatex(option)}
                             </ReactMarkdown>
                           </div>
                         </FormLabel>
@@ -461,10 +499,19 @@ export default function TestPage() {
                     variant="outline"
                     onClick={handlePreviousQuestion}
                     disabled={currentQuestionIndex === 0}
+                    aria-disabled={currentQuestionIndex === 0}
                   >
                     Previous
                   </Button>
-                  <Button type="button" onClick={handleNextQuestion}>
+                  <Button
+                    type="button"
+                    onClick={handleNextQuestion}
+                    aria-label={
+                      currentQuestionIndex < questions.length - 1
+                        ? "Next question"
+                        : "Finish test"
+                    }
+                  >
                     {currentQuestionIndex < questions.length - 1
                       ? "Next"
                       : "Finish Test"}
@@ -518,11 +565,20 @@ export default function TestPage() {
                         <AccordionTrigger>
                           <div className="flex items-center gap-4">
                             {isUnattempted ? (
-                              <EyeOff className="h-5 w-5 flex-shrink-0 text-muted-foreground" />
+                              <EyeOff
+                                className="h-5 w-5 flex-shrink-0 text-muted-foreground"
+                                aria-hidden="true"
+                              />
                             ) : isCorrect ? (
-                              <CheckCircle2 className="h-5 w-5 flex-shrink-0 text-green-500" />
+                              <CheckCircle2
+                                className="h-5 w-5 flex-shrink-0 text-green-500"
+                                aria-hidden="true"
+                              />
                             ) : (
-                              <XCircle className="h-5 w-5 flex-shrink-0 text-red-500" />
+                              <XCircle
+                                className="h-5 w-5 flex-shrink-0 text-red-500"
+                                aria-hidden="true"
+                              />
                             )}
                             <span className="text-left">
                               Question {index + 1}
@@ -538,9 +594,9 @@ export default function TestPage() {
                                   [remarkMath, { singleDollarTextMath: true }],
                                   remarkGfm,
                                 ]}
-                                rehypePlugins={[rehypeKatex]}
+                                rehypePlugins={[rehypeKatex, rehypeSanitize]}
                               >
-                                {q.question}
+                                {ensureLatex(q.question)}
                               </ReactMarkdown>
                             </div>
                             <div className="space-y-2">
@@ -557,11 +613,20 @@ export default function TestPage() {
                                   )}
                                 >
                                   {i === correct ? (
-                                    <CheckCircle2 className="mt-0.5 h-4 w-4 flex-shrink-0 text-green-500" />
+                                    <CheckCircle2
+                                      className="mt-0.5 h-4 w-4 flex-shrink-0 text-green-500"
+                                      aria-hidden="true"
+                                    />
                                   ) : i === selected ? (
-                                    <XCircle className="mt-0.5 h-4 w-4 flex-shrink-0 text-red-500" />
+                                    <XCircle
+                                      className="mt-0.5 h-4 w-4 flex-shrink-0 text-red-500"
+                                      aria-hidden="true"
+                                    />
                                   ) : (
-                                    <div className="mt-0.5 h-4 w-4 flex-shrink-0" />
+                                    <div
+                                      className="mt-0.5 h-4 w-4 flex-shrink-0"
+                                      aria-hidden="true"
+                                    />
                                   )}
                                   <div className="prose prose-sm max-w-none dark:prose-invert">
                                     <ReactMarkdown
@@ -572,9 +637,12 @@ export default function TestPage() {
                                         ],
                                         remarkGfm,
                                       ]}
-                                      rehypePlugins={[rehypeKatex]}
+                                      rehypePlugins={[
+                                        rehypeKatex,
+                                        rehypeSanitize,
+                                      ]}
                                     >
-                                      {option}
+                                      {ensureLatex(option)}
                                     </ReactMarkdown>
                                   </div>
                                 </div>
@@ -591,9 +659,9 @@ export default function TestPage() {
                                     ],
                                     remarkGfm,
                                   ]}
-                                  rehypePlugins={[rehypeKatex]}
+                                  rehypePlugins={[rehypeKatex, rehypeSanitize]}
                                 >
-                                  {q.explanation}
+                                  {ensureLatex(q.explanation)}
                                 </ReactMarkdown>
                               </div>
                             </div>
@@ -608,6 +676,7 @@ export default function TestPage() {
                 <Button
                   onClick={() => setIsReviewing(false)}
                   className="w-full"
+                  aria-label="Back to score summary"
                 >
                   Back to Score
                 </Button>
@@ -615,6 +684,7 @@ export default function TestPage() {
                   onClick={handleRestart}
                   variant="secondary"
                   className="w-full"
+                  aria-label="Take another test"
                 >
                   Take Another Test
                 </Button>
@@ -651,13 +721,18 @@ export default function TestPage() {
               </div>
             </CardContent>
             <CardFooter className="flex-col gap-4">
-              <Button onClick={() => setIsReviewing(true)} className="w-full">
-                <BookOpen className="mr-2" /> Review Answers
+              <Button
+                onClick={() => setIsReviewing(true)}
+                className="w-full"
+                aria-label="Review answers"
+              >
+                <BookOpen className="mr-2" aria-hidden="true" /> Review Answers
               </Button>
               <Button
                 onClick={handleRestart}
                 variant="secondary"
                 className="w-full"
+                aria-label="Take another test"
               >
                 Take Another Test
               </Button>
@@ -676,7 +751,11 @@ export default function TestPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Button onClick={handleRestart} className="w-full">
+              <Button
+                onClick={handleRestart}
+                className="w-full"
+                aria-label="Try again"
+              >
                 Try Again
               </Button>
             </CardContent>
@@ -709,7 +788,7 @@ export default function TestPage() {
                         >
                           <FormControl>
                             <SelectTrigger>
-                              <SelectValue />
+                              <SelectValue placeholder="Select subject group" />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
@@ -743,7 +822,7 @@ export default function TestPage() {
                         >
                           <FormControl>
                             <SelectTrigger>
-                              <SelectValue />
+                              <SelectValue placeholder="Select question count" />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
@@ -754,10 +833,6 @@ export default function TestPage() {
                             ))}
                           </SelectContent>
                         </Select>
-                        <FormDescription>
-                          Must be divisible by the number of subjects in the
-                          selected group.
-                        </FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -774,7 +849,7 @@ export default function TestPage() {
                         >
                           <FormControl>
                             <SelectTrigger>
-                              <SelectValue />
+                              <SelectValue placeholder="Select time limit" />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
@@ -801,7 +876,7 @@ export default function TestPage() {
                         >
                           <FormControl>
                             <SelectTrigger>
-                              <SelectValue />
+                              <SelectValue placeholder="Select difficulty level" />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
@@ -819,7 +894,8 @@ export default function TestPage() {
                 </CardContent>
                 <CardFooter className="flex">
                   <Button type="submit" className="w-full">
-                    <BrainCircuit className="mr-2" /> Start Test
+                    <BrainCircuit className="mr-2" aria-hidden="true" /> Start
+                    Test
                   </Button>
                 </CardFooter>
               </form>
@@ -832,9 +908,20 @@ export default function TestPage() {
   return (
     <main className="min-h-screen bg-gradient-to-br from-secondary/30 via-background to-background p-4 md:p-8">
       <div className="container mx-auto">
-        <div className="flex min-h-[80vh] items-center justify-center">
-          {renderContent()}
+        <div className="flex min-h-[80vh] justify-center items-start gap-6">
+          <div className="hidden lg:block w-[300px]">
+            {/* Google AdSense Ad Slot */}
+            <WideVerticalSlot slot="4725391607" />
+          </div>
+          <div className="flex justify-center w-full max-w-5xl">
+            {renderContent()}
+          </div>
+          <div className="hidden lg:block w-[300px]">
+            {/* Google AdSense Ad Slot */}
+            <WideVerticalSlot slot="8756792499" />
+          </div>
         </div>
+
         <AlertDialog open={isTimeUp} onOpenChange={setIsTimeUp}>
           <AlertDialogContent>
             <AlertDialogHeader>

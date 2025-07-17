@@ -34,7 +34,6 @@ export type GenerateTestInput = z.infer<typeof GenerateTestInputSchema>;
 const GenerateTestOutputSchema = z.object({
   questions: z.array(TestQuestionSchema).describe('An array of test questions.'),
 });
-
 export type GenerateTestOutput = z.infer<typeof GenerateTestOutputSchema>;
 
 

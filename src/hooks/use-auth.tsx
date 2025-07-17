@@ -4,7 +4,7 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { onAuthStateChanged, User, signOut as firebaseSignOut } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
-import { Loader2 } from 'lucide-react';
+import { TricolorSpinner } from '@/components/ui/tricolor-spinner';
 
 interface AuthContextType {
   user: User | null;
@@ -41,7 +41,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     <AuthContext.Provider value={value}>
       {loading ? (
         <div className="flex h-screen items-center justify-center">
-          <Loader2 className="h-12 w-12 animate-spin text-primary" />
+          <TricolorSpinner size={48} />
         </div>
       ) : (
         children

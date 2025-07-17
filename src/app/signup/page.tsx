@@ -8,7 +8,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { createUserWithEmailAndPassword, updateProfile, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
-import { BrainCircuit, Loader2 } from 'lucide-react';
+import { BrainCircuit } from 'lucide-react';
 
 import { auth } from '@/lib/firebase';
 import { Button } from '@/components/ui/button';
@@ -32,6 +32,7 @@ import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/use-auth';
 import { Separator } from '@/components/ui/separator';
+import { TricolorSpinner } from '@/components/ui/tricolor-spinner';
 
 
 const formSchema = z.object({
@@ -173,7 +174,7 @@ export default function SignUpPage() {
             </CardContent>
             <CardFooter className="flex flex-col gap-4">
               <Button type="submit" className="w-full" disabled={isLoading || isGoogleLoading}>
-                {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {isLoading && <TricolorSpinner size={24} />}
                 Sign Up
               </Button>
             </CardFooter>
@@ -191,7 +192,7 @@ export default function SignUpPage() {
         </div>
         <CardFooter className="flex flex-col gap-4">
            <Button variant="outline" className="w-full" onClick={handleGoogleSignIn} disabled={isLoading || isGoogleLoading}>
-            {isGoogleLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <GoogleIcon />}
+            {isGoogleLoading ? <TricolorSpinner size={24} /> : <GoogleIcon />}
             Google
           </Button>
           <p className="text-sm text-muted-foreground">
