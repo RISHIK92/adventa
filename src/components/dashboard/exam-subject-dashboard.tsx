@@ -511,7 +511,7 @@ export const ExamSubjectDashboard = ({
 
       {/* Previous Year Questions - Redesigned */}
       <Card className="bg-white border-slate-200 shadow-lg">
-        <CardHeader className="bg-gradient-to-r from-slate-700 to-slate-800 text-white rounded-t-lg">
+        <CardHeader className="bg-gradient-to-r from-violet-700 to-violet-800 text-white rounded-t-lg">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
               <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
@@ -540,7 +540,7 @@ export const ExamSubjectDashboard = ({
               return (
                 <div
                   key={year}
-                  className="group relative cursor-pointer overflow-hidden rounded-lg border border-slate-200 bg-slate-50 p-4 text-center transition-all duration-300 hover:shadow-md hover:border-blue-400 hover:-translate-y-1"
+                  className="group relative cursor-pointer overflow-hidden rounded-lg border border-slate-200 bg-slate-50 p-4 text-center transition-all duration-300 hover:shadow-md hover:border-violet-400 hover:-translate-y-1"
                   onClick={() => onPYQClick(year)}
                 >
                   {isLatest && (
@@ -555,9 +555,9 @@ export const ExamSubjectDashboard = ({
                     </Badge>
                   )}
                   <div className="flex justify-center items-center mb-2">
-                    <Calendar className="w-8 h-8 text-slate-500 group-hover:text-blue-600 transition-colors" />
+                    <Calendar className="w-8 h-8 text-slate-500 group-hover:text-violet-600 transition-colors" />
                   </div>
-                  <h3 className="text-lg font-bold text-slate-800 group-hover:text-blue-700 transition-colors">
+                  <h3 className="text-lg font-bold text-slate-800 group-hover:text-violet-700 transition-colors">
                     {year} Paper
                   </h3>
                   <p className="text-xs text-slate-500">
@@ -566,7 +566,7 @@ export const ExamSubjectDashboard = ({
                   <Button
                     size="sm"
                     variant="ghost"
-                    className="mt-3 w-full text-blue-600 group-hover:bg-blue-100"
+                    className="mt-3 w-full text-violet-600 group-hover:bg-violet-100"
                   >
                     {isAttempted ? "Review" : "Start"}
                     <ArrowRight className="w-3 h-3 ml-2" />
