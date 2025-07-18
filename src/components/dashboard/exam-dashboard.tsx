@@ -23,7 +23,7 @@ interface ExamDashboardProps {
 }
 
 // Define subjects for each exam
-const examSubjects = {
+const examSubjects: Record<string, string[]> = {
   jee: ["Physics", "Chemistry", "Mathematics"],
   neet: ["Physics", "Chemistry", "Biology"],
   viteee: ["Physics", "Chemistry", "Mathematics", "English"],
@@ -71,9 +71,9 @@ export default function ExamDashboard({
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-100 via-white to-blue-50/40">
+    <div className="min-h-screen bg-stone-50">
       {/* Professional Header */}
-      <div className="bg-white shadow-sm border-b border-slate-200/60">
+      <div className="bg-white shadow-sm border-b border-stone-200/60 sticky top-0 z-20">
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
@@ -81,20 +81,20 @@ export default function ExamDashboard({
                 variant="ghost"
                 size="sm"
                 onClick={onBackClick}
-                className="gap-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100"
+                className="gap-2 text-stone-600 hover:text-stone-900 hover:bg-stone-100"
               >
                 <ChevronLeft className="h-4 w-4" />
                 Back to Exams
               </Button>
-              <div className="h-6 w-px bg-slate-300" />
+              <div className="h-6 w-px bg-stone-300" />
               <div>
-                <h1 className="text-2xl font-bold text-slate-900">
+                <h1 className="text-2xl font-bold text-stone-900">
                   {exam.name}{" "}
-                  <span className="text-slate-600 font-medium">
+                  <span className="text-stone-600 font-medium">
                     Study Center
                   </span>
                 </h1>
-                <p className="text-slate-500 text-sm">
+                <p className="text-stone-500 text-sm">
                   Comprehensive preparation platform
                 </p>
               </div>
@@ -106,7 +106,7 @@ export default function ExamDashboard({
                 variant="outline"
                 size="sm"
                 onClick={handleCheatsheetsClick}
-                className="gap-2 border-emerald-200 text-emerald-700 hover:bg-emerald-50 hover:border-emerald-300"
+                className="gap-2 border-primary/20 text-primary hover:bg-primary/5 hover:border-primary/30"
               >
                 <BookMarked className="h-4 w-4" />
                 Cheatsheets
@@ -115,7 +115,7 @@ export default function ExamDashboard({
                 variant="outline"
                 size="sm"
                 onClick={handleFormulaSheetsClick}
-                className="gap-2 border-blue-200 text-blue-700 hover:bg-blue-50 hover:border-blue-300"
+                className="gap-2 border-accent/20 text-accent hover:bg-accent/5 hover:border-accent/30"
               >
                 <FileText className="h-4 w-4" />
                 Formulas
