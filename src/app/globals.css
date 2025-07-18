@@ -107,12 +107,4 @@
     font-family: "Inter", sans-serif;
     color: var(--foreground);
   }
-
-  a {
-    color: var(--primary);
-    text-decoration: none;
-  }
-  a:hover {
-    text-decoration: underline;
-  }
 }
