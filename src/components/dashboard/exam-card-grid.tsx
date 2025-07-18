@@ -1,6 +1,8 @@
+
 "use client";
 
 import React, { useState } from "react";
+import Link from 'next/link';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -131,15 +133,6 @@ export const ExamCardGrid: React.FC<ExamCardGridProps> = ({ onExamClick }) => {
     },
   ];
 
-  const handleExamCardClick = (examId: string) => {
-    onExamClick(examId);
-  };
-
-  const handleStartButtonClick = (e: React.MouseEvent, examId: string) => {
-    e.stopPropagation(); // Prevent event bubbling to card click
-    onExamClick(examId);
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 relative overflow-hidden">
       {/* Animated Background Shapes */}
@@ -200,124 +193,123 @@ export const ExamCardGrid: React.FC<ExamCardGridProps> = ({ onExamClick }) => {
         {/* Exam Cards Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 gap-8 mb-16">
           {examCards.map((exam) => (
-            <Card
-              key={exam.id}
-              className="relative bg-white/60 backdrop-blur-xl border-0 shadow-lg hover:shadow-2xl transition-all duration-700 group cursor-pointer overflow-hidden"
-              onClick={() => handleExamCardClick(exam.id)}
-              onMouseEnter={() => setHoveredCard(exam.id)}
-              onMouseLeave={() => setHoveredCard(null)}
-              style={{
-                transform:
-                  hoveredCard === exam.id
-                    ? "scale(1.05) rotateY(5deg)"
-                    : "scale(1) rotateY(0deg)",
-                transformStyle: "preserve-3d",
-                perspective: "1000px",
-              }}
-            >
-              {/* Animated Background */}
-              <div
-                className={`absolute inset-0 bg-gradient-to-br ${exam.color} opacity-20 transition-opacity duration-500 group-hover:opacity-30`}
-              ></div>
+            <Link key={exam.id} href={`/dashboard/${exam.id}`} passHref>
+              <Card
+                className="relative bg-white/60 backdrop-blur-xl border-0 shadow-lg hover:shadow-2xl transition-all duration-700 group cursor-pointer overflow-hidden h-full"
+                onMouseEnter={() => setHoveredCard(exam.id)}
+                onMouseLeave={() => setHoveredCard(null)}
+                style={{
+                  transform:
+                    hoveredCard === exam.id
+                      ? "scale(1.05) rotateY(5deg)"
+                      : "scale(1) rotateY(0deg)",
+                  transformStyle: "preserve-3d",
+                  perspective: "1000px",
+                }}
+              >
+                {/* Animated Background */}
+                <div
+                  className={`absolute inset-0 bg-gradient-to-br ${exam.color} opacity-20 transition-opacity duration-500 group-hover:opacity-30`}
+                ></div>
 
-              {/* Geometric Accent */}
-              <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-white/30 to-transparent rounded-bl-3xl"></div>
+                {/* Geometric Accent */}
+                <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-white/30 to-transparent rounded-bl-3xl"></div>
 
-              <div className="relative z-10 p-6">
-                {/* Header */}
-                <div className="flex items-center justify-between mb-4">
-                  <div
-                    className="w-12 h-12 rounded-xl bg-gradient-to-br shadow-lg flex items-center justify-center text-white group-hover:rotate-12 transition-transform duration-500"
-                    style={{
-                      background: `linear-gradient(135deg, ${exam.gradientFrom}, ${exam.gradientTo})`,
-                    }}
-                  >
-                    {exam.icon}
-                  </div>
-                  <div
-                    className={`px-2 py-1 rounded-full text-xs font-medium ${
-                      exam.difficulty === "Hard"
-                        ? "bg-red-100 text-red-600"
-                        : exam.difficulty === "Medium"
-                        ? "bg-amber-100 text-amber-600"
-                        : "bg-emerald-100 text-emerald-600"
-                    }`}
-                  >
-                    {exam.difficulty}
-                  </div>
-                </div>
-
-                {/* Title */}
-                <div className="mb-4">
-                  <h3 className="text-2xl font-bold text-slate-800 mb-1">
-                    {exam.name}
-                  </h3>
-                  <p className="text-sm text-slate-600 font-medium">
-                    {exam.fullName}
-                  </p>
-                </div>
-
-                {/* Progress */}
-                <div className="mb-5">
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="text-sm font-medium text-slate-700">
-                      Preparation Progress
-                    </span>
-                    <span className="text-sm font-bold text-slate-800">
-                      {exam.progress}%
-                    </span>
-                  </div>
-                  <div className="w-full bg-slate-200 rounded-full h-2 overflow-hidden">
+                <div className="relative z-10 p-6 flex flex-col h-full">
+                  {/* Header */}
+                  <div className="flex items-center justify-between mb-4">
                     <div
-                      className="h-2 bg-gradient-to-r transition-all duration-1000 ease-out rounded-full"
+                      className="w-12 h-12 rounded-xl bg-gradient-to-br shadow-lg flex items-center justify-center text-white group-hover:rotate-12 transition-transform duration-500"
                       style={{
-                        background: `linear-gradient(90deg, ${exam.gradientFrom}, ${exam.gradientTo})`,
-                        width:
-                          hoveredCard === exam.id ? `${exam.progress}%` : "0%",
+                        background: `linear-gradient(135deg, ${exam.gradientFrom}, ${exam.gradientTo})`,
                       }}
-                    ></div>
+                    >
+                      {exam.icon}
+                    </div>
+                    <div
+                      className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        exam.difficulty === "Hard"
+                          ? "bg-red-100 text-red-600"
+                          : exam.difficulty === "Medium"
+                          ? "bg-amber-100 text-amber-600"
+                          : "bg-emerald-100 text-emerald-600"
+                      }`}
+                    >
+                      {exam.difficulty}
+                    </div>
                   </div>
-                </div>
 
-                {/* Subjects */}
-                <div className="mb-5">
-                  <div className="text-sm font-medium text-slate-700 mb-2">
-                    Subjects
+                  {/* Title */}
+                  <div className="mb-4">
+                    <h3 className="text-2xl font-bold text-slate-800 mb-1">
+                      {exam.name}
+                    </h3>
+                    <p className="text-sm text-slate-600 font-medium">
+                      {exam.fullName}
+                    </p>
                   </div>
-                  <div className="flex flex-wrap gap-1">
-                    {exam.subjects.map((subject, index) => (
-                      <span
-                        key={index}
-                        className="px-2 py-1 bg-white/70 text-xs font-medium text-slate-600 rounded-lg backdrop-blur-sm"
-                      >
-                        {subject}
+
+                  {/* Progress */}
+                  <div className="mb-5">
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="text-sm font-medium text-slate-700">
+                        Preparation Progress
                       </span>
-                    ))}
+                      <span className="text-sm font-bold text-slate-800">
+                        {exam.progress}%
+                      </span>
+                    </div>
+                    <div className="w-full bg-slate-200 rounded-full h-2 overflow-hidden">
+                      <div
+                        className="h-2 bg-gradient-to-r transition-all duration-1000 ease-out rounded-full"
+                        style={{
+                          background: `linear-gradient(90deg, ${exam.gradientFrom}, ${exam.gradientTo})`,
+                          width:
+                            hoveredCard === exam.id ? `${exam.progress}%` : "0%",
+                        }}
+                      ></div>
+                    </div>
                   </div>
-                </div>
 
-                {/* Footer */}
-                <div className="flex items-center justify-between pt-4 border-t border-slate-200/50">
-                  <div className="flex items-center gap-4 text-xs text-slate-600">
-                    <div className="flex items-center gap-1">
-                      <Calendar className="w-3 h-3" />
-                      <span>{exam.nextExam}</span>
+                  {/* Subjects */}
+                  <div className="mb-5 flex-grow">
+                    <div className="text-sm font-medium text-slate-700 mb-2">
+                      Subjects
                     </div>
-                    <div className="flex items-center gap-1">
-                      <Users className="w-3 h-3" />
-                      <span>{exam.registered.toLocaleString()}</span>
+                    <div className="flex flex-wrap gap-1">
+                      {exam.subjects.map((subject, index) => (
+                        <span
+                          key={index}
+                          className="px-2 py-1 bg-white/70 text-xs font-medium text-slate-600 rounded-lg backdrop-blur-sm"
+                        >
+                          {subject}
+                        </span>
+                      ))}
                     </div>
                   </div>
-                  <Button
-                    size="sm"
-                    className="bg-gradient-to-r from-emerald-500 to-violet-500 hover:from-emerald-600 hover:to-violet-600 text-white text-xs px-3 py-1 h-7 group-hover:scale-105 transition-transform duration-300"
-                    onClick={(e) => handleStartButtonClick(e, exam.id)}
-                  >
-                    Start
-                  </Button>
+
+                  {/* Footer */}
+                  <div className="flex items-center justify-between pt-4 border-t border-slate-200/50">
+                    <div className="flex items-center gap-4 text-xs text-slate-600">
+                      <div className="flex items-center gap-1">
+                        <Calendar className="w-3 h-3" />
+                        <span>{exam.nextExam}</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Users className="w-3 h-3" />
+                        <span>{exam.registered.toLocaleString()}</span>
+                      </div>
+                    </div>
+                    <Button
+                      size="sm"
+                      className="bg-gradient-to-r from-emerald-500 to-violet-500 hover:from-emerald-600 hover:to-violet-600 text-white text-xs px-3 py-1 h-7 group-hover:scale-105 transition-transform duration-300"
+                    >
+                      Start
+                    </Button>
+                  </div>
                 </div>
-              </div>
-            </Card>
+              </Card>
+            </Link>
           ))}
         </div>
 
