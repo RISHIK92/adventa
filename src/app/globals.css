@@ -1,58 +1,118 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap");
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    --background: 240 10% 97%; /* Soft white */
-    --foreground: 25 35% 15%; /* Dark Brown */
-    --card: 240 10% 100%;
-    --card-foreground: 25 35% 15%;
-    --popover: 240 10% 100%;
-    --popover-foreground: 25 35% 15%;
-    --primary: 158 40% 45%; /* Muted Green */
-    --primary-foreground: 40 50% 98%;
-    --secondary: 40 30% 94%; /* Light Tan */
-    --secondary-foreground: 25 35% 15%;
-    --muted: 40 30% 94%;
-    --muted-foreground: 25 35% 45%;
-    --accent: 30 75% 60%; /* Soft Orange */
-    --accent-foreground: 25 35% 10%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 100%;
-    --border: 40 20% 88%;
-    --input: 40 20% 88%;
-    --ring: 158 40% 45%;
+    --background: #f5f5f4; /* Soft white equivalent */
+    --foreground: #292524; /* Dark Brown equivalent */
+
+    --card: #ffffff;
+    --card-foreground: #292524;
+
+    --popover: #ffffff;
+    --popover-foreground: #292524;
+
+    --primary: #059669; /* Muted Green equivalent */
+    --primary-foreground: #fefce8;
+
+    --secondary: #fef3c7; /* Light Tan equivalent */
+    --secondary-foreground: #292524;
+
+    --muted: #fef3c7;
+    --muted-foreground: #78716c;
+
+    --accent: #fb923c; /* Soft Orange equivalent */
+    --accent-foreground: #1c1917;
+
+    --destructive: #ef4444;
+    --destructive-foreground: #ffffff;
+
+    --border: #e7e5e4;
+    --input: #e7e5e4;
+    --ring: #059669;
+
+    --chart-1: #059669;
+    --chart-2: #fb923c;
+    --chart-3: #78716c;
+    --chart-4: #f59e0b;
+    --chart-5: #3b82f6;
+
     --radius: 0.8rem;
   }
+
   .dark {
-    --background: 25 20% 10%; /* Dark earthy brown */
-    --foreground: 40 20% 90%; /* Light beige */
-    --card: 25 20% 12%;
-    --card-foreground: 40 20% 90%;
-    --popover: 25 20% 10%;
-    --popover-foreground: 40 20% 90%;
-    --primary: 158 40% 45%; /* Muted Green */
-    --primary-foreground: 40 50% 98%;
-    --secondary: 25 20% 18%; /* Darker tan */
-    --secondary-foreground: 40 20% 90%;
-    --muted: 25 20% 18%;
-    --muted-foreground: 40 20% 65%;
-    --accent: 30 75% 60%; /* Soft Orange */
-    --accent-foreground: 25 35% 10%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 100%;
-    --border: 25 20% 20%;
-    --input: 25 20% 20%;
-    --ring: 158 40% 45%;
+    --background: #1c1917; /* Dark earthy brown */
+    --foreground: #f5f5f4; /* Light beige */
+
+    --card: #262626;
+    --card-foreground: #f5f5f4;
+
+    --popover: #1c1917;
+    --popover-foreground: #f5f5f4;
+
+    --primary: #059669; /* Muted Green */
+    --primary-foreground: #fefce8;
+
+    --secondary: #404040; /* Darker tan */
+    --secondary-foreground: #f5f5f4;
+
+    --muted: #404040;
+    --muted-foreground: #a8a29e;
+
+    --accent: #fb923c; /* Soft Orange */
+    --accent-foreground: #1c1917;
+
+    --destructive: #dc2626;
+    --destructive-foreground: #ffffff;
+
+    --border: #404040;
+    --input: #404040;
+    --ring: #059669;
   }
 }
 
+/*
+  The default border color has changed to `currentColor` in Tailwind CSS v4,
+  so we've added these compatibility styles to make sure everything still
+  looks the same as it did with Tailwind CSS v3.
+  
+  If we ever want to remove these styles, we need to add an explicit border
+  color utility to any element that depends on these defaults.
+*/
+
 @layer base {
   * {
-    @apply border-border;
+    border-color: var(--border);
   }
   body {
-    @apply bg-background text-foreground;
+    background-color: var(--background);
+    color: var(--foreground);
+    font-family: "Inter", sans-serif;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: "Inter", sans-serif;
+    color: var(--foreground);
+  }
+
+  p {
+    font-family: "Inter", sans-serif;
+    color: var(--foreground);
+  }
+
+  a {
+    color: var(--primary);
+    text-decoration: none;
+  }
+  a:hover {
+    text-decoration: underline;
   }
 }

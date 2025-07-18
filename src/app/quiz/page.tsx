@@ -338,7 +338,7 @@ export default function QuizPage() {
                         <AccordionTrigger>
                           <div className="flex items-center gap-4">
                             {isCorrect ? (
-                              <CheckCircle2 className="h-5 w-5 flex-shrink-0 text-green-500" />
+                              <CheckCircle2 className="h-5 w-5 flex-shrink-0 text-[#12b981]" />
                             ) : (
                               <XCircle className="h-5 w-5 flex-shrink-0 text-red-500" />
                             )}
@@ -370,14 +370,14 @@ export default function QuizPage() {
                                     className={cn(
                                       "flex items-start gap-3 rounded-md border p-3 text-sm",
                                       isCorrectAnswer &&
-                                        "border-green-500 bg-green-500/10",
+                                        "border-[#12b981] bg-[#12b981]/10",
                                       isSelected &&
                                         !isCorrectAnswer &&
                                         "border-red-500 bg-red-500/10"
                                     )}
                                   >
                                     {isCorrectAnswer ? (
-                                      <CheckCircle2 className="mt-0.5 h-4 w-4 flex-shrink-0 text-green-500" />
+                                      <CheckCircle2 className="mt-0.5 h-4 w-4 flex-shrink-0 text-[#12b981]" />
                                     ) : isSelected ? (
                                       <XCircle className="mt-0.5 h-4 w-4 flex-shrink-0 text-red-500" />
                                     ) : (

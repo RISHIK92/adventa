@@ -455,7 +455,7 @@ function LessonDetailView({
 }: {
   subject: Subject;
   lesson: Lesson;
-  toast: any;
+  toast?: any;
 }) {
   const [cheatsheetContent, setCheatsheetContent] = React.useState<
     string | null
@@ -465,6 +465,7 @@ function LessonDetailView({
   >(null);
   const [isLoading, setIsLoading] = React.useState(true);
   const [activeTab, setActiveTab] = React.useState("cheatsheet");
+  const safeToast = toast || (() => {});
 
   React.useEffect(() => {
     async function loadContent() {
@@ -574,6 +575,8 @@ function LessonDetailView({
     </div>
   );
 }
+
+export { LessonDetailView };
 
 // function AiSuggestions({
 //   subject,

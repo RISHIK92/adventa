@@ -571,7 +571,7 @@ export default function TestPage() {
                               />
                             ) : isCorrect ? (
                               <CheckCircle2
-                                className="h-5 w-5 flex-shrink-0 text-green-500"
+                                className="h-5 w-5 flex-shrink-0 text-[#12b981]"
                                 aria-hidden="true"
                               />
                             ) : (
@@ -606,7 +606,7 @@ export default function TestPage() {
                                   className={cn(
                                     "flex items-start gap-3 rounded-md border p-3 text-sm",
                                     i === correct &&
-                                      "border-green-500 bg-green-500/10",
+                                      "border-[#12b981] bg-[#12b981]/10",
                                     i === selected &&
                                       !isCorrect &&
                                       "border-red-500 bg-red-500/10"
@@ -614,7 +614,7 @@ export default function TestPage() {
                                 >
                                   {i === correct ? (
                                     <CheckCircle2
-                                      className="mt-0.5 h-4 w-4 flex-shrink-0 text-green-500"
+                                      className="mt-0.5 h-4 w-4 flex-shrink-0 text-[#12b981]"
                                       aria-hidden="true"
                                     />
                                   ) : i === selected ? (
