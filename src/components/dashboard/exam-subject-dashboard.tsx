@@ -79,7 +79,7 @@ export const ExamSubjectDashboard = ({
     "2018",
     "2017",
   ];
-  const pyqAttempts = {
+  const pyqAttempts: Record<string, number> = {
     "2024": 0,
     "2023": 3,
     "2022": 2,
