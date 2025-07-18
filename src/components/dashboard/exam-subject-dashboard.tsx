@@ -38,6 +38,7 @@ import {
   Zap,
   CheckCircle,
   Star,
+  History,
 } from "lucide-react";
 
 interface ExamSubjectDashboardProps {
@@ -508,95 +509,71 @@ export const ExamSubjectDashboard = ({
         </Card>
       </div>
 
-      {/* Previous Year Questions */}
+      {/* Previous Year Questions - Redesigned */}
       <Card className="bg-white border-slate-200 shadow-lg">
         <CardHeader className="bg-gradient-to-r from-slate-700 to-slate-800 text-white rounded-t-lg">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
               <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
-                <Calendar className="w-6 h-6" />
+                <History className="w-6 h-6" />
               </div>
               <div>
                 <CardTitle className="text-xl font-bold">
                   Previous Year Question Papers
                 </CardTitle>
                 <p className="text-slate-300 text-sm">
-                  Authentic exam papers with solutions
+                  Authentic exam papers with detailed solutions
                 </p>
               </div>
             </div>
             <Badge className="bg-blue-500 text-white border-0 font-semibold">
-              Updated 2024
+              Updated for 2024
             </Badge>
           </div>
         </CardHeader>
         <CardContent className="p-6">
-          <div className="space-y-4">
-            <div className="flex items-center justify-between mb-4">
-              <p className="text-slate-600 font-medium">
-                Year-wise Question Banks
-              </p>
-              <div className="text-sm text-slate-500">
-                Click any year to start
-              </div>
-            </div>
-
-            <div className="overflow-x-auto">
-              <div className="flex space-x-4 pb-4 min-w-max">
-                {pyqYears.map((year) => (
-                  <Card
-                    key={year}
-                    className="min-w-[160px] cursor-pointer group hover:shadow-lg transition-all duration-300 border-slate-200 bg-white relative"
-                    onClick={() => onPYQClick(year)}
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {pyqYears.map((year) => {
+              const attempts = pyqAttempts[year] || 0;
+              const isLatest = year === "2024";
+              const isAttempted = attempts > 0;
+              return (
+                <div
+                  key={year}
+                  className="group relative cursor-pointer overflow-hidden rounded-lg border border-slate-200 bg-slate-50 p-4 text-center transition-all duration-300 hover:shadow-md hover:border-blue-400 hover:-translate-y-1"
+                  onClick={() => onPYQClick(year)}
+                >
+                  {isLatest && (
+                    <Badge className="absolute top-2 right-2 bg-blue-500 text-white">
+                      Latest
+                    </Badge>
+                  )}
+                  {isAttempted && !isLatest && (
+                    <Badge className="absolute top-2 right-2 bg-green-100 text-green-700">
+                      <Trophy className="w-3 h-3 mr-1" /> {attempts} Attempt
+                      {attempts > 1 ? "s" : ""}
+                    </Badge>
+                  )}
+                  <div className="flex justify-center items-center mb-2">
+                    <Calendar className="w-8 h-8 text-slate-500 group-hover:text-blue-600 transition-colors" />
+                  </div>
+                  <h3 className="text-lg font-bold text-slate-800 group-hover:text-blue-700 transition-colors">
+                    {year} Paper
+                  </h3>
+                  <p className="text-xs text-slate-500">
+                    {examName}
+                  </p>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="mt-3 w-full text-blue-600 group-hover:bg-blue-100"
                   >
-                    <CardContent className="p-4 text-center space-y-3">
-                      <div className="flex justify-center">
-                        <Badge
-                          className={`${
-                            pyqAttempts[year] > 0
-                              ? "bg-green-100 text-green-700 border-green-300"
-                              : year === "2024"
-                              ? "bg-blue-100 text-blue-700 border-blue-300"
-                              : "bg-slate-100 text-slate-600 border-slate-300"
-                          } font-medium`}
-                        >
-                          {pyqAttempts[year] > 0
-                            ? `${pyqAttempts[year]} Attempts`
-                            : year === "2024"
-                            ? "Latest"
-                            : "Available"}
-                        </Badge>
-                      </div>
-
-                      <div className="space-y-1">
-                        <h3 className="text-xl font-bold text-slate-900 group-hover:text-blue-600 transition-colors">
-                          {year}
-                        </h3>
-                        <p className="text-sm text-slate-500">
-                          {year === "2024" ? "Current Year" : "Previous Year"}
-                        </p>
-                      </div>
-
-                      <div className="pt-2">
-                        <div
-                          className={`w-10 h-10 mx-auto rounded-full flex items-center justify-center transition-all ${
-                            pyqAttempts[year] > 0
-                              ? "bg-green-500 text-white"
-                              : "bg-slate-200 text-slate-600 group-hover:bg-slate-700 group-hover:text-white"
-                          }`}
-                        >
-                          {pyqAttempts[year] > 0 ? (
-                            <Trophy className="w-5 h-5" />
-                          ) : (
-                            <Play className="w-5 h-5" />
-                          )}
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </div>
+                    {isAttempted ? "Review" : "Start"}
+                    <ArrowRight className="w-3 h-3 ml-2" />
+                  </Button>
+                </div>
+              );
+            })}
           </div>
         </CardContent>
       </Card>
