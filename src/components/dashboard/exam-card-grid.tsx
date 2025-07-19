@@ -1,8 +1,7 @@
-
 "use client";
 
 import React, { useState } from "react";
-import Link from 'next/link';
+import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -80,33 +79,6 @@ export const ExamCardGrid: React.FC<ExamCardGridProps> = ({ onExamClick }) => {
     },
   ];
 
-  const statsData: StatsItem[] = [
-    {
-      label: "Active Students",
-      value: "46,300+",
-      icon: <Users className="w-5 h-5" />,
-      color: "text-emerald-600",
-    },
-    {
-      label: "Success Rate",
-      value: "94%",
-      icon: <TrendingUp className="w-5 h-5" />,
-      color: "text-violet-600",
-    },
-    {
-      label: "Study Hours",
-      value: "1.2M+",
-      icon: <Clock className="w-5 h-5" />,
-      color: "text-rose-600",
-    },
-    {
-      label: "Top Rankings",
-      value: "2,840",
-      icon: <Star className="w-5 h-5" />,
-      color: "text-amber-600",
-    },
-  ];
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 relative overflow-hidden">
       {/* Animated Background Shapes */}
@@ -126,38 +98,12 @@ export const ExamCardGrid: React.FC<ExamCardGridProps> = ({ onExamClick }) => {
               Excellence in Engineering & Medical
             </span>
           </div>
-          <h1 className="text-5xl font-bold text-slate-800 mb-4 tracking-tight">
-          </h1>
+          <h1 className="text-5xl font-bold text-slate-800 mb-4 tracking-tight"></h1>
           <p className="text-xl text-slate-600 max-w-2xl mx-auto leading-relaxed">
             Comprehensive preparation platform for India's most competitive
             engineering and medical entrance examinations
           </p>
         </div>
-
-        {/* Stats Overview */}
-        {/* <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-16">
-          {statsData.map((stat, index) => (
-            <Card
-              key={index}
-              className="relative p-6 bg-white/70 backdrop-blur-xl border-0 shadow-lg hover:shadow-xl transition-all duration-500 hover:scale-105 group"
-            >
-              <div className="absolute inset-0 bg-gradient-to-br from-white/50 to-white/20 rounded-lg"></div>
-              <div className="relative z-10 text-center">
-                <div
-                  className={`inline-flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br from-slate-100 to-slate-200 mb-3 group-hover:scale-110 transition-transform duration-300 ${stat.color}`}
-                >
-                  {stat.icon}
-                </div>
-                <div className="text-2xl font-bold text-slate-800 mb-1">
-                  {stat.value}
-                </div>
-                <div className="text-sm text-slate-600 font-medium">
-                  {stat.label}
-                </div>
-              </div>
-            </Card>
-          ))}
-        </div> */}
 
         {/* Exam Cards Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 gap-8 mb-16">

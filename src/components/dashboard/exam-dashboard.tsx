@@ -194,7 +194,6 @@ export default function ExamDashboard({
         </div>
       </div>
 
-      {/* Enhanced Subject Dashboard */}
       <ExamSubjectDashboard
         examId={exam.id}
         examName={exam.name}
