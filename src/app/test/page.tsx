@@ -19,7 +19,6 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
-import rehypeSanitize from "rehype-sanitize";
 
 import {
   generateTest,
@@ -76,6 +75,7 @@ import {
 import { useRouter } from "next/navigation";
 import { TricolorSpinner } from "@/components/ui/tricolor-spinner";
 import { WideVerticalSlot } from "../ads/WideVerticalAds";
+import { Input } from "postcss";
 
 const subjectGroups = {
   MPC: ["Mathematics", "Physics", "Chemistry"],
@@ -120,14 +120,6 @@ type AnsweredQuestion = TestQuestion & {
   isCorrect?: boolean;
   isUnattempted?: boolean;
 };
-
-function ensureLatex(str: string): string {
-  if (!str || typeof str !== "string") return str;
-  if (/\$.*\$|\$\$.*\$\$/.test(str)) return str;
-  if (/[=+\-^\\\\]/.test(str)) return `$${str}$`;
-  if (/(->|<=>|\ce\{.*\})/.test(str)) return `$${str}$`;
-  return str;
-}
 
 export default function TestPage() {
   const { user, loading: authLoading } = useAuth();
@@ -309,7 +301,7 @@ export default function TestPage() {
         difficulty: values.difficulty,
       };
 
-      const result = await generateTest(input, { signal: controller.signal });
+      const result = await generateTest(input);
       if (
         result &&
         result.questions?.length > 0 &&
@@ -450,9 +442,9 @@ export default function TestPage() {
                           [remarkMath, { singleDollarTextMath: true }],
                           remarkGfm,
                         ]}
-                        rehypePlugins={[rehypeKatex, rehypeSanitize]}
+                        rehypePlugins={[rehypeKatex]}
                       >
-                        {ensureLatex(currentQuestion.question)}
+                        {currentQuestion.question}
                       </ReactMarkdown>
                     </div>
                   </CardDescription>
@@ -483,9 +475,9 @@ export default function TestPage() {
                                 [remarkMath, { singleDollarTextMath: true }],
                                 remarkGfm,
                               ]}
-                              rehypePlugins={[rehypeKatex, rehypeSanitize]}
+                              rehypePlugins={[rehypeKatex]}
                             >
-                              {ensureLatex(option)}
+                              {option}
                             </ReactMarkdown>
                           </div>
                         </FormLabel>
@@ -571,7 +563,7 @@ export default function TestPage() {
                               />
                             ) : isCorrect ? (
                               <CheckCircle2
-                                className="h-5 w-5 flex-shrink-0 text-[#12b981]"
+                                className="h-5 w-5 flex-shrink-0 text-green-500"
                                 aria-hidden="true"
                               />
                             ) : (
@@ -594,9 +586,9 @@ export default function TestPage() {
                                   [remarkMath, { singleDollarTextMath: true }],
                                   remarkGfm,
                                 ]}
-                                rehypePlugins={[rehypeKatex, rehypeSanitize]}
+                                rehypePlugins={[rehypeKatex]}
                               >
-                                {ensureLatex(q.question)}
+                                {q.question}
                               </ReactMarkdown>
                             </div>
                             <div className="space-y-2">
@@ -606,7 +598,7 @@ export default function TestPage() {
                                   className={cn(
                                     "flex items-start gap-3 rounded-md border p-3 text-sm",
                                     i === correct &&
-                                      "border-[#12b981] bg-[#12b981]/10",
+                                      "border-green-500 bg-green-500/10",
                                     i === selected &&
                                       !isCorrect &&
                                       "border-red-500 bg-red-500/10"
@@ -614,7 +606,7 @@ export default function TestPage() {
                                 >
                                   {i === correct ? (
                                     <CheckCircle2
-                                      className="mt-0.5 h-4 w-4 flex-shrink-0 text-[#12b981]"
+                                      className="mt-0.5 h-4 w-4 flex-shrink-0 text-green-500"
                                       aria-hidden="true"
                                     />
                                   ) : i === selected ? (
@@ -637,12 +629,9 @@ export default function TestPage() {
                                         ],
                                         remarkGfm,
                                       ]}
-                                      rehypePlugins={[
-                                        rehypeKatex,
-                                        rehypeSanitize,
-                                      ]}
+                                      rehypePlugins={[rehypeKatex]}
                                     >
-                                      {ensureLatex(option)}
+                                      {option}
                                     </ReactMarkdown>
                                   </div>
                                 </div>
@@ -659,9 +648,9 @@ export default function TestPage() {
                                     ],
                                     remarkGfm,
                                   ]}
-                                  rehypePlugins={[rehypeKatex, rehypeSanitize]}
+                                  rehypePlugins={[rehypeKatex]}
                                 >
-                                  {ensureLatex(q.explanation)}
+                                  {q.explanation}
                                 </ReactMarkdown>
                               </div>
                             </div>
