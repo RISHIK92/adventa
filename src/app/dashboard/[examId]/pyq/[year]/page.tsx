@@ -1,4 +1,6 @@
-import { useParams } from 'next/navigation';
+"use client";
+
+import { useParams } from "next/navigation";
 
 export default function PYQYearPage() {
   const params = useParams();
