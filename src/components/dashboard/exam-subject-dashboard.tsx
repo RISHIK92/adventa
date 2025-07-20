@@ -148,7 +148,7 @@ export const ExamSubjectDashboard = ({
   return (
     <div className="relative z-10 p-6 max-w-7xl mx-auto space-y-8">
       {/* Hero Stats Section */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+      {/* <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
         {[
           {
             label: "Mock Tests",
@@ -207,7 +207,7 @@ export const ExamSubjectDashboard = ({
             </CardContent>
           </Card>
         ))}
-      </div>
+      </div> */}
 
       {/* Main Dashboard Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">

@@ -4,6 +4,7 @@
 import { useParams, useRouter } from 'next/navigation';
 import ExamDashboard from '@/components/dashboard/exam-dashboard';
 import { notFound } from 'next/navigation';
+import ImmersiveExamDashboard from '@/components/dashboard/exam-dashboard';
 
 interface ExamDetails {
   id: string;
@@ -51,8 +52,9 @@ export default function ExamPage() {
   };
 
   return (
-    <ExamDashboard
+    <ImmersiveExamDashboard
       exam={examDetails}
+      examName={examId}
       onNavigate={handleNavigate}
       onBackClick={handleBackClick}
     />
