@@ -54,7 +54,7 @@ export default function QuestionDisplay({
         </div>
 
         <div
-          className={`px-4 py-2 rounded-lg text-white text-sm font-semibold ${getSubjectColor(
+          className={`px-4 py-2 rounded-sm text-white text-sm font-semibold ${getSubjectColor(
             subject
           )}`}
         >
@@ -80,8 +80,12 @@ export default function QuestionDisplay({
               <div
                 key={index}
                 className={`
-                  group relative flex items-start gap-4 p-5 rounded-xl cursor-pointer transition-all duration-200
-                  ${isSelected ? "bg-green-50 shadow-sm" : "hover:bg-gray-50"}
+                  group relative flex items-start gap-4 p-5 rounded-xl cursor-pointer transition-all duration-200 border
+                  ${
+                    isSelected
+                      ? "bg-green-50 shadow-sm border-gray-300"
+                      : "hover:bg-gray-50 border-gray-200"
+                  }
                 `}
                 onClick={() => handleValueChange(option)}
               >
