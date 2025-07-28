@@ -35,7 +35,7 @@ export function Header() {
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container relative flex h-14 items-center justify-center">
         {/* Logo - left on desktop, centered on mobile */}
         <div className="flex items-center w-full justify-center md:justify-start md:w-auto md:absolute md:left-0 md:top-0 md:h-full">

@@ -22,6 +22,6 @@ export default function Home() {
       <FrequentlyAskedQuestionsAccordion />
       <SimpleCenteredWithGradient />
       <FooterWithGrid />
-      </main>
+    </main>
   );
 }
