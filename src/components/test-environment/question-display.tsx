@@ -46,7 +46,7 @@ export default function QuestionDisplay({
 
   return (
     <div className="bg-white rounded-xl shadow-sm p-8 md:p-10 max-w-4xl mx-auto">
-      <div className="flex items-center justify-between mb-4 pb-6">
+      <div className="flex items-center justify-between mb-3 pb-6">
         <div className="flex items-center gap-4">
           <div className="text-sm font-medium text-gray-500 bg-gray-50 px-3 py-1.5 rounded-lg">
             Question {questionNumber} of {totalQuestions}

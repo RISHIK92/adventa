@@ -71,14 +71,12 @@ export default function QuestionNavigation({
 
   return (
     <div className="w-full max-w-md mt-4 ml-4 bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
-      {/* Header with Subject Selector */}
       <div className="bg-gradient-to-r from-slate-50 to-gray-50 border-b border-gray-200 p-4">
         <div className="flex items-center gap-3 mb-3">
           <BookOpen className="w-5 h-5 text-slate-600" />
           <h2 className="font-semibold text-slate-800">Question Navigator</h2>
         </div>
 
-        {/* Custom Dropdown */}
         <div className="relative">
           <button
             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
@@ -147,7 +145,7 @@ export default function QuestionNavigation({
       </div>
 
       {/* Question Grid */}
-      <div className="p-4 max-h-80 overflow-y-auto">
+      <div className="p-4 max-h-72 overflow-y-auto">
         <div className="grid grid-cols-8 gap-1.5">
           {questions.map((question) => {
             const status = getQuestionStatus(question);

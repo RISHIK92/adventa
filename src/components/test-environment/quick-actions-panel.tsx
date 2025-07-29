@@ -45,7 +45,7 @@ export default function QuickActionsPanel({
 
   return (
     <>
-      <div className="fixed top-16 right-6 w-80 bg-white rounded-md shadow-lg">
+      <div className="w-72 bg-white rounded-md shadow-lg">
         <div className="p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">
             Quick Actions

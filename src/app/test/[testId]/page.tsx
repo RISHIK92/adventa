@@ -174,7 +174,7 @@ export default function Home() {
           />
         </div>
 
-        <main className="flex-1 overflow-auto p-8 lg:p-10">
+        <main className="overflow-auto pl-4 pr-2 lg:pl-6 lg:pr-2 mt-4">
           <QuestionDisplay
             questionNumber={currentQuestion.id}
             totalQuestions={questions.length}
@@ -187,10 +187,11 @@ export default function Home() {
           />
         </main>
 
-        <aside className="w-80 flex-shrink-0 pr-6 pt-6">
+        <aside className="w-72 mr-1 mt-4">
           <QuickActionsPanel
             answered={questionCounts.answered}
             markedForReview={questionCounts.markedForReview}
+            z
             notVisited={questionCounts.notVisited}
             onSaveAndNext={handleSaveAndNext}
             onClearResponse={handleClearResponse}
