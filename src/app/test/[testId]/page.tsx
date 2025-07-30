@@ -191,7 +191,6 @@ export default function Home() {
           <QuickActionsPanel
             answered={questionCounts.answered}
             markedForReview={questionCounts.markedForReview}
-            z
             notVisited={questionCounts.notVisited}
             onSaveAndNext={handleSaveAndNext}
             onClearResponse={handleClearResponse}
