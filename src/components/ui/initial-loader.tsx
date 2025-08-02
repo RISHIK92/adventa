@@ -10,7 +10,7 @@ export function InitialLoader() {
   if (hydrated) return null;
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-background">
-      <TricolorSpinner size={64} />
+      <TricolorSpinner />
     </div>
   );
 } 

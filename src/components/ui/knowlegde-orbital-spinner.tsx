@@ -5,7 +5,7 @@ interface KnowledgeOrbitalSpinnerProps {
   className?: string
 }
 
-export const TricolorSpinner: React.FC<KnowledgeOrbitalSpinnerProps> = ({ size = 64, className }) => {
+export const KnowledgeOrbitalSpinner: React.FC<KnowledgeOrbitalSpinnerProps> = ({ size = 64, className }) => {
   const center = size / 2
   const coreRadius = size * 0.08
   const orbit1Radius = size * 0.25
@@ -15,6 +15,7 @@ export const TricolorSpinner: React.FC<KnowledgeOrbitalSpinnerProps> = ({ size =
 
   return (
     <div className={`relative ${className || ""}`} style={{ width: size, height: size }}>
+      {/* Central AI Core */}
       <div
         className="absolute bg-gradient-to-br from-blue-400 to-purple-500 rounded-full animate-pulse"
         style={{
@@ -193,4 +194,3 @@ export const TricolorSpinner: React.FC<KnowledgeOrbitalSpinnerProps> = ({ size =
     </div>
   )
 }
-

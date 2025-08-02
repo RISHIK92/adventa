@@ -174,7 +174,7 @@ export default function SignUpPage() {
             </CardContent>
             <CardFooter className="flex flex-col gap-4">
               <Button type="submit" className="w-full" disabled={isLoading || isGoogleLoading}>
-                {isLoading && <TricolorSpinner size={24} />}
+                {isLoading && <TricolorSpinner size={32} />}
                 Sign Up
               </Button>
             </CardFooter>
@@ -192,7 +192,7 @@ export default function SignUpPage() {
         </div>
         <CardFooter className="flex flex-col gap-4">
            <Button variant="outline" className="w-full" onClick={handleGoogleSignIn} disabled={isLoading || isGoogleLoading}>
-            {isGoogleLoading ? <TricolorSpinner size={24} /> : <GoogleIcon />}
+            {isGoogleLoading ? <TricolorSpinner size={32} /> : <GoogleIcon />}
             Google
           </Button>
           <p className="text-sm text-muted-foreground">

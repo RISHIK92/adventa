@@ -381,7 +381,7 @@ export default function TestPage() {
   if (authLoading || !user) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <TricolorSpinner size={48} />
+        <TricolorSpinner size={72} />
       </div>
     );
   }

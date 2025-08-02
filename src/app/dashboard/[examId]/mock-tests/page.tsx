@@ -164,7 +164,7 @@ export default function MockTestsPage() {
 
       // Create next test
       const nextTestNumber = testNumber + 1;
-      const preparationEndTime = Date.now() + 30 * 60 * 1000; // 30 minutes from now
+      const preparationEndTime = Date.now() + 1 * 60 * 1000; // 30 minutes from now
 
       const newTest: MockTest = {
         id: `mock-test-${nextTestNumber}`,

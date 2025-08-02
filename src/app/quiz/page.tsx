@@ -223,7 +223,7 @@ export default function QuizPage() {
   if (authLoading || !user) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <TricolorSpinner size={48} />
+        <TricolorSpinner size={72} />
       </div>
     );
   }
@@ -233,7 +233,7 @@ export default function QuizPage() {
       case "loading":
         return (
           <div className="flex flex-col items-center justify-center gap-4 py-16">
-            <TricolorSpinner size={48} />
+            <TricolorSpinner size={64} />
             <p className="text-lg text-muted-foreground">
               Generating your quiz...
             </p>

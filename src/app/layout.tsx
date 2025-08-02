@@ -36,8 +36,6 @@ export default function RootLayout({
       </head>
       <body className="font-body antialiased">
         <AdsenseLoader />
-
-        <InitialLoader />
         <AuthProvider>
           <Header />
           {children}

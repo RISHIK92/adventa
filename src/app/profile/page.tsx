@@ -170,7 +170,7 @@ export default function ProfilePage() {
   if (authLoading || !user) {
     return (
       <div className="flex h-screen w-full items-center justify-center">
-        <TricolorSpinner size={48} />
+        <TricolorSpinner size={72} />
       </div>
     );
   }
@@ -181,7 +181,6 @@ export default function ProfilePage() {
         return formatDistanceToNow(new Date(timestamp), { addSuffix: true });
       }
     } catch (e) {
-      // In case of any other parsing error
     }
     return null;
   };
@@ -284,7 +283,7 @@ export default function ProfilePage() {
               </div>
             ) : isAnalyzing ? (
               <div className="flex items-center justify-center p-8">
-                <TricolorSpinner size={32} />
+                <TricolorSpinner size={64} />
                 <p className="ml-4 text-muted-foreground">
                   Analyzing your performance...
                 </p>
@@ -302,7 +301,7 @@ export default function ProfilePage() {
             >
               {isAnalyzing ? (
                 <>
-                  <TricolorSpinner size={24} />
+                  <TricolorSpinner size={32} />
                   Analyzing...
                 </>
               ) : (
@@ -331,7 +330,7 @@ export default function ProfilePage() {
             <CardContent>
               {loadingResults ? (
                 <div className="flex items-center justify-center p-8">
-                  <TricolorSpinner size={24} />
+                  <TricolorSpinner size={32} />
                 </div>
               ) : quizResults.length > 0 ? (
                 <ul className="space-y-4">
@@ -377,7 +376,7 @@ export default function ProfilePage() {
             <CardContent>
               {loadingResults ? (
                 <div className="flex items-center justify-center p-8">
-                  <TricolorSpinner size={24} />
+                  <TricolorSpinner size={32} />
                 </div>
               ) : testResults.length > 0 ? (
                 <Accordion type="single" collapsible className="w-full">
@@ -460,7 +459,7 @@ export default function ProfilePage() {
           </DialogHeader>
           {modalLoading ? (
             <div className="flex items-center justify-center p-8">
-              <TricolorSpinner size={24} />
+              <TricolorSpinner size={32} />
             </div>
           ) : modalTestResult ? (
             <>

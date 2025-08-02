@@ -41,7 +41,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     <AuthContext.Provider value={value}>
       {loading ? (
         <div className="flex h-screen items-center justify-center">
-          <TricolorSpinner size={48} />
+          <TricolorSpinner size={96} />
         </div>
       ) : (
         children
