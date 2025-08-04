@@ -9,6 +9,7 @@ import React from "react";
 import { InitialLoader } from "@/components/ui/initial-loader";
 import AdsenseLoader from "@/components/AdsenseLoader";
 import GoogleAd from "./ads/HeroToFeatures";
+import HighlightBubble from "@/components/highlightBubble";
 
 export const metadata: Metadata = {
   title: "Vertical Ascent",
@@ -38,6 +39,7 @@ export default function RootLayout({
         <AdsenseLoader />
         <AuthProvider>
           <Header />
+          <HighlightBubble />
           {children}
           <Toaster />
         </AuthProvider>

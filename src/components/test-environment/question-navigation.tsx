@@ -1,3 +1,5 @@
+"use client";
+
 import { useState } from "react";
 import {
   ChevronDown,
@@ -17,6 +19,7 @@ interface QuestionNavigationProps {
   onQuestionClick?: (questionId: number) => void;
   onSubjectChange?: (subject: string) => void;
   selectedSubject?: string;
+  isMobile?: boolean;
 }
 
 export default function QuestionNavigation({
@@ -29,6 +32,7 @@ export default function QuestionNavigation({
   onQuestionClick = (id) => console.log(`Question ${id} clicked`),
   onSubjectChange = (subject) => console.log(`Subject changed to ${subject}`),
   selectedSubject = "All Subjects",
+  isMobile = false,
 }: QuestionNavigationProps) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
@@ -69,6 +73,134 @@ export default function QuestionNavigation({
       "bg-gray-50 text-gray-600 border border-gray-200 hover:bg-gray-100 hover:text-gray-800",
   };
 
+  if (isMobile) {
+    return (
+      <div className="w-full bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+        <div className="bg-gradient-to-r from-slate-50 to-gray-50 border-b border-gray-200 p-3 md:p-4">
+          <div className="flex items-center gap-2 mb-2">
+            <BookOpen className="w-4 h-4 text-slate-600" />
+            <h2 className="font-semibold text-slate-800 text-sm md:text-base">
+              Question Navigator
+            </h2>
+          </div>
+
+          <div className="relative">
+            <button
+              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+              className="w-full flex items-center justify-between px-3 py-2 bg-white border border-gray-300 rounded-lg transition-colors focus:outline-none text-sm"
+              style={{
+                borderColor: isDropdownOpen ? "#ff6b35" : undefined,
+                boxShadow: isDropdownOpen
+                  ? "0 0 0 2px rgba(255, 107, 53, 0.2)"
+                  : undefined,
+              }}
+            >
+              <span className="flex items-center gap-2">{selectedSubject}</span>
+              <ChevronDown
+                className={`w-4 h-4 text-gray-500 transition-transform ${
+                  isDropdownOpen ? "rotate-180" : ""
+                }`}
+              />
+            </button>
+
+            {isDropdownOpen && (
+              <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-20 overflow-hidden">
+                {subjects.map((subject) => (
+                  <button
+                    key={subject}
+                    onClick={() => {
+                      onSubjectChange(subject);
+                      setIsDropdownOpen(false);
+                    }}
+                    className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-gray-50 transition-colors text-left"
+                  >
+                    {subject}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Progress Stats */}
+          <div className="mt-2 flex items-center justify-between text-xs text-gray-600">
+            <span>
+              Progress: {stats.answered}/{stats.total}
+            </span>
+            <span>Marked: {stats.marked}</span>
+          </div>
+          <div className="mt-1 w-full bg-gray-200 rounded-full h-1.5">
+            <div
+              className="h-1.5 rounded-full transition-all duration-300"
+              style={{
+                width: `${(stats.answered / stats.total) * 100}%`,
+                backgroundColor: "#12b981",
+              }}
+            />
+          </div>
+        </div>
+
+        {/* Question Grid */}
+        <div className="p-3 md:p-4 max-h-48 md:max-h-64 overflow-y-auto">
+          <div className="grid grid-cols-10 md:grid-cols-12 gap-1.5">
+            {questions.map((question) => {
+              const status = getQuestionStatus(question);
+              const isCurrent = status === "current";
+              return (
+                <button
+                  key={question.id}
+                  onClick={() => onQuestionClick(question.id)}
+                  className={`
+                    relative w-7 h-7 md:w-8 md:h-8 rounded-lg text-xs font-medium transition-all duration-200
+                    hover:scale-105 focus:outline-none
+                    ${statusStyles[status]}
+                  `}
+                  style={{
+                    backgroundColor: isCurrent ? "#ff6b35" : undefined,
+                    borderColor: isCurrent ? "#ff6b35" : undefined,
+                  }}
+                  title={`Question ${question.id}${
+                    question.answered ? " (Answered)" : ""
+                  }${question.markedForReview ? " (Marked)" : ""}`}
+                >
+                  {question.id}
+                  {question.markedForReview && (
+                    <div className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 md:w-2 md:h-2 bg-amber-400 rounded-full border border-white" />
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Compact Legend */}
+        <div className="bg-gray-50 border-t border-gray-200 p-2 md:p-3">
+          <div className="grid grid-cols-2 gap-1.5 md:gap-2 text-xs">
+            <div className="flex items-center gap-1">
+              <Circle className="w-2.5 h-2.5 md:w-3 md:h-3 text-gray-400" />
+              <span className="text-gray-600">Unanswered</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <CheckCircle className="w-2.5 h-2.5 md:w-3 md:h-3 text-emerald-500" />
+              <span className="text-gray-600">Answered</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <AlertCircle className="w-2.5 h-2.5 md:w-3 md:h-3 text-amber-500" />
+              <span className="text-gray-600">Review</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <div
+                className="w-2.5 h-2.5 md:w-3 md:h-3 rounded-full"
+                style={{ backgroundColor: "#ff6b35" }}
+              />
+              <span className="text-gray-600">Current</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Desktop version (original)
   return (
     <div className="w-full max-w-md mt-4 ml-4 bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
       <div className="bg-gradient-to-r from-slate-50 to-gray-50 border-b border-gray-200 p-4">
@@ -76,7 +208,6 @@ export default function QuestionNavigation({
           <BookOpen className="w-5 h-5 text-slate-600" />
           <h2 className="font-semibold text-slate-800">Question Navigator</h2>
         </div>
-
         <div className="relative">
           <button
             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
@@ -86,16 +217,6 @@ export default function QuestionNavigation({
               boxShadow: isDropdownOpen
                 ? "0 0 0 2px rgba(255, 107, 53, 0.2)"
                 : undefined,
-            }}
-            onMouseEnter={(e) => {
-              if (!isDropdownOpen) {
-                e.currentTarget.style.borderColor = "#ff6b35";
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (!isDropdownOpen) {
-                e.currentTarget.style.borderColor = "";
-              }
             }}
           >
             <span className="flex items-center gap-2 text-sm">
@@ -155,20 +276,13 @@ export default function QuestionNavigation({
                 key={question.id}
                 onClick={() => onQuestionClick(question.id)}
                 className={`
-                  relative w-8 h-8 rounded-lg text-xs font-medium transition-all duration-200 
-                  hover:scale-105 focus:outline-none
+                  relative w-8 h-8 rounded-lg text-xs font-medium transition-all duration-200
+                   hover:scale-105 focus:outline-none
                   ${statusStyles[status]}
                 `}
                 style={{
                   backgroundColor: isCurrent ? "#ff6b35" : undefined,
                   borderColor: isCurrent ? "#ff6b35" : undefined,
-                }}
-                onFocus={(e) => {
-                  e.currentTarget.style.boxShadow =
-                    "0 0 0 2px rgba(255, 107, 53, 0.5)";
-                }}
-                onBlur={(e) => {
-                  e.currentTarget.style.boxShadow = "";
                 }}
                 title={`Question ${question.id}${
                   question.answered ? " (Answered)" : ""

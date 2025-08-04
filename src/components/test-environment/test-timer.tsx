@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect, useState } from "react";
 import { Clock, AlertTriangle } from "lucide-react";
 
@@ -5,12 +7,14 @@ interface TestTimerProps {
   duration?: number; // in seconds
   onTimeUp?: () => void;
   className?: string;
+  isMobile?: boolean;
 }
 
 export default function TestTimer({
-  duration = 3600, // 1 hour default
+  duration = 3600,
   onTimeUp = () => console.log("Time's up!"),
   className,
+  isMobile = false,
 }: TestTimerProps) {
   const [timeRemaining, setTimeRemaining] = useState(duration);
   const [isWarning, setIsWarning] = useState(false);
@@ -26,14 +30,12 @@ export default function TestTimer({
     const interval = setInterval(() => {
       setTimeRemaining((prev) => {
         const newTime = prev - 1;
-
         if (newTime <= 300 && !isUrgent) {
           setIsUrgent(true);
           setIsPulsing(true);
         } else if (newTime <= 900 && !isWarning) {
           setIsWarning(true);
         }
-
         return newTime;
       });
     }, 1000);
@@ -81,39 +83,55 @@ export default function TestTimer({
 
   return (
     <div
-      className={`inline-flex items-center gap-3 px-4 ml-14 py-2.5 rounded-xl border shadow-sm transition-all duration-300 ${getContainerStyles()} ${
+      className={`inline-flex items-center gap-2 md:gap-3 px-3 md:px-4 ${
+        isMobile ? "ml-0" : "ml-4 md:ml-14"
+      } py-2 md:py-2 rounded-xl border shadow-sm transition-all duration-300 ${getContainerStyles()} ${
         isPulsing && isUrgent ? "animate-pulse" : ""
-      } ${className}`}
+      } ${className} ${isMobile ? "scale-90" : ""}`}
     >
       <div className="flex-shrink-0">
         {isUrgent ? (
-          <AlertTriangle className={`w-5 h-5 ${getIconColor()}`} />
+          <AlertTriangle
+            className={`w-4 h-4 md:w-5 md:h-5 ${getIconColor()}`}
+          />
         ) : (
-          <Clock className={`w-5 h-5 ${getIconColor()}`} />
+          <Clock className={`w-4 h-4 md:w-5 md:h-5 ${getIconColor()}`} />
         )}
       </div>
-
       <div className="flex flex-col">
-        <div className="flex items-center gap-2">
-          <span className="font-mono text-lg font-bold tabular-nums leading-none">
+        <div className="flex items-center gap-1 md:gap-0">
+          <span
+            className={`font-mono ${
+              isMobile ? "text-lg" : "text-base md:text-lg"
+            } font-bold tabular-nums leading-none`}
+          >
             {formatTime(timeRemaining)}
           </span>
           {isUrgent && (
-            <span className="text-xs font-medium text-red-600 bg-red-100 px-1.5 py-0.5 rounded-full">
-              URGENT
+            <span className="text-xs font-medium text-red-600 bg-red-100 px-1 md:px-1.5 rounded-full">
+              {isMobile ? "!" : "URGENT"}
             </span>
           )}
         </div>
-        <span className="text-xs font-medium opacity-75 leading-none mt-0.5">
+        <span
+          className={`text-xs font-medium opacity-75 leading-none ${
+            isMobile ? "text-center" : "hidden md:block"
+          }`}
+        >
           {isUrgent
-            ? "Time running out!"
+            ? isMobile
+              ? "Hurry up!"
+              : "Time running out!"
             : isWarning
             ? "Time warning"
             : "Time remaining"}
         </span>
       </div>
-
-      <div className="flex-shrink-0 w-16 h-2 bg-white/60 rounded-full overflow-hidden">
+      <div
+        className={`flex-shrink-0 ${
+          isMobile ? "w-12" : "w-12 md:w-16"
+        } h-2 bg-white/60 rounded-full overflow-hidden`}
+      >
         <div
           className="h-full transition-all duration-1000 ease-out rounded-full"
           style={{

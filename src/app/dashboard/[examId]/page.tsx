@@ -1,10 +1,9 @@
+"use client";
 
-'use client';
-
-import { useParams, useRouter } from 'next/navigation';
-import ExamDashboard from '@/components/dashboard/exam-dashboard';
-import { notFound } from 'next/navigation';
-import ImmersiveExamDashboard from '@/components/dashboard/exam-dashboard';
+import { useParams, useRouter } from "next/navigation";
+import ExamDashboard from "@/components/dashboard/exam-dashboard";
+import { notFound } from "next/navigation";
+import ImmersiveExamDashboard from "@/components/dashboard/exam-dashboard";
 
 interface ExamDetails {
   id: string;
@@ -37,10 +36,10 @@ export default function ExamPage() {
 
   const handleNavigate = (section: string) => {
     // Navigate to actual pages now
-    if (section === 'mock-test') {
-      router.push('/test');
-    } else if (section === 'quiz') {
-      router.push('/quiz');
+    if (section === "mock-test") {
+      router.push("/test");
+    } else if (section === "quiz") {
+      router.push("/quiz");
     } else {
       // Handle other sections if needed, e.g., study material
       router.push(`/dashboard/${examId}/${section}`);
@@ -48,7 +47,7 @@ export default function ExamPage() {
   };
 
   const handleBackClick = () => {
-    router.push('/dashboard');
+    router.push("/dashboard");
   };
 
   return (
