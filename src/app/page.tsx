@@ -8,6 +8,7 @@ import ThreeTiersWithToggle from "@/components/home/three-tiers-with-toggle";
 import { FrequentlyAskedQuestionsAccordion } from "@/components/home/faqs-with-accordion";
 import SimpleCenteredWithGradient from "@/components/home/simple-centered-with-gradient";
 import { FooterWithGrid } from "@/components/home/footer-with-grid";
+import { CardLayoutHero } from "@/components/home/weakness-card";
 
 export default function Home() {
   return (
@@ -17,6 +18,7 @@ export default function Home() {
       <ThreeColumnBentoGrid />
       <WithProductScreenshot />
       <WithProductScreenshotOnLeft />
+      <CardLayoutHero />
       {/* <TestimonialsGridWithCenteredCarousel /> */}
       {/* <ThreeTiersWithToggle /> */}
       <FrequentlyAskedQuestionsAccordion />

@@ -180,8 +180,7 @@ export default function ProfilePage() {
       if (timestamp && !isNaN(new Date(timestamp).getTime())) {
         return formatDistanceToNow(new Date(timestamp), { addSuffix: true });
       }
-    } catch (e) {
-    }
+    } catch (e) {}
     return null;
   };
 

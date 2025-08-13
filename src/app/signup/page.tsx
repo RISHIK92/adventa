@@ -1,17 +1,21 @@
+"use client";
 
-'use client';
+import * as React from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import {
+  createUserWithEmailAndPassword,
+  updateProfile,
+  signInWithPopup,
+  GoogleAuthProvider,
+} from "firebase/auth";
+import { BrainCircuit } from "lucide-react";
 
-import * as React from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
-import { z } from 'zod';
-import { createUserWithEmailAndPassword, updateProfile, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
-import { BrainCircuit } from 'lucide-react';
-
-import { auth } from '@/lib/firebase';
-import { Button } from '@/components/ui/button';
+import { auth } from "@/lib/firebase";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -19,7 +23,7 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
+} from "@/components/ui/card";
 import {
   Form,
   FormControl,
@@ -27,29 +31,36 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { useToast } from '@/hooks/use-toast';
-import { useAuth } from '@/hooks/use-auth';
-import { Separator } from '@/components/ui/separator';
-import { TricolorSpinner } from '@/components/ui/tricolor-spinner';
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/use-auth";
+import { Separator } from "@/components/ui/separator";
+import { TricolorSpinner } from "@/components/ui/tricolor-spinner";
 
+import { signupUser } from "@/lib/auth";
 
 const formSchema = z.object({
-  name: z.string().min(2, { message: 'Name must be at least 2 characters.'}),
-  email: z.string().email({ message: 'Please enter a valid email address.' }),
-  password: z.string().min(6, { message: 'Password must be at least 6 characters.' }),
+  name: z.string().min(2, { message: "Name must be at least 2 characters." }),
+  email: z.string().email({ message: "Please enter a valid email address." }),
+  password: z
+    .string()
+    .min(6, { message: "Password must be at least 6 characters." }),
 });
 
 type SignUpFormValues = z.infer<typeof formSchema>;
 
 const GoogleIcon = () => (
-  <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" className="h-4 w-4">
+  <svg
+    role="img"
+    viewBox="0 0 24 24"
+    xmlns="http://www.w3.org/2000/svg"
+    className="h-4 w-4"
+  >
     <title>Google</title>
     <path d="M12.48 10.92v3.28h7.84c-.24 1.84-.85 3.18-1.73 4.1-1.02 1.02-2.3 1.84-4.25 1.84-5.18 0-9.4-4.22-9.4-9.4s4.22-9.4 9.4-9.4c2.6 0 4.92 1.02 6.57 2.6l2.5-2.5C19.05 1.18 15.98 0 12.48 0 5.88 0 0 5.88 0 12.48s5.88 12.48 12.48 12.48c7.2 0 12.03-4.92 12.03-12.03 0-.8-.08-1.55-.2-2.3H12.48z" />
   </svg>
 );
-
 
 export default function SignUpPage() {
   const router = useRouter();
@@ -58,40 +69,61 @@ export default function SignUpPage() {
   const [isLoading, setIsLoading] = React.useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = React.useState(false);
 
+  const handleSignup = async () => {
+    try {
+      const res = await signupUser();
+      if (res?.msg === "User Already Exists") {
+        return false;
+      }
+      console.log("Signup successful:", res);
+      return true;
+    } catch (err: any) {
+      console.error(err.message);
+      return false;
+    }
+  };
+
   const form = useForm<SignUpFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: '',
-      email: '',
-      password: '',
+      name: "",
+      email: "",
+      password: "",
     },
   });
-  
-  React.useEffect(() => {
-    if (user) {
-      router.push('/profile');
-    }
-  }, [user, router]);
-
 
   const onSubmit = async (values: SignUpFormValues) => {
     setIsLoading(true);
     try {
-      const userCredential = await createUserWithEmailAndPassword(auth, values.email, values.password);
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        values.email,
+        values.password
+      );
+      const success = await handleSignup();
+      if (!success) {
+        toast({
+          variant: "destructive",
+          title: "Sign Up Failed",
+          description:
+            "Failed to create account on backend or user already exists.",
+        });
+        return; // Exit early if backend signup fails
+      }
       await updateProfile(userCredential.user, {
         displayName: values.name,
       });
 
       toast({
-        title: 'Account Created',
+        title: "Account Created",
         description: "Welcome! You have successfully signed up.",
       });
-      router.push('/profile');
+      router.push("/profile"); // Only redirect on success
     } catch (error: any) {
       toast({
-        variant: 'destructive',
-        title: 'Sign Up Failed',
-        description: error.message || 'An unexpected error occurred.',
+        variant: "destructive",
+        title: "Sign Up Failed",
+        description: error.message || "An unexpected error occurred.",
       });
     } finally {
       setIsLoading(false);
@@ -103,31 +135,45 @@ export default function SignUpPage() {
     try {
       const provider = new GoogleAuthProvider();
       await signInWithPopup(auth, provider);
+      const success = await handleSignup();
+      if (!success) {
+        toast({
+          variant: "destructive",
+          title: "Sign Up Failed",
+          description:
+            "Failed to create account on backend or user already exists.",
+        });
+        return; // Exit early if backend signup fails
+      }
       toast({
-        title: 'Account Created',
+        title: "Account Created",
         description: "Welcome!",
       });
-      router.push('/profile');
+      router.push("/profile"); // Only redirect on success
     } catch (error: any) {
       toast({
-        variant: 'destructive',
-        title: 'Sign Up Failed',
-        description: error.message || 'Could not sign up with Google.',
+        variant: "destructive",
+        title: "Sign Up Failed",
+        description: error.message || "Could not sign up with Google.",
       });
     } finally {
       setIsGoogleLoading(false);
     }
-  }
+  };
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-gradient-to-br from-primary/10 via-background to-background p-4">
       <Card className="w-full max-w-sm">
         <CardHeader className="text-center">
           <div className="mb-2 flex justify-center">
-             <BrainCircuit className="h-12 w-12 text-primary" />
+            <BrainCircuit className="h-12 w-12 text-primary" />
           </div>
-          <CardTitle className="font-headline text-3xl">Create an Account</CardTitle>
-          <CardDescription>Join to start your personalized learning journey.</CardDescription>
+          <CardTitle className="font-headline text-3xl">
+            Create an Account
+          </CardTitle>
+          <CardDescription>
+            Join to start your personalized learning journey.
+          </CardDescription>
         </CardHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)}>
@@ -139,7 +185,11 @@ export default function SignUpPage() {
                   <FormItem>
                     <FormLabel>Name</FormLabel>
                     <FormControl>
-                      <Input placeholder="Your Name" {...field} disabled={isGoogleLoading}/>
+                      <Input
+                        placeholder="Your Name"
+                        {...field}
+                        disabled={isGoogleLoading}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -152,7 +202,11 @@ export default function SignUpPage() {
                   <FormItem>
                     <FormLabel>Email</FormLabel>
                     <FormControl>
-                      <Input placeholder="you@example.com" {...field} disabled={isGoogleLoading}/>
+                      <Input
+                        placeholder="you@example.com"
+                        {...field}
+                        disabled={isGoogleLoading}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -165,7 +219,12 @@ export default function SignUpPage() {
                   <FormItem>
                     <FormLabel>Password</FormLabel>
                     <FormControl>
-                      <Input type="password" placeholder="••••••••" {...field} disabled={isGoogleLoading}/>
+                      <Input
+                        type="password"
+                        placeholder="••••••••"
+                        {...field}
+                        disabled={isGoogleLoading}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -173,7 +232,11 @@ export default function SignUpPage() {
               />
             </CardContent>
             <CardFooter className="flex flex-col gap-4">
-              <Button type="submit" className="w-full" disabled={isLoading || isGoogleLoading}>
+              <Button
+                type="submit"
+                className="w-full"
+                disabled={isLoading || isGoogleLoading}
+              >
                 {isLoading && <TricolorSpinner size={32} />}
                 Sign Up
               </Button>
@@ -191,12 +254,17 @@ export default function SignUpPage() {
           </div>
         </div>
         <CardFooter className="flex flex-col gap-4">
-           <Button variant="outline" className="w-full" onClick={handleGoogleSignIn} disabled={isLoading || isGoogleLoading}>
+          <Button
+            variant="outline"
+            className="w-full"
+            onClick={handleGoogleSignIn}
+            disabled={isLoading || isGoogleLoading}
+          >
             {isGoogleLoading ? <TricolorSpinner size={32} /> : <GoogleIcon />}
             Google
           </Button>
           <p className="text-sm text-muted-foreground">
-            Already have an account?{' '}
+            Already have an account?{" "}
             <Button variant="link" asChild className="p-0">
               <Link href="/login">Sign in</Link>
             </Button>

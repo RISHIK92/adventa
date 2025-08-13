@@ -37,6 +37,7 @@ import {
   Zap,
   GraduationCap,
   Layers,
+  AlertTriangle,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
@@ -173,7 +174,7 @@ export default function ImmersiveExamDashboard({ examName }) {
       </div>
 
       <div className="relative z-10 p-6 max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
           <Card
             className="relative bg-white/70 backdrop-blur-xl border-0 shadow-lg hover:shadow-2xl transition-all duration-500 group cursor-pointer transform hover:scale-100"
             onClick={() => router.push(`/dashboard/${exam.name}/mock-tests`)}
@@ -238,6 +239,39 @@ export default function ImmersiveExamDashboard({ examName }) {
                 <span>500+ Topics</span>
                 <span>5–50 Questions</span>
                 <span>Instant Results</span>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card
+            className="relative bg-white/70 backdrop-blur-xl border-0 shadow-lg hover:shadow-2xl transition-all duration-500 group cursor-pointer transform hover:scale-100"
+            onClick={() => router.push(`/dashboard/${exam.name}/weakness-test`)}
+          >
+            <div className="absolute inset-0 bg-gradient-to-br from-red-100/50 to-rose-100/50 group-hover:from-red-100/70 group-hover:to-rose-100/70 transition-all"></div>
+            <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-red-200/40 to-transparent rounded-bl-3xl"></div>
+
+            <CardContent className="relative z-10 p-8">
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center space-x-4">
+                  <div>
+                    <h2 className="text-2xl font-bold text-red-800 mb-2">
+                      Weakness Test
+                    </h2>
+                    <p className="text-red-700">AI-powered weakness analysis</p>
+                  </div>
+                </div>
+                <ChevronRight className="w-8 h-8 text-red-500 group-hover:text-red-700 group-hover:translate-x-2 transition-all" />
+              </div>
+
+              <p className="text-red-700 mb-6 leading-relaxed">
+                Identify your weak areas with smart diagnostic tests and get
+                personalized improvement plans.
+              </p>
+
+              <div className="flex items-center justify-between text-sm text-red-600 font-medium">
+                <span>Smart Analysis</span>
+                <span>30-60 Minutes</span>
+                <span>Custom Reports</span>
               </div>
             </CardContent>
           </Card>
@@ -543,7 +577,7 @@ export default function ImmersiveExamDashboard({ examName }) {
         {/* Subject Filter */}
         <div className="mt-8 flex justify-center">
           <div className="flex gap-2 bg-white/50 p-2 rounded-xl">
-            {exam.subjects.map((subject) => (
+            {exam.subjects.map((subject: any) => (
               <Button
                 key={subject}
                 variant={selectedSubject === subject ? "default" : "ghost"}
