@@ -110,7 +110,7 @@ export const ExamCardGrid: React.FC<ExamCardGridProps> = ({ onExamClick }) => {
           {examCards.map((exam) => (
             <Link key={exam.id} href={`/dashboard/${exam.id}`} passHref>
               <Card
-                className="relative bg-white/60 backdrop-blur-xl border-0 shadow-lg hover:shadow-2xl transition-all duration-700 group cursor-pointer overflow-hidden h-full"
+                className="relative bg-white/60 backdrop-blur-xl border-0 shadow-lg hover:shadow-2xl transition-all duration-50 group cursor-pointer overflow-hidden h-full"
                 onMouseEnter={() => setHoveredCard(exam.id)}
                 onMouseLeave={() => setHoveredCard(null)}
                 style={{
