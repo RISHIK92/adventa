@@ -40,10 +40,12 @@ export default function LearningPage() {
             const Icon = iconMap[subject.iconName];
             return (
               <Link key={subject.id} href={`/learning/${subject.id}`}>
-                <Card className="group cursor-pointer bg-card/80 backdrop-blur-sm transition-all duration-300 hover:border-primary/50 hover:shadow-xl">
+                <Card className="group cursor-pointer bg-[#f7f7f7]/80 backdrop-blur-sm transition-all duration-300 hover:border-primary/50 hover:shadow-xl">
                   <CardHeader className="items-center">
                     <div className="rounded-full bg-primary/10 p-3 transition-colors duration-300 group-hover:bg-primary group-hover:text-primary-foreground">
-                      {Icon && <Icon className="h-8 w-8 text-primary group-hover:text-primary-foreground transition-colors duration-300" />}
+                      {Icon && (
+                        <Icon className="h-8 w-8 text-primary group-hover:text-primary-foreground transition-colors duration-300" />
+                      )}
                     </div>
                     <CardTitle className="font-headline text-xl">
                       {subject.title}

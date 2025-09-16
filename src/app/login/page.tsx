@@ -214,7 +214,7 @@ export default function LoginPage() {
             <span className="w-full border-t" />
           </div>
           <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-card px-2 text-muted-foreground">
+            <span className="bg-[#f7f7f7] px-2 text-muted-foreground">
               Or continue with
             </span>
           </div>

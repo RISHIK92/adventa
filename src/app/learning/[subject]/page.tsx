@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import { subjects } from "@/lib/data";
 import Link from "next/link";
@@ -9,7 +9,11 @@ import { Atom, Calculator, Beaker, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import React from "react";
 
-export default function SubjectPage({ params }: { params: Promise<{ subject: string }> }) {
+export default function SubjectPage({
+  params,
+}: {
+  params: Promise<{ subject: string }>;
+}) {
   const { subject: subjectId } = React.use(params);
   const subject = subjects.find((s) => s.id === subjectId);
   if (!subject) return notFound();
@@ -29,7 +33,7 @@ export default function SubjectPage({ params }: { params: Promise<{ subject: str
         <Button
           variant="ghost"
           size="sm"
-          onClick={() => router.push('/learning')}
+          onClick={() => router.push("/learning")}
           className="absolute left-4 top-4 z-10 flex items-center gap-2 transition-opacity duration-300"
         >
           <ArrowLeft className="h-4 w-4" />
@@ -43,16 +47,20 @@ export default function SubjectPage({ params }: { params: Promise<{ subject: str
             {subject.title}
           </h1>
         </div>
-        <p className="mb-8 mt-2 max-w-2xl text-md text-muted-foreground md:mb-12 md:text-lg">{subject.description}</p>
+        <p className="mb-8 mt-2 max-w-2xl text-md text-muted-foreground md:mb-12 md:text-lg">
+          {subject.description}
+        </p>
         <div className="w-full">
           <GoogleAd slot="4270752574" />
         </div>
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
           {subject.lessons.map((lesson) => (
             <Link key={lesson.id} href={`/learning/${subject.id}/${lesson.id}`}>
-              <Card className="group cursor-pointer bg-card/80 backdrop-blur-sm transition-all duration-300 hover:border-primary/50 hover:shadow-xl">
+              <Card className="group cursor-pointer bg-white/80 backdrop-blur-sm transition-all duration-300 hover:border-primary/50 hover:shadow-xl">
                 <CardHeader className="items-center">
-                  <CardTitle className="font-headline text-xl">{lesson.title}</CardTitle>
+                  <CardTitle className="font-headline text-xl">
+                    {lesson.title}
+                  </CardTitle>
                 </CardHeader>
                 <CardContent />
               </Card>
@@ -62,4 +70,4 @@ export default function SubjectPage({ params }: { params: Promise<{ subject: str
       </div>
     </main>
   );
-} 
+}

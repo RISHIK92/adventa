@@ -30,7 +30,7 @@ interface QuickActionsPanelProps {
 export default function QuickActionsPanel({
   answered = 0,
   markedForReview = 0,
-  notVisited = 180 - 0 - 0,
+  notVisited,
   onSaveAndNext,
   onClearResponse,
   onMarkForReview,
