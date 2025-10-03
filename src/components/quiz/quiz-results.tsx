@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Latex from "react-latex-next";
 import "katex/dist/katex.min.css";
 
@@ -30,8 +30,18 @@ import {
   Sparkles,
   ChevronLeft,
 } from "lucide-react";
-import RenderWithCitations from "@/lib/cite";
 import { useRouter } from "next/navigation";
+import {
+  continueInBackground,
+  handleExplainConcept,
+} from "@/utils/videoHelper";
+import { VideoGenerator } from "@/components/ui/videoGenerator";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 interface QuizResultsData {
   quizName: string;
@@ -73,6 +83,13 @@ export default function QuizResultsPage({ data }: QuizResultsPageProps) {
     key: keyof QuizResultsData["topics"][0];
     direction: "asc" | "desc";
   } | null>(null);
+  const [bgVideoJob, setBgVideoJob] = useState<any>(null);
+  const [genTopic, setGenTopic] = useState("");
+  const [genContext, setGenContext] = useState("");
+  const [showVideoGen, setShowVideoGen] = useState(false);
+  const [showVideoModal, setShowVideoModal] = useState(false);
+  const [selectedQuestion, setSelectedQuestion] = useState<any | null>(null);
+  const timersRef = useRef<NodeJS.Timeout[]>([]);
   const router = useRouter();
 
   const handleSort = (key: keyof QuizResultsData["topics"][0]) => {
@@ -120,6 +137,34 @@ export default function QuizResultsPage({ data }: QuizResultsPageProps) {
     return `${paddedMinutes}:${paddedSeconds}`;
   };
 
+  const handleVisualizeQuestion = (question: any) => {
+    const session = {
+      title: `Q${question.questionNumber}: ${question.questionText?.slice(
+        0,
+        50
+      )}${question.questionText?.length > 50 ? "..." : ""}`,
+      // You can add more session properties here if needed
+    };
+    setSelectedQuestion(question);
+    setShowVideoModal(true);
+    handleExplainConcept(
+      session,
+      bgVideoJob,
+      timersRef,
+      setBgVideoJob,
+      setGenTopic,
+      setGenContext,
+      setShowVideoGen
+    );
+  };
+
+  const handleModalOpenChange = (isOpen: boolean) => {
+    setShowVideoModal(isOpen);
+    if (!isOpen) {
+      setSelectedQuestion(null);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100">
       <header className="relative z-10 bg-white/60 backdrop-blur-xl border-b border-white/20 shadow-lg">
@@ -160,11 +205,8 @@ export default function QuizResultsPage({ data }: QuizResultsPageProps) {
           </div>
         </div>
       </header>
-      {/* END: Full-width Immersive Header */}
 
-      {/* Page Content Wrapper */}
       <div className="relative z-10 p-6 max-w-7xl mx-auto space-y-8">
-        {/* Stats Cards Grid (This was previously part of the header) */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <Card className="bg-white/70 backdrop-blur-xl border-0 shadow-lg hover:shadow-xl transition-all">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -241,9 +283,7 @@ export default function QuizResultsPage({ data }: QuizResultsPageProps) {
           </Card>
         </div>
 
-        {/* Topic-wise Performance Table */}
         <Card className="bg-white/70 backdrop-blur-xl border-0 shadow-lg">
-          {/* ... The rest of your Topic-wise Performance card's JSX is unchanged ... */}
           <CardHeader>
             <CardTitle className="text-2xl font-semibold text-gray-900">
               Topic-wise Performance
@@ -327,17 +367,15 @@ export default function QuizResultsPage({ data }: QuizResultsPageProps) {
                       </TableCell>
                       <TableCell>
                         <div className="w-full bg-gray-100 rounded-full h-2">
-                          <div className="w-full bg-gray-100 rounded-full h-2">
-                            <div
-                              className="h-2 rounded-full transition-all duration-300"
-                              style={{
-                                width: `${topic.accuracy}%`,
-                                backgroundColor: getAccuracyColor(
-                                  Number(topic.accuracy)
-                                ),
-                              }}
-                            />
-                          </div>
+                          <div
+                            className="h-2 rounded-full transition-all duration-300"
+                            style={{
+                              width: `${topic.accuracy}%`,
+                              backgroundColor: getAccuracyColor(
+                                Number(topic.accuracy)
+                              ),
+                            }}
+                          />
                         </div>
                       </TableCell>
                     </TableRow>
@@ -348,7 +386,6 @@ export default function QuizResultsPage({ data }: QuizResultsPageProps) {
           </CardContent>
         </Card>
 
-        {/* Question-by-Question Review Accordion */}
         <Card className="bg-white border-gray-200">
           <CardHeader>
             <CardTitle className="text-2xl font-semibold text-gray-900">
@@ -395,6 +432,21 @@ export default function QuizResultsPage({ data }: QuizResultsPageProps) {
                           </div>
                         )}
                       </div>
+
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleVisualizeQuestion(question);
+                          }}
+                          className="text-xs px-3 py-1 h-7 bg-gradient-to-r hover:text-gray-200 from-orange-500 to-orange-500 text-white border-0 hover:from-orange-600 hover:to-orange-600 mr-2"
+                        >
+                          <Sparkles className="h-3 w-3 mr-1" />
+                          Visualize
+                        </Button>
+                      </div>
                     </div>
                   </AccordionTrigger>
                   <AccordionContent className="px-4 pb-4">
@@ -420,12 +472,10 @@ export default function QuizResultsPage({ data }: QuizResultsPageProps) {
                           const optionLetter = String.fromCharCode(
                             65 + optionIndex
                           );
-
                           const isSelected =
                             question.selectedAnswer === optionLetter;
                           const isCorrect =
                             question.correctAnswer === optionLetter;
-
                           const isOptionImageUrl =
                             typeof option === "string" &&
                             option.startsWith("http");
@@ -505,6 +555,24 @@ export default function QuizResultsPage({ data }: QuizResultsPageProps) {
           </CardContent>
         </Card>
       </div>
+
+      <Dialog open={showVideoGen} onOpenChange={handleModalOpenChange}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>AI Video Explanation</DialogTitle>
+          </DialogHeader>
+
+          {/* Render the VideoGenerator only when a question is selected */}
+          {selectedQuestion && (
+            <VideoGenerator
+              questionId={selectedQuestion.id}
+              startGeneration={showVideoModal} // The component starts its work when this is true
+              topicTitle={`Q${selectedQuestion.questionNumber}: ${selectedQuestion.topic}`}
+              context={selectedQuestion.questionText}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

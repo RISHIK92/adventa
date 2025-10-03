@@ -856,6 +856,14 @@ export interface SubjectWithTopics {
   topics: TopicOption[];
 }
 
+export interface VideoJobStatus {
+  id: string;
+  status: "PENDING" | "PROCESSING" | "COMPLETED" | "FAILED";
+  videoUrl: string | null;
+  errorMessage: string | null;
+  retryCount: number;
+}
+
 const getAuthToken = async (): Promise<string> => {
   const auth = getAuth();
   if (!auth.currentUser) {
@@ -874,12 +882,6 @@ const handleResponse = async (response: Response) => {
     );
   }
   const result = await response.json();
-  if (!result.success) {
-    throw new Error(
-      result.error ||
-        "The API indicated a failure but provided no error message."
-    );
-  }
   return result.data;
 };
 
@@ -2182,6 +2184,31 @@ export const apiService = {
       }
     );
     return handleResponse(response);
+  },
+
+  async startVideoGeneration(questionId: number): Promise<{ jobId: string }> {
+    const token = await getAuthToken();
+    const response = await fetch(`${API_BASE_URL}/video/generate`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ questionId }),
+    });
+    const result = await response.json();
+    return result;
+  },
+
+  async getVideoGenerationStatus(jobId: string): Promise<VideoJobStatus> {
+    const token = await getAuthToken();
+    const response = await fetch(`${API_BASE_URL}/video/status/${jobId}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    const result = await response.json();
+    return result.jobRecord;
   },
 
   /**
