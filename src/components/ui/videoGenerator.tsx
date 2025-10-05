@@ -9,12 +9,15 @@ import { Badge } from "@/components/ui/badge";
 import { Play, CheckCircle2, Loader2, Sparkles, XCircle } from "lucide-react";
 // Assuming weaknessApi.ts exports your API functions and types
 import { apiService, VideoJobStatus } from "@/services/weaknessApi";
+import { continueInBackground } from "@/utils/videoHelper";
 
 interface VideoGeneratorProps {
   questionId: number;
-  startGeneration: boolean; // Prop to tell the component when to start the process
+  startGeneration: boolean;
   topicTitle: string;
   context?: string;
+  setShowVideoGen: (show: boolean) => void;
+  setBgVideoJob: (updater: (prev: any) => any) => void;
 }
 
 const getYouTubeEmbedUrl = (url: string): string | null => {
@@ -49,6 +52,8 @@ export const VideoGenerator = ({
   startGeneration,
   topicTitle,
   context,
+  setShowVideoGen,
+  setBgVideoJob,
 }: VideoGeneratorProps) => {
   // --- INTERNAL STATE MANAGEMENT ---
   const [videoJob, setVideoJob] = useState<VideoJobStatus | null>(null);
@@ -195,6 +200,12 @@ export const VideoGenerator = ({
     return statusMap[backendStatus || "PENDING"];
   };
 
+  useEffect(() => {
+    if (videoJob) {
+      setBgVideoJob((prev: any) => ({ ...prev, ...videoJob }));
+    }
+  }, [videoJob, setBgVideoJob]);
+
   const display = mapJobStatusToDisplay(videoJob?.status);
   const effectiveStatus = display.componentStatus;
 
@@ -265,7 +276,7 @@ export const VideoGenerator = ({
           variant={effectiveStatus === "complete" ? "default" : "secondary"}
           className={
             effectiveStatus === "complete"
-              ? "bg-green-100 text-green-800 border border-green-200"
+              ? "bg-green-200 text-green-800 border hover:bg-green-300 border-green-300"
               : ""
           }
         >
@@ -346,10 +357,10 @@ export const VideoGenerator = ({
                 <span className="text-sm">Generation completed</span>
               </div>
               <div className="flex items-center gap-2">
-                <Button size="sm" className="gap-2">
+                {/* <Button size="sm" className="gap-2">
                   <Play className="h-4 w-4" /> Play Again
-                </Button>
-                <Button variant="outline" size="sm" className="gap-2">
+                </Button> */}
+                <Button size="sm" className="gap-2">
                   <Sparkles className="h-4 w-4" /> New Version
                 </Button>
               </div>
@@ -359,9 +370,19 @@ export const VideoGenerator = ({
       </AnimatePresence>
 
       {effectiveStatus !== "complete" && (
-        <div className="flex items-center gap-2 text-xs text-[#667085]">
-          <Loader2 className="h-3.5 w-3.5 animate-spin" />
-          This may take a minute. Feel free to continue in the background.
+        <div className="flex items-center justify-between text-xs text-[#667085]">
+          <div className="flex items-center gap-2">
+            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            This may take a minute.
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-xs h-auto py-1 px-2 text-[#ff5c00] hover:text-[#ff5c00] hover:bg-orange-50"
+            onClick={() => continueInBackground(setShowVideoGen, setBgVideoJob)}
+          >
+            Continue in background
+          </Button>
         </div>
       )}
     </div>

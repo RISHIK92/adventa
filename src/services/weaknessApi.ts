@@ -2232,4 +2232,39 @@ export const apiService = {
     );
     return handleResponse(response);
   },
+
+  async sendMessage(message: string): Promise<{ response: string }> {
+    const token = await getAuthToken();
+    const response = await fetch(`${API_BASE_URL}/tutor/chat`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ message }),
+    });
+    return response.json(); // Or adapt to handleResponse if needed
+  },
+
+  /**
+   * Fetches a batch of conversation messages.
+   */
+  async getConversation(
+    limit: number,
+    cursor: string | null
+  ): Promise<{ messages: any[]; nextCursor: string | null }> {
+    const token = await getAuthToken();
+    const query = new URLSearchParams({
+      limit: String(limit),
+      ...(cursor && { cursor }),
+    });
+
+    const response = await fetch(
+      `${API_BASE_URL}/tutor/conversation?${query}`,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
+    return response.json(); // Or adapt to handleResponse if needed
+  },
 };

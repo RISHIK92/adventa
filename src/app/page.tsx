@@ -14,7 +14,6 @@ import { Toaster } from "sonner";
 export default function Home() {
   return (
     <main className="min-h-screen">
-      <Toaster position="bottom-right" richColors />
       <WithAppScreenshot />
       {/* <SpotlightLogoCloud /> */}
       <ThreeColumnBentoGrid />

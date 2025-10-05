@@ -31,10 +31,7 @@ import {
   ChevronLeft,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import {
-  continueInBackground,
-  handleExplainConcept,
-} from "@/utils/videoHelper";
+import { handleExplainConcept } from "@/utils/videoHelper";
 import { VideoGenerator } from "@/components/ui/videoGenerator";
 import {
   Dialog,
@@ -87,7 +84,6 @@ export default function QuizResultsPage({ data }: QuizResultsPageProps) {
   const [genTopic, setGenTopic] = useState("");
   const [genContext, setGenContext] = useState("");
   const [showVideoGen, setShowVideoGen] = useState(false);
-  const [showVideoModal, setShowVideoModal] = useState(false);
   const [selectedQuestion, setSelectedQuestion] = useState<any | null>(null);
   const timersRef = useRef<NodeJS.Timeout[]>([]);
   const router = useRouter();
@@ -143,10 +139,9 @@ export default function QuizResultsPage({ data }: QuizResultsPageProps) {
         0,
         50
       )}${question.questionText?.length > 50 ? "..." : ""}`,
-      // You can add more session properties here if needed
     };
     setSelectedQuestion(question);
-    setShowVideoModal(true);
+    // Directly call the function from your helper file
     handleExplainConcept(
       session,
       bgVideoJob,
@@ -159,9 +154,11 @@ export default function QuizResultsPage({ data }: QuizResultsPageProps) {
   };
 
   const handleModalOpenChange = (isOpen: boolean) => {
-    setShowVideoModal(isOpen);
+    setShowVideoGen(isOpen);
     if (!isOpen) {
-      setSelectedQuestion(null);
+      setTimeout(() => {
+        setSelectedQuestion(null);
+      }, 150);
     }
   };
 
@@ -566,9 +563,11 @@ export default function QuizResultsPage({ data }: QuizResultsPageProps) {
           {selectedQuestion && (
             <VideoGenerator
               questionId={selectedQuestion.id}
-              startGeneration={showVideoModal} // The component starts its work when this is true
+              startGeneration={showVideoGen} // The component starts its work when this is true
               topicTitle={`Q${selectedQuestion.questionNumber}: ${selectedQuestion.topic}`}
               context={selectedQuestion.questionText}
+              setShowVideoGen={setShowVideoGen}
+              setBgVideoJob={setBgVideoJob}
             />
           )}
         </DialogContent>

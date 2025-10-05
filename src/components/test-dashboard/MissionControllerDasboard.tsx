@@ -54,6 +54,7 @@ import {
   Play,
   Users,
   Rocket,
+  User,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
@@ -101,9 +102,9 @@ interface AIRecommendation {
 
 interface ChatMessage {
   id: string;
-  type: "user" | "coach";
-  message: string;
-  timestamp: Date;
+  role: "user" | "assistant";
+  content: string;
+  createdAt: Date;
   avatar?: string;
 }
 
@@ -230,33 +231,9 @@ export default function MissionControlDashboard({
     },
   ]);
 
-  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([
-    {
-      id: "1",
-      type: "coach",
-      message:
-        "Great job maintaining your 12-day streak! Ready to tackle today's challenges?",
-      timestamp: new Date(Date.now() - 5 * 60000),
-      avatar:
-        "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=32&h=32&fit=crop&crop=face",
-    },
-    {
-      id: "2",
-      type: "user",
-      message:
-        "Yes! I'm feeling confident about today. What should I focus on?",
-      timestamp: new Date(Date.now() - 3 * 60000),
-    },
-    {
-      id: "3",
-      type: "coach",
-      message:
-        "Perfect! Based on your recent performance, I'd recommend starting with calculus integration practice. Your algebra skills are strong, but we can strengthen integration techniques. Want me to create a focused 30-minute session?",
-      timestamp: new Date(Date.now() - 1 * 60000),
-      avatar:
-        "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=32&h=32&fit=crop&crop=face",
-    },
-  ]);
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+  const [isChatLoading, setIsChatLoading] = useState(true);
+  const [isSendingMessage, setIsSendingMessage] = useState(false);
 
   const [newMessage, setNewMessage] = useState("");
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
@@ -269,6 +246,85 @@ export default function MissionControlDashboard({
     questionCount: [20],
   });
   const [isActionLoading, setIsActionLoading] = useState(false);
+
+  useEffect(() => {
+    const fetchConversation = async () => {
+      setIsChatLoading(true);
+      try {
+        const response = await apiService.getConversation(3, null);
+        const formattedMessages = response.messages.map((msg: any) => ({
+          id: msg.id,
+          role: msg.role,
+          content: msg.content,
+          createdAt: new Date(msg.createdAt),
+          avatar:
+            msg.role === "assistant"
+              ? "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=32&h=32&fit=crop&crop=face"
+              : undefined,
+        }));
+        setChatMessages(formattedMessages);
+      } catch (error) {
+        console.error("Failed to load chat history:", error);
+        toast.error("Failed to load chat history.");
+      } finally {
+        setIsChatLoading(false);
+      }
+    };
+
+    fetchConversation();
+  }, []);
+
+  const handleSendMessage = async () => {
+    if (!newMessage.trim() || isSendingMessage) return;
+
+    const userMessage: ChatMessage = {
+      id: Date.now().toString(),
+      role: "user",
+      content: newMessage.trim(),
+      createdAt: new Date(),
+    };
+
+    setChatMessages((prev) => [...prev, userMessage]);
+    const messageToSend = newMessage;
+    setNewMessage("");
+    setIsSendingMessage(true);
+
+    const loadingMessage: ChatMessage = {
+      id: (Date.now() + 1).toString(),
+      role: "assistant",
+      content: "● ● ●",
+      createdAt: new Date(),
+      avatar:
+        "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=32&h=32&fit=crop&crop=face",
+    };
+    setChatMessages((prev) => [...prev, loadingMessage]);
+
+    try {
+      const response = await apiService.sendMessage(messageToSend);
+
+      const coachResponse: ChatMessage = {
+        id: (Date.now() + 2).toString(),
+        role: "assistant",
+        content: response.response,
+        createdAt: new Date(),
+        avatar:
+          "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=32&h=32&fit=crop&crop=face",
+      };
+
+      setChatMessages((prev) =>
+        prev.map((msg) => (msg.id === loadingMessage.id ? coachResponse : msg))
+      );
+      router.push("/chat");
+    } catch (error) {
+      console.error("Failed to send message:", error);
+      toast.error("Failed to send message. Please try again.");
+      setChatMessages((prev) =>
+        prev.filter((msg) => msg.id !== loadingMessage.id)
+      );
+    } finally {
+      setIsSendingMessage(false);
+    }
+  };
 
   const getIconForAction = (actionType: string) => {
     switch (actionType) {
@@ -402,33 +458,6 @@ export default function MissionControlDashboard({
       coins: 50,
     },
   ];
-
-  const handleSendMessage = () => {
-    if (!newMessage.trim()) return;
-
-    const userMessage: ChatMessage = {
-      id: Date.now().toString(),
-      type: "user",
-      message: newMessage.trim(),
-      timestamp: new Date(),
-    };
-
-    setChatMessages((prev) => [...prev, userMessage]);
-    setNewMessage("");
-
-    // Simulate AI coach response
-    setTimeout(() => {
-      const coachResponse: ChatMessage = {
-        id: (Date.now() + 1).toString(),
-        type: "coach",
-        message: getAIResponse(newMessage),
-        timestamp: new Date(),
-        avatar:
-          "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=32&h=32&fit=crop&crop=face",
-      };
-      setChatMessages((prev) => [...prev, coachResponse]);
-    }, 1500);
-  };
 
   const getAIResponse = (userMessage: string): string => {
     const responses = [
@@ -780,7 +809,7 @@ export default function MissionControlDashboard({
             <CardContent className="p-6 pt-0">
               {isRecommendationLoading ? (
                 <div className="p-4 rounded-lg border-2 border-dashed flex items-center justify-center min-h-[120px]">
-                  <Loader className="w-5 h-5 animate-spin text-gray-400 mr-3" />
+                  <Loader className="w-5 h-5 animate-spin text-orange-400 mr-3" />
                   <span className="text-gray-500 font-medium">
                     Your AI Coach is preparing your plan...
                   </span>
@@ -814,22 +843,23 @@ export default function MissionControlDashboard({
                           onClick={() =>
                             handleAIAction(aiRecommendation.action)
                           }
-                          className={`${aiRecommendation.status === "PENDING"
-                            ? "bg-orange-600 hover:bg-orange-700 text-white"
-                            : aiRecommendation.status === "COMPLETED"
-                            ? "bg-green-600 text-white cursor-not-allowed"
-                            : "bg-gray-400 text-white cursor-not-allowed"
+                          className={`${
+                            aiRecommendation.status === "PENDING"
+                              ? "bg-orange-600 hover:bg-orange-700 text-white"
+                              : aiRecommendation.status === "COMPLETED"
+                              ? "bg-green-600 text-white cursor-not-allowed"
+                              : "bg-gray-400 text-white cursor-not-allowed"
                           }`}
                           disabled={
                             aiRecommendation.status !== "PENDING" ||
                             isActionLoading
-                          } 
+                          }
                         >
-                      {aiRecommendation.status === "PENDING"
-                      ? "Start Now"
-                      : aiRecommendation.status === "COMPLETED"
-                      ? "Completed"
-                      : aiRecommendation.status}
+                          {aiRecommendation.status === "PENDING"
+                            ? "Start Now"
+                            : aiRecommendation.status === "COMPLETED"
+                            ? "Completed"
+                            : aiRecommendation.status}
                         </Button>
                       </div>
                     </div>
@@ -1292,44 +1322,59 @@ export default function MissionControlDashboard({
               <div className="space-y-4">
                 <ScrollArea className="h-48 pr-4">
                   <div className="space-y-3">
-                    {chatMessages.map((message) => (
-                      <div
-                        key={message.id}
-                        className={`flex gap-3 ${
-                          message.type === "user"
-                            ? "justify-end"
-                            : "justify-start"
-                        }`}
-                      >
-                        {message.type === "coach" && (
-                          <Avatar className="w-6 h-6">
-                            <AvatarImage src={message.avatar} />
-                            <AvatarFallback>AI</AvatarFallback>
-                          </Avatar>
-                        )}
+                    {isChatLoading ? (
+                      <div className="flex justify-center items-center h-full">
+                        <Loader className="w-6 h-6 animate-spin text-gray-300" />
+                      </div>
+                    ) : (
+                      chatMessages.map((message) => (
                         <div
-                          className={`rounded-lg px-3 py-2 max-w-[80%] ${
-                            message.type === "user"
-                              ? "bg-[#ff5c00] text-[#ffffff]"
-                              : "bg-[#f0f2f5] text-[#667085]"
+                          key={message.id}
+                          className={`flex gap-3 ${
+                            message.role === "user"
+                              ? "justify-end"
+                              : "justify-start"
                           }`}
                         >
-                          <p className="text-sm">{message.message}</p>
-                          <p className="text-xs opacity-70 mt-1">
-                            {message.timestamp.toLocaleTimeString([], {
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            })}
-                          </p>
+                          {message.role === "assistant" && (
+                            <div className="w-6 h-6 rounded-lg bg-[#fe724c]/10 flex items-center justify-center">
+                              <Bot className="w-4 h-4 text-[#fe724c]" />
+                            </div>
+                          )}
+                          <div
+                            className={`rounded-lg px-3 py-2 max-w-[80%] ${
+                              message.role === "user"
+                                ? "bg-[#ff5c00] text-[#ffffff]"
+                                : "bg-[#f0f2f5] text-[#667085]"
+                            }`}
+                          >
+                            <p
+                              className={`text-sm ${
+                                message.role === "user" &&
+                                "text-[#ffffff] font-medium"
+                              }`}
+                            >
+                              {message.content}
+                            </p>
+                            {/* <p
+                              className={`text-xs opacity-70 mt-1 ${
+                                message.role === "user" && "text-[#ffffff]"
+                              }`}
+                            >
+                              {message.createdAt.toLocaleTimeString([], {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              })}
+                            </p> */}
+                          </div>
+                          {message.role === "user" && (
+                            <div className="w-6 h-6 rounded-lg bg-[#4299e1]/20 flex items-center justify-center">
+                              <User className="w-4 h-4 text-[#4299e1]" />
+                            </div>
+                          )}
                         </div>
-                        {message.type === "user" && (
-                          <Avatar className="w-6 h-6">
-                            <AvatarImage src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=24&h=24&fit=crop&crop=face" />
-                            <AvatarFallback>U</AvatarFallback>
-                          </Avatar>
-                        )}
-                      </div>
-                    ))}
+                      ))
+                    )}
                   </div>
                 </ScrollArea>
 
@@ -1344,10 +1389,22 @@ export default function MissionControlDashboard({
                   <Button
                     size="sm"
                     onClick={handleSendMessage}
-                    disabled={!newMessage.trim()}
+                    disabled={!newMessage.trim() || isSendingMessage}
                   >
-                    <Send className="w-4 h-4" />
+                    {isSendingMessage ? (
+                      <Loader className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Send className="w-4 h-4" />
+                    )}
                   </Button>
+                </div>
+                <div className="flex justify-center">
+                  <button
+                    className="text-orange-600 hover:text-orange-500 text-xs"
+                    onClick={() => router.push("/chat")}
+                  >
+                    Open Chat
+                  </button>
                 </div>
               </div>
             </CardContent>
