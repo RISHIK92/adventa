@@ -799,55 +799,75 @@ export default function MissionControlDashboard({
           </Card>
 
           {/* AI Recommendations */}
-          <Card className="bg-[#ffffff] border-[#e0e0e0]">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-lg">
+          <Card className="relative overflow-hidden border border-[#e4e4e4] shadow-sm hover:shadow-md transition-all duration-300 rounded-md">
+            {/* Decorative glow */}
+            <div className="absolute inset-0 pointer-events-none" />
+
+            <CardHeader className="relative z-10 pb-2">
+              <CardTitle className="flex items-center gap-2 text-lg font-semibold text-gray-800">
                 <Sparkles className="w-5 h-5 text-[#ff5c00]" />
-                Your Plan For Today
+                Your Plan for Today
               </CardTitle>
             </CardHeader>
-            <CardContent className="p-6 pt-0">
+
+            <CardContent className="relative z-10 p-6 pt-0">
               {isRecommendationLoading ? (
-                <div className="p-4 rounded-lg border-2 border-dashed flex items-center justify-center min-h-[120px]">
-                  <Loader className="w-5 h-5 animate-spin text-orange-400 mr-3" />
-                  <span className="text-gray-500 font-medium">
-                    Your AI Coach is preparing your plan...
+                <div className="p-5 rounded-xl border-2 border-dashed flex flex-col gap-3 items-center justify-center min-h-[140px] bg-gray-50">
+                  <Loader className="w-6 h-6 animate-spin text-orange-500" />
+                  <span className="text-gray-500 font-medium text-sm">
+                    Your AI Coach is preparing your personalized plan...
                   </span>
                 </div>
               ) : aiRecommendation ? (
                 <div
-                  className={`p-4 rounded-lg border-2 ${getPriorityColor(
+                  className={`p-5 rounded-xl border ${getPriorityColor(
                     "high"
-                  )}`}
+                  )} bg-gradient-to-br from-orange-50/70 to-white shadow-inner`}
                 >
-                  <div className="flex items-start gap-3">
-                    <div className="p-2 bg-[#ff5c00]/10 rounded-lg text-[#ff5c00] mt-1">
+                  <div className="flex items-start gap-4">
+                    <div className="p-3 bg-[#ff5c00]/10 rounded-xl text-[#ff5c00] mt-1 shadow-sm">
                       {getIconForAction(aiRecommendation.action.type)}
                     </div>
-                    <div className="flex-1">
-                      <div className="flex items-center justify-between mb-2">
-                        <h4 className="font-semibold text-base">
+                    <div className="flex-1 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <h4 className="font-semibold text-gray-800 text-base leading-snug">
                           {aiRecommendation.title}
                         </h4>
+                        <span
+                          className={`text-xs px-2 py-1 rounded-full font-medium ${
+                            aiRecommendation.status === "COMPLETED"
+                              ? "bg-green-100 text-green-700"
+                              : aiRecommendation.status === "PENDING"
+                              ? "bg-orange-100 text-orange-700"
+                              : "bg-gray-100 text-gray-500"
+                          }`}
+                        >
+                          {aiRecommendation.status}
+                        </span>
                       </div>
-                      <p className="text-sm text-[#667085] mb-3">
-                        <span className="font-semibold">Ai:</span>{" "}
+
+                      <p className="text-sm text-gray-600 leading-relaxed">
+                        <span className="font-semibold text-gray-700">
+                          AI Insight:
+                        </span>{" "}
                         {aiRecommendation.rationale}
                       </p>
-                      <div className="flex items-center justify-between mt-4 p-3 bg-black/5 rounded-md">
-                        <span className="text-sm text-gray-600 italic font-medium">
-                          {aiRecommendation.action.parameters.details}
+
+                      <div className="flex items-center justify-between mt-4 p-3 bg-gray-50 rounded-lg border border-gray-100 shadow-inner">
+                        <span className="text-sm text-gray-700 italic font-medium">
+                          {aiRecommendation.action.parameters.details ||
+                            "Practice task to boost your learning."}
                         </span>
                         <Button
                           size="sm"
                           onClick={() =>
                             handleAIAction(aiRecommendation.action)
                           }
-                          className={`${
+                          className={`rounded-lg font-medium transition-all duration-300 ${
                             aiRecommendation.status === "PENDING"
-                              ? "bg-orange-600 hover:bg-orange-700 text-white"
+                              ? "bg-orange-600 hover:bg-orange700 text-white shadow-md"
                               : aiRecommendation.status === "COMPLETED"
-                              ? "bg-green-600 text-white cursor-not-allowed"
+                              ? "bg-green-600 text-white opacity-80 cursor-not-allowed"
                               : "bg-gray-400 text-white cursor-not-allowed"
                           }`}
                           disabled={
@@ -866,38 +886,17 @@ export default function MissionControlDashboard({
                   </div>
                 </div>
               ) : (
-                <div className="p-4 rounded-lg border-2 border-dashed flex flex-col items-center justify-center min-h-[120px]">
+                <div className="p-6 rounded-xl border-2 border-dashed flex flex-col items-center justify-center min-h-[140px] bg-gray-50 text-center">
                   <AlertTriangle className="w-6 h-6 text-yellow-500 mb-2" />
-                  <h4 className="font-semibold text-gray-700">
+                  <h4 className="font-semibold text-gray-700 mb-1">
                     No Plan Available
                   </h4>
-                  <p className="text-sm text-gray-500 text-center">
-                    Your AI Coach couldn't generate a plan. Please try again
-                    later.
+                  <p className="text-sm text-gray-500 max-w-xs">
+                    Your AI Coach couldn't generate a plan at the moment. Please
+                    try again later.
                   </p>
                 </div>
               )}
-              {/* {aiRecommendation && (
-                <div className="flex items-center gap-2 mt-2">
-                  <span
-                    className={`px-3 py-1 rounded-full text-xs font-semibold
-                      ${
-                        aiRecommendation.status === "PENDING"
-                          ? "bg-orange-100 text-orange-700"
-                          : aiRecommendation.status === "COMPLETED"
-                          ? "bg-green-100 text-green-700"
-                          : "bg-gray-100 text-gray-700"
-                      }
-                    `}
-                  >
-                    {aiRecommendation.status === "PENDING"
-                      ? "Start Now"
-                      : aiRecommendation.status === "COMPLETED"
-                      ? "Completed"
-                      : aiRecommendation.status}
-                  </span>
-                </div>
-              )} */}
             </CardContent>
           </Card>
 
