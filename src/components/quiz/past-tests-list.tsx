@@ -39,7 +39,7 @@ interface PastTestsListProps {
   attempts: QuizAttempt[];
   loading?: boolean;
   onViewResults: (attemptId: string) => void;
-  onContinueQuiz: (attemptId: string) => void;
+  onContinueQuiz?: (attemptId: string) => void;
   onStartQuiz: (quizId: string) => void;
 }
 
@@ -253,7 +253,7 @@ export const PastTestsList: React.FC<PastTestsListProps> = ({
                     </Button>
                   )}
 
-                  {attempt.status === "In Progress" && (
+                  {onContinueQuiz && attempt.status === "In Progress" && (
                     <Button
                       size="sm"
                       onClick={() => onContinueQuiz(attempt.id)}

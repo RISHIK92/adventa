@@ -134,6 +134,8 @@ export function Quiz({
       const result = await apiService.submitTest(testInstanceId, testType);
       if (testType === "custom") {
         router.push(`/quiz-results/${result.summary.testInstanceId}`);
+      } else if (testType === "revision") {
+        router.push(`/revision-results/${result.summary.testInstanceId}`);
       } else {
         router.push(`/test-result/${result.summary.testInstanceId}`);
       }

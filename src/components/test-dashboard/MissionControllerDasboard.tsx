@@ -1152,6 +1152,7 @@ export default function MissionControlDashboard({
                       size="sm"
                       variant="outline"
                       className="w-full group-hover:bg-[#ff5c00] group-hover:text-[#ffffff] group-hover:border-[#ff5c00]"
+                      onClick={() => router.push("/dashboard/JEE/revision")}
                     >
                       Start Now
                     </Button>

@@ -2,7 +2,7 @@ import { getAuth } from "firebase/auth";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
 
-export type TestType = "custom" | "weakness";
+export type TestType = "custom" | "weakness" | "revision";
 
 export interface CreateScheduledTestPayload {
   name: string;
@@ -892,14 +892,29 @@ export const apiService = {
    */
   async getTestData(testInstanceId: string, testType: TestType) {
     const token = await getAuthToken();
-    const url =
-      testType === "custom"
-        ? `${API_BASE_URL}/custom-quiz/test/${testInstanceId}`
-        : `${API_BASE_URL}/weakness/test-details/${testInstanceId}`;
+
+    let url = "";
+    switch (testType) {
+      case "custom":
+        url = `${API_BASE_URL}/custom-quiz/test/${testInstanceId}`;
+        break;
+
+      case "weakness":
+        url = `${API_BASE_URL}/weakness/test-details/${testInstanceId}`;
+        break;
+
+      case "revision":
+        url = `${API_BASE_URL}/revision-test/test-details/${testInstanceId}`;
+        break;
+
+      default:
+        throw new Error(`Unsupported test type: ${testType}`);
+    }
 
     const response = await fetch(url, {
       headers: { Authorization: `Bearer ${token}` },
     });
+
     return handleResponse(response);
   },
 
@@ -1084,6 +1099,42 @@ export const apiService = {
     return result.data;
   },
 
+  /**
+   * Fetches the dashboard data for revision tests (list of past attempts).
+   * GET /revision-test/dashboard/:examId
+   * NOTE: You will need to create this endpoint on your backend. See note below.
+   */
+  async getRevisionTestDashboard(examId: number) {
+    const token = await getAuthToken();
+    const response = await fetch(
+      `${API_BASE_URL}/revision-test/dashboard/${examId}`,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
+    return handleResponse(response);
+  },
+
+  /**
+   * Generates a new revision test.
+   * POST /revision-test/generate
+   */
+  async generateRevisionTest(payload: {
+    examId: number;
+    questionCount: 10 | 20 | 30 | 60;
+  }) {
+    const token = await getAuthToken();
+    const response = await fetch(`${API_BASE_URL}/revision-test/generate`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(payload),
+    });
+    return handleResponse(response);
+  },
+
   // WEAKNESS TEST SPECIFIC ENDPOINTS
 
   async getWeaknessTestHistory(): Promise<WeaknessTestHistoryItem[]> {
@@ -1091,6 +1142,23 @@ export const apiService = {
     const response = await fetch(`${API_BASE_URL}/weakness/history`, {
       headers: { Authorization: `Bearer ${token}` },
     });
+    return handleResponse(response);
+  },
+
+  /**
+  Fetches the detailed results for any completed test.
+  This can be a generic function if the result structures are similar.
+  GET /revision-test/results/:testInstanceId
+  */
+  async getRevisionTestResults(testInstanceId: string) {
+    const token = await getAuthToken();
+    const response = await fetch(
+      `
+        ${API_BASE_URL}/revision-test/results/${testInstanceId}`,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
     return handleResponse(response);
   },
 
