@@ -10,7 +10,7 @@ export const CardLayoutHero = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
           {/* Left Text Content */}
           <div className="space-y-6">
-            <h2 className="flex items-center gap-2 text-lg font-medium tracking-tight text-[var(--accent)] font-display">
+            <h2 className="flex items-center gap-2 text-lg font-medium tracking-tight text-gray-500 font-display">
               AI-Powered Test Prep
             </h2>
 

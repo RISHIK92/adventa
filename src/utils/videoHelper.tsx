@@ -22,17 +22,14 @@ const handleExplainConcept = (
   const topic = session.title || session.subject || "Concept";
   const context = session.subject || "";
 
-  // clear existing timers
   timersRef.current.forEach(clearTimeout);
   timersRef.current = [];
 
-  // Start job and open dialog first
   setBgVideoJob({ status: "preparing", videoUrl: null, topic, context });
   setGenTopic(topic);
   setGenContext(context);
   setShowVideoGen(true);
 
-  // Simulated background checkpoints
   const checkpoints: Array<{
     at: number;
     status: string;
@@ -74,7 +71,6 @@ const continueInBackground = (
   setShowVideoGen: (arg0: boolean) => void,
   setBgVideoJob: (arg0: (prev: any) => any) => void
 ) => {
-  // Create persistent toast if not yet created, keep dialog closable
   setBgVideoJob((prev: any) => {
     if (!prev) return prev;
     if (prev.toastId === undefined) {

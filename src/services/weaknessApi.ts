@@ -2186,6 +2186,21 @@ export const apiService = {
     return handleResponse(response);
   },
 
+  async getDailySchedule(date: Date): Promise<any[]> {
+    const token = await getAuthToken();
+    const query = new URLSearchParams({
+      year: String(date.getUTCFullYear()),
+      month: String(date.getUTCMonth() + 1), // Month is 0-indexed in JS
+      day: String(date.getUTCDate()),
+    });
+
+    const response = await fetch(`${API_BASE_URL}/schedule/day?${query}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    return handleResponse(response);
+  },
+
   async startVideoGeneration(questionId: number): Promise<{ jobId: string }> {
     const token = await getAuthToken();
     const response = await fetch(`${API_BASE_URL}/video/generate`, {

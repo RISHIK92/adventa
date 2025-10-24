@@ -55,6 +55,7 @@ import {
   Users,
   Rocket,
   User,
+  Pen,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
@@ -159,6 +160,33 @@ export interface DailyPlan {
   status: string;
 }
 
+interface Mission {
+  id: string;
+  subject: string;
+  topic: string;
+  priority: "LOW" | "MEDIUM" | "HIGH";
+  method: "STUDY" | "PRACTICE" | "TEST";
+  duration: number; // durationMinutes from backend
+  difficultyLevel: "EASY" | "MEDIUM" | "HARD";
+  // These are optional fields from your backend
+  questionCount?: number;
+  timeLimitMinutes?: number;
+  status: "PENDING" | "COMPLETED" | "SKIPPED";
+}
+
+const getMissionIcon = (method: Mission["method"]) => {
+  switch (method) {
+    case "STUDY":
+      return <BookOpen className="w-5 h-5" />;
+    case "PRACTICE":
+      return <Pen className="w-5 h-5" />;
+    case "TEST":
+      return <Target className="w-5 h-5" />;
+    default:
+      return <BookOpen className="w-5 h-5" />;
+  }
+};
+
 export default function MissionControlDashboard({
   aiRecommendation,
   isRecommendationLoading,
@@ -169,12 +197,12 @@ export default function MissionControlDashboard({
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [userStats, setUserStats] = useState<UserStats>({
-    streak: 12,
-    coins: 850,
+    streak: 1,
+    coins: 800,
     dailyGoal: 120,
     dailyProgress: 78,
-    weeklyData: [45, 67, 89, 23, 56, 78, 90],
-    accuracyTrend: [85, 87, 82, 91, 88, 93, 89],
+    weeklyData: [0, 0, 0, 0, 0, 0, 0],
+    accuracyTrend: [0, 0, 0, 0, 0, 0, 0],
     rank: 24,
     friends: [
       {
@@ -198,38 +226,7 @@ export default function MissionControlDashboard({
     ],
   });
 
-  const [missions, setMissions] = useState<MissionCard[]>([
-    {
-      id: "1",
-      title: "Morning Math Drill",
-      subject: "Algebra",
-      estimatedTime: 15,
-      difficulty: "medium",
-      coinReward: 25,
-      completed: false,
-      icon: <Component className="w-4 h-4" />,
-    },
-    {
-      id: "2",
-      title: "Physics Review",
-      subject: "Mechanics",
-      estimatedTime: 20,
-      difficulty: "hard",
-      coinReward: 40,
-      completed: false,
-      icon: <PanelsTopLeft className="w-4 h-4" />,
-    },
-    {
-      id: "3",
-      title: "Quick Grammar Check",
-      subject: "English",
-      estimatedTime: 10,
-      difficulty: "easy",
-      coinReward: 15,
-      completed: false,
-      icon: <PanelTop className="w-4 h-4" />,
-    },
-  ]);
+  const [missions, setMissions] = useState<MissionCard[]>([]);
 
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [isChatLoading, setIsChatLoading] = useState(true);
@@ -246,6 +243,35 @@ export default function MissionControlDashboard({
     questionCount: [20],
   });
   const [isActionLoading, setIsActionLoading] = useState(false);
+
+  useEffect(() => {
+    const fetchMissions = async () => {
+      try {
+        // Fetches today's schedule. In UTC to be timezone-safe.
+        const today = new Date();
+        const dailySchedule = await apiService.getDailySchedule(today);
+
+        // Map backend data to our frontend Mission type
+        const formattedMissions = dailySchedule.map((session) => ({
+          ...session,
+          // Add default values and transformations here if needed
+          estimatedTime: session.duration,
+          coinReward: Math.round(session.duration * 1.5), // Example reward logic
+          completed: session.status === "COMPLETED",
+          icon: getMissionIcon(session.method),
+          title: session.topic,
+          difficulty: session.difficultyLevel,
+        }));
+
+        setMissions(formattedMissions);
+      } catch (err) {
+        console.error("Failed to fetch daily missions:", err);
+        toast.error("Failed to load daily missions.");
+      }
+    };
+
+    fetchMissions();
+  }, []);
 
   useEffect(() => {
     const fetchConversation = async () => {
@@ -383,6 +409,8 @@ export default function MissionControlDashboard({
             recommendedId: aiRecommendation?.recommendedId || "",
           };
           response = await apiService.generateDrill(payload);
+        } else if (params.testType === "diagnostic") {
+          router.push("/dashboard/JEE/quizzes");
         } else {
           throw new Error(`Unsupported test type: ${params.testType}`);
         }
@@ -390,8 +418,6 @@ export default function MissionControlDashboard({
         if (response && response.testInstanceId) {
           toast.success("Test generated successfully! Starting now...");
           router.push(`/ai-test/${response.testInstanceId}`);
-        } else {
-          throw new Error("Failed to get a valid test ID from the server.");
         }
       }
     } catch (error: any) {
@@ -439,36 +465,25 @@ export default function MissionControlDashboard({
     {
       id: "1",
       type: "completion",
-      text: "Completed Calculus Practice",
-      time: "2 hours ago",
-      coins: 30,
+      text: "Account Created",
+      time: "Now",
+      coins: 800,
     },
-    {
-      id: "2",
-      type: "badge",
-      text: 'Earned "Math Master" badge',
-      time: "1 day ago",
-      coins: 0,
-    },
-    {
-      id: "3",
-      type: "challenge",
-      text: "Won speed challenge vs Sarah",
-      time: "2 days ago",
-      coins: 50,
-    },
+    // {
+    //   id: "2",
+    //   type: "badge",
+    //   text: 'Earned "Math Master" badge',
+    //   time: "1 day ago",
+    //   coins: 0,
+    // },
+    // {
+    //   id: "3",
+    //   type: "challenge",
+    //   text: "Won speed challenge vs Sarah",
+    //   time: "2 days ago",
+    //   coins: 50,
+    // },
   ];
-
-  const getAIResponse = (userMessage: string): string => {
-    const responses = [
-      "That's a great question! Based on your learning pattern, I recommend focusing on foundational concepts first.",
-      "I can see you're making excellent progress! Let's build on that momentum with some targeted practice.",
-      "Remember, consistency is key. Even 15 minutes of focused study can make a big difference.",
-      "Your performance data shows you're strongest in the morning. Consider scheduling challenging topics then.",
-      "Great insight! I'll adjust your study plan to include more practice in that area.",
-    ];
-    return responses[Math.floor(Math.random() * responses.length)];
-  };
 
   const handleCompleteCard = useCallback(
     (cardId: string) => {
@@ -679,10 +694,16 @@ export default function MissionControlDashboard({
                     </div>
                     <div className="space-y-2">
                       <div className="flex justify-between">
+                        <span className="text-sm">New Join Bonus</span>
+                        <span className="text-sm text-[#667085]">
+                          800 coins
+                        </span>
+                      </div>
+                      {/* <div className="flex justify-between">
                         <span className="text-sm">Power-up Hints</span>
                         <span className="text-sm text-[#667085]">50 coins</span>
-                      </div>
-                      <div className="flex justify-between">
+                      </div> */}
+                      {/* <div className="flex justify-between">
                         <span className="text-sm">Extra Time</span>
                         <span className="text-sm text-[#667085]">75 coins</span>
                       </div>
@@ -691,7 +712,7 @@ export default function MissionControlDashboard({
                         <span className="text-sm text-[#667085]">
                           200 coins
                         </span>
-                      </div>
+                      </div> */}
                     </div>
                   </div>
                 </PopoverContent>
@@ -729,7 +750,7 @@ export default function MissionControlDashboard({
               </Button>
 
               <Avatar className="w-10 h-10">
-                <AvatarImage src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face" />
+                {/* <AvatarImage src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face" /> */}
                 <AvatarFallback>U</AvatarFallback>
               </Avatar>
             </div>
@@ -865,7 +886,7 @@ export default function MissionControlDashboard({
                           }
                           className={`rounded-lg font-medium transition-all duration-300 ${
                             aiRecommendation.status === "PENDING"
-                              ? "bg-orange-600 hover:bg-orange700 text-white shadow-md"
+                              ? "bg-orange-600 hover:bg-orange-700 text-white shadow-md"
                               : aiRecommendation.status === "COMPLETED"
                               ? "bg-green-600 text-white opacity-80 cursor-not-allowed"
                               : "bg-gray-400 text-white cursor-not-allowed"
@@ -979,13 +1000,15 @@ export default function MissionControlDashboard({
                                   <Button
                                     size="sm"
                                     className="flex-1"
-                                    onClick={() =>
-                                      handleCompleteCard(mission.id)
-                                    }
+                                    onClick={() => router.push("/ai-schedule")}
                                   >
                                     Start Mission
                                   </Button>
-                                  <Button size="sm" variant="outline">
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => router.push("/ai-schedule")}
+                                  >
                                     Snooze
                                   </Button>
                                 </>
@@ -1013,7 +1036,9 @@ export default function MissionControlDashboard({
                   <p className="text-sm text-[#667085] mb-4">
                     Let's get you started with a quick diagnostic!
                   </p>
-                  <Button>Run Quick Diagnostic</Button>
+                  <Button onClick={() => router.push("/dashboard/JEE/quizzes")}>
+                    Run Quick Diagnostic
+                  </Button>
                 </div>
               )}
             </CardContent>
@@ -1062,6 +1087,7 @@ export default function MissionControlDashboard({
                     <Button
                       size="sm"
                       className="w-full group-hover:bg-[#ff5c00] group-hover:text-[#ffffff]"
+                      onClick={() => router.push("/dashboard/jee/mock-tests")}
                     >
                       <Play className="w-3 h-3 mr-2" />
                       Start Mock Test
@@ -1153,6 +1179,7 @@ export default function MissionControlDashboard({
                       size="sm"
                       variant="outline"
                       className="w-full group-hover:bg-[#ff5c00] group-hover:text-[#ffffff] group-hover:border-[#ff5c00]"
+                      onClick={() => router.push("/dashboard/JEE/pyq")}
                     >
                       Start Now
                     </Button>
@@ -1180,6 +1207,7 @@ export default function MissionControlDashboard({
                       size="sm"
                       variant="outline"
                       className="w-full group-hover:bg-[#ff5c00] group-hover:text-[#ffffff] group-hover:border-[#ff5c00]"
+                      onClick={() => router.push("/dashboard/JEE/pyq/practice")}
                     >
                       Start Now
                     </Button>
@@ -1207,6 +1235,7 @@ export default function MissionControlDashboard({
                       size="sm"
                       variant="outline"
                       className="w-full group-hover:bg-[#ff5c00] group-hover:text-[#ffffff] group-hover:border-[#ff5c00]"
+                      onClick={() => router.push("/dashboard/JEE/mistake-bank")}
                     >
                       Start Now
                     </Button>
@@ -1238,6 +1267,7 @@ export default function MissionControlDashboard({
                       size="sm"
                       variant="outline"
                       className="w-full group-hover:bg-[#ff5c00] group-hover:text-[#ffffff] group-hover:border-[#ff5c00]"
+                      onClick={() => router.push("/dashboard/JEE/quizzes")}
                     >
                       Start Now
                     </Button>
@@ -1273,6 +1303,9 @@ export default function MissionControlDashboard({
                       size="sm"
                       variant="outline"
                       className="w-full group-hover:bg-[#ff5c00] group-hover:text-[#ffffff] group-hover:border-[#ff5c00]"
+                      onClick={() =>
+                        router.push("/dashboard/JEE/weakness-test")
+                      }
                     >
                       Start Now
                     </Button>

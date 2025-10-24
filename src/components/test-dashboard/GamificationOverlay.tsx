@@ -184,27 +184,27 @@ export default function GamificationOverlay() {
   const streakIntensity = getStreakIntensity(data.streakDays);
 
   // Achievement notifications
-  useEffect(() => {
-    const newAchievements = data.achievements.filter(
-      (achievement) =>
-        achievement.unlocked &&
-        achievement.unlockedAt &&
-        Date.now() - achievement.unlockedAt.getTime() < 5000
-    );
+  // useEffect(() => {
+  //   const newAchievements = data.achievements.filter(
+  //     (achievement) =>
+  //       achievement.unlocked &&
+  //       achievement.unlockedAt &&
+  //       Date.now() - achievement.unlockedAt.getTime() < 5000
+  //   );
 
-    newAchievements.forEach((achievement) => {
-      if (!doNotDisturb) {
-        toast.success(`Achievement Unlocked: ${achievement.title}`, {
-          description: achievement.description,
-          duration: 5000,
-          action: {
-            label: "View",
-            onClick: () => setShowBadgeGallery(true),
-          },
-        });
-      }
-    });
-  }, [data.achievements, doNotDisturb]);
+  //   newAchievements.forEach((achievement) => {
+  //     if (!doNotDisturb) {
+  //       toast.success(`Achievement Unlocked: ${achievement.title}`, {
+  //         description: achievement.description,
+  //         duration: 5000,
+  //         action: {
+  //           label: "View",
+  //           onClick: () => setShowBadgeGallery(true),
+  //         },
+  //       });
+  //     }
+  //   });
+  // }, [data.achievements, doNotDisturb]);
 
   // Daily bonus spin logic
   const handleSpin = () => {

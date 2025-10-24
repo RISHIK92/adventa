@@ -111,7 +111,7 @@ export const WeakTopicsPreview: React.FC<{
               onClick={() => router.back()}
               className="px-6 py-3 bg-[#ff6b35] hover:bg-[#ff6b35]/90 text-white font-medium rounded-lg transition-colors"
             >
-              Back to Quizzes
+              Back to Dashboard
             </Button>
 
             <Button

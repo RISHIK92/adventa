@@ -118,7 +118,7 @@ export default function SignUpPage() {
         title: "Account Created",
         description: "Welcome! You have successfully signed up.",
       });
-      router.push("/profile"); // Only redirect on success
+      router.push("/dashboard"); // Only redirect on success
     } catch (error: any) {
       toast({
         variant: "destructive",
@@ -149,7 +149,7 @@ export default function SignUpPage() {
         title: "Account Created",
         description: "Welcome!",
       });
-      router.push("/profile"); // Only redirect on success
+      router.push("/dashboard"); // Only redirect on success
     } catch (error: any) {
       toast({
         variant: "destructive",

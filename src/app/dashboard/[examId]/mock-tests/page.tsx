@@ -304,7 +304,8 @@ export default function MockTestsPage() {
                           >
                             {test.status === "completed"
                               ? "Completed"
-                              : "Ready to Start"}
+                              : // : "Ready to Start"}
+                                "No Enough data"}
                           </Badge>
                           <Badge
                             variant="outline"
@@ -368,10 +369,14 @@ export default function MockTestsPage() {
                         ) : (
                           <Button
                             className="bg-[#12b981] text-white hover:bg-[#12b981]/90 font-semibold"
-                            onClick={() => handleCompleteTest(test.testNumber)}
+                            // onClick={() => handleCompleteTest(test.testNumber)}
+                            onClick={() =>
+                              router.push("/dashboard/JEE/quizzes")
+                            }
                           >
                             <Play className="w-4 h-4 mr-2" />
-                            Start Test
+                            {/* Start Test */}
+                            Take Diagnostic test
                           </Button>
                         )}
                       </div>

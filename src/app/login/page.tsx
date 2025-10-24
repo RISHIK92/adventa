@@ -104,7 +104,7 @@ export default function LoginPage() {
         title: "Login Successful",
         description: "Welcome back!",
       });
-      router.push("/profile"); // Only redirect on success
+      router.push("/test-dashboard"); // Only redirect on success
     } catch (error: any) {
       toast({
         variant: "destructive",
@@ -134,7 +134,7 @@ export default function LoginPage() {
         title: "Login Successful",
         description: "Welcome!",
       });
-      router.push("/profile"); // Only redirect on success
+      router.push("/test-dashboard"); // Only redirect on success
     } catch (error: any) {
       toast({
         variant: "destructive",
