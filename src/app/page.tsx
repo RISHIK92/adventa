@@ -9,6 +9,7 @@ import { FrequentlyAskedQuestionsAccordion } from "@/components/home/faqs-with-a
 import SimpleCenteredWithGradient from "@/components/home/simple-centered-with-gradient";
 import { FooterWithGrid } from "@/components/home/footer-with-grid";
 import { CardLayoutHero } from "@/components/home/weakness-card";
+import { Toaster } from "sonner";
 
 export default function Home() {
   return (

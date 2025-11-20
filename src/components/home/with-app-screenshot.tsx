@@ -34,7 +34,7 @@ export default function WithAppScreenshot() {
             opacity-60 sm:left-[calc(50%-30rem)] sm:w-[72.1875rem]"
           />
         </div>
-        <div className="py-24 sm:py-32 lg:pb-40">
+        <div className="py-24 sm:py-20 lg:pb-40">
           <div className="mx-auto max-w-7xl px-6 lg:px-8">
             <div className="mx-auto max-w-2xl text-center">
               <h1 className="text-5xl font-bold tracking-tight text-balance text-[#0f172a] sm:text-7xl">
@@ -47,12 +47,15 @@ export default function WithAppScreenshot() {
               </p>
               <div className="mt-10 flex items-center justify-center gap-x-6">
                 <a
-                  href="#"
-                  className="rounded-md bg-[#ff6b35] px-3.5 py-2.5 text-sm font-semibold text-[#0f172a] shadow-sm hover:bg-[#ff6b35]/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#f3e6fa]"
+                  href="/dashboard"
+                  className="rounded-md bg-[#ff6b35] px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-[#ff6b35]/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#f3e6fa]"
                 >
                   Start Free Trial
                 </a>
-                <a href="#" className="text-sm/6 font-semibold text-[#0f172a]">
+                <a
+                  href="/dashboard"
+                  className="text-sm/6 font-semibold text-[#0f172a]"
+                >
                   View Demo <span aria-hidden="true">→</span>
                 </a>
               </div>

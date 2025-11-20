@@ -35,17 +35,17 @@ export function Header() {
   };
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header className="sticky top-0 z-40 w-full border-b bg-backgrond/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container relative flex h-14 items-center justify-center">
         {/* Logo - left on desktop, centered on mobile */}
         <div className="flex items-center w-full justify-center md:justify-start md:w-auto md:absolute md:left-0 md:top-0 md:h-full">
           <Link href="/" className="flex items-center space-x-2">
             <BrainCircuit className="h-6 w-6 text-primary" />
-            <span className="font-bold sm:inline-block">Vertical Ascent</span>
+            <span className="font-bold sm:inline-block">Study Ai</span>
           </Link>
         </div>
         {/* Desktop Nav - centered */}
-        <div className="hidden md:flex items-center gap-2">
+        {/* <div className="hidden md:flex items-center gap-2">
           <Button asChild variant="ghost" size="sm">
             <Link href="/">Home</Link>
           </Button>
@@ -58,7 +58,7 @@ export function Header() {
           <Button asChild variant="ghost" size="sm">
             <Link href="/test">Mock Tests</Link>
           </Button>
-        </div>
+        </div> */}
         {/* Mobile Hamburger - left on mobile */}
         <div className="flex md:hidden items-center absolute left-0 top-0 h-full">
           <DropdownMenu>
@@ -103,7 +103,11 @@ export function Header() {
                   </Avatar>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-56" align="end" forceMount>
+              <DropdownMenuContent
+                className="w-56 bg-white"
+                align="end"
+                forceMount
+              >
                 <DropdownMenuLabel className="font-normal">
                   <div className="flex flex-col space-y-1">
                     <p className="text-sm font-medium leading-none">
@@ -116,9 +120,9 @@ export function Header() {
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
-                  <Link href="/profile">
+                  <Link href="/dashboard">
                     <UserIcon className="mr-2 h-4 w-4" />
-                    <span>Profile</span>
+                    <span>Dashboard</span>
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />

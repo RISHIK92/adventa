@@ -4,14 +4,14 @@ import { useEffect, useState } from "react";
 import { Clock, AlertTriangle } from "lucide-react";
 
 interface TestTimerProps {
-  duration?: number; // in seconds
+  duration: number; // in seconds
   onTimeUp?: () => void;
   className?: string;
   isMobile?: boolean;
 }
 
 export default function TestTimer({
-  duration = 3600,
+  duration,
   onTimeUp = () => console.log("Time's up!"),
   className,
   isMobile = false,

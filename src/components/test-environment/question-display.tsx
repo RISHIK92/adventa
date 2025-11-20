@@ -2,32 +2,43 @@
 
 import { useState } from "react";
 import { Check } from "lucide-react";
+import Latex from "react-latex-next";
+import "katex/dist/katex.min.css";
+
+interface Option {
+  label: string;
+  value: string;
+}
 
 interface QuestionDisplayProps {
   questionNumber?: number;
   totalQuestions?: number;
-  subject?: string;
+  subject: string;
   type?: "mcq" | "numerical";
   questionText?: string;
-  options?: string[];
+  options?: Option[];
   value?: string;
   onValueChange?: (value: string) => void;
   isMobile?: boolean;
+  imageUrl?: string | null;
 }
+
+const isImageUrl = (url: string) => {
+  return (
+    url.match(/\.(jpeg|jpg|gif|png|svg)$/) != null ||
+    url.startsWith("https://res.cloudinary.com")
+  );
+};
 
 export default function QuestionDisplay({
   questionNumber = 1,
   totalQuestions = 180,
-  subject = "Physics",
-  type = "mcq",
-  questionText = "What is the relationship between the pressure and volume of a gas at constant temperature according to Boyle's Law?",
-  options = [
-    "Pressure is directly proportional to volume (P ∝ V)",
-    "Pressure is inversely proportional to volume (P ∝ 1/V)",
-    "Pressure has no relationship with volume at constant temperature",
-    "Pressure is equal to volume in all cases (P = V)",
-  ],
-  value = "",
+  subject,
+  type,
+  questionText,
+  imageUrl,
+  options,
+  value,
   onValueChange = (val) => console.log("Value changed:", val),
   isMobile = false,
 }: QuestionDisplayProps) {
@@ -52,6 +63,19 @@ export default function QuestionDisplay({
   const textSize = isMobile ? "text-sm md:text-base" : "text-md md:text-lg";
   const optionPadding = isMobile ? "p-3 md:p-4" : "p-5";
 
+  const renderOptionContent = (optionValue: string) => {
+    if (optionValue.startsWith("http")) {
+      return (
+        <img
+          src={optionValue}
+          alt={`Option image`}
+          className="max-w-xs h-auto rounded-md object-contain"
+        />
+      );
+    }
+    return <Latex>{optionValue}</Latex>;
+  };
+
   return (
     <div
       className={`bg-white rounded-xl shadow-sm ${containerPadding} max-w-4xl mx-auto`}
@@ -72,23 +96,28 @@ export default function QuestionDisplay({
       </div>
 
       <div className="mb-6 md:mb-8">
-        <h2
-          className={`${textSize} font-semibold text-gray-900 leading-relaxed`}
-        >
-          {questionText}
-        </h2>
+        <div className="text-md md:text-lg font-semibold text-gray-900 leading-relaxed">
+          {questionText && <Latex>{questionText}</Latex>}
+        </div>
+        {imageUrl && (
+          <div className="mt-4 p-4 bg-gray-50 rounded-lg flex justify-center">
+            <img
+              src={imageUrl}
+              alt="Question illustration"
+              className="max-w-full h-auto rounded-md"
+            />
+          </div>
+        )}
       </div>
 
       {/* MCQ Options */}
       {type === "mcq" && (
         <div className="space-y-2 md:space-y-3">
-          {options?.map((option, index) => {
-            const letters = ["A", "B", "C", "D"];
-            const letter = letters[index];
-            const isSelected = selectedValue === option;
+          {options?.map((option) => {
+            const isSelected = value === option.label;
             return (
               <div
-                key={index}
+                key={option.label}
                 className={`
                   group relative flex items-start gap-3 md:gap-4 ${optionPadding} rounded-xl cursor-pointer transition-all duration-200 border
                   ${
@@ -97,7 +126,7 @@ export default function QuestionDisplay({
                       : "hover:bg-gray-50 border-gray-200"
                   }
                 `}
-                onClick={() => handleValueChange(option)}
+                onClick={() => handleValueChange(option.label)}
               >
                 <div className="flex items-center gap-2 md:gap-3 flex-1 min-w-0">
                   <div
@@ -111,7 +140,7 @@ export default function QuestionDisplay({
                     `}
                     style={isSelected ? { backgroundColor: "#12b981" } : {}}
                   >
-                    {letter}
+                    {option.label}
                   </div>
                   <span
                     className={`
@@ -123,7 +152,7 @@ export default function QuestionDisplay({
                       }
                     `}
                   >
-                    {option}
+                    {renderOptionContent(option.value)}
                   </span>
                 </div>
               </div>
@@ -142,16 +171,16 @@ export default function QuestionDisplay({
             <input
               type="text"
               placeholder="Type your answer here..."
-              value={selectedValue}
+              value={value}
               onChange={(e) => handleValueChange(e.target.value)}
               className="w-full px-3 md:px-4 py-3 md:py-4 text-base md:text-lg rounded-xl focus:outline-none transition-all duration-200 bg-gray-50 focus:bg-white border border-gray-200"
               style={{
-                boxShadow: selectedValue
+                boxShadow: value
                   ? `0 0 0 3px rgba(18, 185, 129, 0.1)`
                   : undefined,
               }}
             />
-            {selectedValue && (
+            {value && (
               <div className="absolute right-3 md:right-4 top-1/2 transform -translate-y-1/2">
                 <Check
                   className="w-4 h-4 md:w-5 md:h-5"

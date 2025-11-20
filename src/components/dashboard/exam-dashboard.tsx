@@ -44,13 +44,47 @@ import { useRouter } from "next/navigation";
 // Mock data for different sections
 const examData = {
   jee: {
-    name: "jee",
+    name: "JEE",
     fullName: "Joint Entrance Examination",
     tagline: "Gateway to Premier Engineering Institutes",
     subjects: ["Physics", "Chemistry", "Mathematics"],
     gradientFrom: "#6ee7b7",
     gradientTo: "#10b981",
     accentColor: "emerald",
+  },
+  neet: {
+    name: "NEET",
+    fullName: "National Eligibility cum Entrance Test",
+    tagline: "Gateway to Premier Medical Institutes",
+    subjects: ["Physics", "Chemistry", "Biology"],
+    gradientFrom: "#6ee7b7",
+    gradientTo: "#10b981",
+    accentColor: "emerald",
+  },
+  viteee: {
+    name: "VITEEE",
+    fullName:
+      "Vellore Institute of Technology Engineering Entrance Examination",
+    tagline: "Gateway to VIT's Premier Engineering Programs",
+    subjects: ["Physics", "Chemistry", "Mathematics", "English", "Aptitude"],
+    gradientFrom: "#60a5fa",
+    gradientTo: "#3b82f6",
+    accentColor: "green",
+  },
+  bitsat: {
+    name: "BITSAT",
+    fullName: "Birla Institute of Technology and Science Admission Test",
+    tagline: "Gateway to BITS Pilani, Goa & Hyderabad",
+    subjects: [
+      "Physics",
+      "Chemistry",
+      "Mathematics",
+      "English",
+      "Logical Reasoning",
+    ],
+    gradientFrom: "#fbbf24",
+    gradientTo: "#f59e0b",
+    accentColor: "amber",
   },
 };
 
@@ -106,7 +140,7 @@ const cheatSheetsData = [
     title: "Classical Mechanics",
     subject: "Physics",
     topics: 24,
-    color: "blue",
+    color: "green",
     icon: TestTube,
     lastUpdated: "2 days ago",
   },
@@ -173,207 +207,167 @@ export default function ImmersiveExamDashboard({ examName }) {
         </div>
       </div>
 
-      <div className="relative z-10 p-6 max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+      <div className="relative z-10 p-6 max-w-7xl mx-auto flex flex-col space-y-8">
+        {/* --- ROW 1: CORE MOCK TESTS --- */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Mock Tests Card */}
           <Card
-            className="relative bg-white/70 backdrop-blur-xl border-0 shadow-lg hover:shadow-2xl transition-all duration-500 group cursor-pointer transform hover:scale-100"
+            className="relative bg-white/70 backdrop-blur-xl border-0 shadow-lg hover:shadow-2xl transition-all duration-500 group cursor-pointer transform hover:-translate-y-1"
             onClick={() => router.push(`/dashboard/${exam.name}/mock-tests`)}
           >
             <div className="absolute inset-0 bg-gradient-to-br from-amber-100/50 to-orange-100/50 group-hover:from-amber-100/70 group-hover:to-orange-100/70 transition-all"></div>
             <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-orange-200/40 to-transparent rounded-bl-3xl"></div>
-
             <CardContent className="relative z-10 p-8">
               <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center space-x-4">
-                  <div>
-                    <h2 className="text-2xl font-bold text-orange-800 mb-2">
-                      Mock Tests
-                    </h2>
-                    <p className="text-orange-700">
-                      Full-length practice exams
-                    </p>
-                  </div>
-                </div>
+                <h2 className="text-2xl font-bold text-orange-800">
+                  Mock Tests
+                </h2>
                 <ChevronRight className="w-8 h-8 text-orange-500 group-hover:text-orange-700 group-hover:translate-x-2 transition-all" />
               </div>
-
               <p className="text-orange-700 mb-6 leading-relaxed">
                 Experience the real exam environment with timed tests that match
                 the exact {exam.name} pattern.
               </p>
-
               <div className="flex items-center justify-between text-sm text-orange-600 font-medium">
                 <span>12 Available Tests</span>
-                <span>3 Hours Each</span>
-                <span>90 Questions</span>
+                <span>Full Syllabus</span>
               </div>
             </CardContent>
           </Card>
 
+          {/* Create Custom Mock Test Card (using green theme for distinction) */}
           <Card
-            className="relative bg-white/70 backdrop-blur-xl border-0 shadow-lg hover:shadow-2xl transition-all duration-500 group cursor-pointer transform hover:scale-100"
-            onClick={() => router.push(`/dashboard/${exam.name}/quizzes`)}
+            className="relative bg-white/70 backdrop-blur-xl border-0 shadow-lg hover:shadow-2xl transition-all duration-500 group cursor-pointer transform hover:-translate-y-1"
+            onClick={() => router.push(`/dashboard/${exam.name}/custom-mock`)}
           >
             <div className="absolute inset-0 bg-gradient-to-br from-green-100/50 to-emerald-100/50 group-hover:from-green-100/70 group-hover:to-emerald-100/70 transition-all"></div>
             <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-green-200/40 to-transparent rounded-bl-3xl"></div>
-
             <CardContent className="relative z-10 p-8">
               <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center space-x-4">
-                  <div>
-                    <h2 className="text-2xl font-bold text-green-800 mb-2">
-                      Quick Practice
-                    </h2>
-                    <p className="text-green-700">
-                      Topic-wise focused sessions
-                    </p>
-                  </div>
-                </div>
+                <h2 className="text-2xl font-bold text-green-800">
+                  Custom Mock Test
+                </h2>
                 <ChevronRight className="w-8 h-8 text-green-500 group-hover:text-green-700 group-hover:translate-x-2 transition-all" />
               </div>
               <p className="text-green-700 mb-6 leading-relaxed">
-                Sharpen specific skills with customizable quizzes on individual
-                topics and concepts.
+                Design your own mock test by selecting chapters for a tailored
+                practice session.
               </p>
-              <div className="flex items-center justify-between text-sm text-green-800">
-                <span>500+ Topics</span>
-                <span>5–50 Questions</span>
-                <span>Instant Results</span>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card
-            className="relative bg-white/70 backdrop-blur-xl border-0 shadow-lg hover:shadow-2xl transition-all duration-500 group cursor-pointer transform hover:scale-100"
-            onClick={() => router.push(`/dashboard/${exam.name}/weakness-test`)}
-          >
-            <div className="absolute inset-0 bg-gradient-to-br from-red-100/50 to-rose-100/50 group-hover:from-red-100/70 group-hover:to-rose-100/70 transition-all"></div>
-            <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-red-200/40 to-transparent rounded-bl-3xl"></div>
-
-            <CardContent className="relative z-10 p-8">
-              <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center space-x-4">
-                  <div>
-                    <h2 className="text-2xl font-bold text-red-800 mb-2">
-                      Weakness Test
-                    </h2>
-                    <p className="text-red-700">AI-powered weakness analysis</p>
-                  </div>
-                </div>
-                <ChevronRight className="w-8 h-8 text-red-500 group-hover:text-red-700 group-hover:translate-x-2 transition-all" />
-              </div>
-
-              <p className="text-red-700 mb-6 leading-relaxed">
-                Identify your weak areas with smart diagnostic tests and get
-                personalized improvement plans.
-              </p>
-
-              <div className="flex items-center justify-between text-sm text-red-600 font-medium">
-                <span>Smart Analysis</span>
-                <span>30-60 Minutes</span>
-                <span>Custom Reports</span>
+              <div className="flex items-center justify-between text-sm text-green-600 font-medium">
+                <span>Personalized Practice</span>
+                <span>Flexible Duration</span>
               </div>
             </CardContent>
           </Card>
         </div>
 
-        {/* Secondary Sections */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Previous Year Questions */}
-          <Card
-            className="bg-white/60 backdrop-blur-xl border-0 shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer group transform hover:scale-105"
-            onClick={() => router.push(`/dashboard/${exam.name}/pyq`)}
-          >
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <div className="p-3 bg-gradient-to-br from-orange-100 to-orange-200 rounded-xl">
-                    <History className="w-6 h-6 text-orange-600" />
-                  </div>
-                  <div>
-                    <CardTitle className="text-lg font-bold">
-                      Previous Years
-                    </CardTitle>
-                    <p className="text-sm text-slate-500">2017-2024 Papers</p>
-                  </div>
+        {/* --- ROW 2: TARGETED PRACTICE TOOLS --- */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {[
+            {
+              title: "Revision Tests",
+              icon: History,
+              color: "teal",
+              desc: "Solidify your knowledge with tests focused on previously covered topics and questions.",
+              path: `/dashboard/${exam.name}/revision-tests`,
+            },
+            {
+              title: "PYQ Papers",
+              icon: Calendar,
+              color: "amber",
+              desc: "Solve full papers from previous years to understand the exam pattern.",
+              path: `/dashboard/${exam.name}/pyq`,
+            },
+            {
+              title: "Chapter-wise PYQs",
+              icon: Brain,
+              color: "green",
+              desc: "Sharpen specific skills by solving previous year questions organized by topic and chapter.",
+              path: `/dashboard/${exam.name}/pyq/practice`,
+            },
+            {
+              title: "Mistake Bank",
+              icon: Target,
+              color: "red",
+              desc: "Revisit and learn from every question you answered incorrectly.",
+              path: `/dashboard/${exam.name}/mistakes`,
+            },
+          ].map((item) => (
+            <Card
+              key={item.title}
+              className="bg-white/60 backdrop-blur-xl border-0 shadow-lg hover:shadow-xl transition-all duration-300 group cursor-pointer transform hover:-translate-y-1 flex flex-col"
+              onClick={() => router.push(item.path)}
+            >
+              <CardContent className="p-6 flex flex-col flex-grow">
+                <div
+                  className={`p-3 self-start bg-gradient-to-br from-${item.color}-100 to-${item.color}-200 rounded-xl mb-4`}
+                >
+                  {/* <item.icon className={`w-7 h-7 text-${item.color}-600`} /> */}
                 </div>
-                <ChevronRight className="w-5 h-5 text-slate-400 group-hover:text-slate-600 group-hover:translate-x-1 transition-all" />
+                <h3 className="font-bold text-lg text-slate-800">
+                  {item.title}
+                </h3>
+                <p className="text-sm text-slate-600 mt-2 flex-grow">
+                  {item.desc}
+                </p>
+                <div
+                  className={`flex items-center mt-6 text-sm font-semibold text-${item.color}-600 group-hover:text-${item.color}-700`}
+                >
+                  <span>Start Now</span>
+                  <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        {/* --- ROW 3: ANALYSIS & IMPROVEMENT --- */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <Card
+            className="relative bg-white/70 backdrop-blur-xl border-0 shadow-lg hover:shadow-2xl transition-all duration-500 group cursor-pointer transform hover:-translate-y-1"
+            onClick={() => router.push(`/dashboard/${exam.name}/quizzes`)}
+          >
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-100/50 to-indigo-100/50 group-hover:from-blue-100/70 group-hover:to-indigo-100/70 transition-all"></div>
+            <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-indigo-200/40 to-transparent rounded-bl-3xl"></div>
+            <CardContent className="relative z-10 p-8">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl font-bold text-blue-800">
+                  Custom Quiz
+                </h2>
+                <ChevronRight className="w-8 h-8 text-blue-500 group-hover:text-blue-700 group-hover:translate-x-2 transition-all" />
               </div>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-slate-600 mb-4">
-                Practice with authentic exam papers from the last 8 years.
+              <p className="text-blue-700 mb-6 leading-relaxed">
+                Sharpen specific skills by solving previous year questions
+                organized by topic and chapter.
               </p>
-              <div className="text-xs text-slate-500 space-y-1">
-                <div>8 Years Available</div>
-                <div>Complete Solutions</div>
-                <div>Performance Analysis</div>
+              <div className="flex items-center justify-between text-sm text-blue-800">
+                <span>500+ Topics</span>
+                <span>Instant Solutions</span>
               </div>
             </CardContent>
           </Card>
 
-          {/* Cheat Sheets */}
+          {/* Mistake Bank Card */}
           <Card
-            className="bg-white/60 backdrop-blur-xl border-0 shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer group transform hover:scale-105"
-            onClick={() => setCurrentView("cheatsheets")}
+            className="relative bg-white/70 backdrop-blur-xl border-0 shadow-lg hover:shadow-2xl transition-all duration-500 group cursor-pointer transform hover:-translate-y-1"
+            onClick={() => router.push(`/dashboard/${exam.name}/weakness-test`)}
           >
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <div className="p-3 bg-gradient-to-br from-emerald-100 to-emerald-200 rounded-xl">
-                    <BookMarked className="w-6 h-6 text-emerald-600" />
-                  </div>
-                  <div>
-                    <CardTitle className="text-lg font-bold">
-                      Cheat Sheets
-                    </CardTitle>
-                    <p className="text-sm text-slate-500">Quick References</p>
-                  </div>
-                </div>
-                <ChevronRight className="w-5 h-5 text-slate-400 group-hover:text-slate-600 group-hover:translate-x-1 transition-all" />
+            <div className="absolute inset-0 bg-gradient-to-br from-red-200/50 to-rose-100/80 group-hover:from-red-100/70 group-hover:to-rose-200/70 transition-all"></div>
+            <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-red-200/40 to-transparent rounded-bl-3xl"></div>
+            <CardContent className="relative z-10 p-8">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl font-bold text-red-800">
+                  Weakness Test
+                </h2>
+                <ChevronRight className="w-8 h-8 text-red-500 group-hover:text-red-700 group-hover:translate-x-2 transition-all" />
               </div>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-slate-600 mb-4">
-                Essential concepts and formulas organized by topics.
+              <p className="text-red-700 mb-6 leading-relaxed">
+                Turn your weaknesses into strengths with our smart weakness
+                tests
               </p>
-              <div className="text-xs text-slate-500 space-y-1">
-                <div>74 Cheat Sheets</div>
-                <div>All Subjects Covered</div>
-                <div>Regularly Updated</div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Formula Sheets */}
-          <Card
-            className="bg-white/60 backdrop-blur-xl border-0 shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer group transform hover:scale-105"
-            onClick={() => setCurrentView("formulas")}
-          >
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <div className="p-3 bg-gradient-to-br from-blue-100 to-blue-200 rounded-xl">
-                    <Calculator className="w-6 h-6 text-blue-600" />
-                  </div>
-                  <div>
-                    <CardTitle className="text-lg font-bold">
-                      Formula Sheets
-                    </CardTitle>
-                    <p className="text-sm text-slate-500">Mathematical Tools</p>
-                  </div>
-                </div>
-                <ChevronRight className="w-5 h-5 text-slate-400 group-hover:text-slate-600 group-hover:translate-x-1 transition-all" />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-slate-600 mb-4">
-                Comprehensive collection of essential formulas and equations.
-              </p>
-              <div className="text-xs text-slate-500 space-y-1">
-                <div>200+ Formulas</div>
-                <div>Subject-wise Organized</div>
-                <div>Easy to Reference</div>
+              <div className="flex items-center justify-between text-sm text-red-600 font-medium">
+                <span>Personalized Error Log</span>
+                <span>Improve Accuracy</span>
               </div>
             </CardContent>
           </Card>
@@ -428,7 +422,7 @@ export default function ImmersiveExamDashboard({ examName }) {
                         className={`${
                           test.attempted
                             ? "bg-green-500/20 text-green-300 border-green-500/30"
-                            : "bg-blue-500/20 text-blue-300 border-blue-500/30"
+                            : "bg-green-500/20 text-green-300 border-green-500/30"
                         }`}
                       >
                         {test.attempted ? "Completed" : "Not Attempted"}

@@ -1,10 +1,15 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { Quiz } from "@/components/test-environment/quiz";
 import { Loader2 } from "lucide-react";
-import { apiService } from "@/app/dashboard/[examId]/weakness-test/page";
+import { apiService } from "@/services/weaknessApi";
+
+type QuestionOption = {
+  label: string;
+  value: string;
+};
 
 interface TestData {
   testInstanceId: string;
@@ -14,7 +19,7 @@ interface TestData {
     id: number;
     questionNumber: number;
     question: string;
-    options: string[];
+    options: QuestionOption[];
     imageUrl?: string;
   }[];
 }
@@ -25,6 +30,13 @@ export default function TestPage() {
   const [error, setError] = useState<string | null>(null);
   const params = useParams();
   const testId = params.testId as string;
+  const router = useRouter();
+
+  useEffect(() => {
+    if (error) {
+      router.push("/dashboard");
+    }
+  }, [error, router]);
 
   useEffect(() => {
     if (!testId) {
@@ -37,7 +49,7 @@ export default function TestPage() {
       try {
         setLoading(true);
         setError(null);
-        const data = await apiService.getTestForTaking(testId);
+        const data = await apiService.getTestData(testId, "custom");
         setTestData(data);
       } catch (err) {
         setError(
@@ -78,5 +90,5 @@ export default function TestPage() {
     );
   }
 
-  return <Quiz quizData={testData} />;
+  return <Quiz quizData={testData} testType="custom" />;
 }

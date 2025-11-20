@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
   ChevronDown,
   BookOpen,
@@ -9,10 +9,19 @@ import {
   Circle,
 } from "lucide-react";
 
+interface Question {
+  id: number;
+  number: number;
+  subject: string;
+  answered: boolean;
+  markedForReview: boolean;
+}
+
 interface QuestionNavigationProps {
   currentQuestion?: number;
   questions?: Array<{
     id: number;
+    number: number;
     answered: boolean;
     markedForReview: boolean;
   }>;
@@ -22,13 +31,11 @@ interface QuestionNavigationProps {
   isMobile?: boolean;
 }
 
+const defaultQuestions: Question[] = [];
+
 export default function QuestionNavigation({
   currentQuestion = 1,
-  questions = Array.from({ length: 50 }, (_, i) => ({
-    id: i + 1,
-    answered: Math.random() > 0.6,
-    markedForReview: Math.random() > 0.8,
-  })),
+  questions = defaultQuestions,
   onQuestionClick = (id) => console.log(`Question ${id} clicked`),
   onSubjectChange = (subject) => console.log(`Subject changed to ${subject}`),
   selectedSubject = "All Subjects",
@@ -36,19 +43,23 @@ export default function QuestionNavigation({
 }: QuestionNavigationProps) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
-  const subjects = [
-    "All Subjects",
-    "Physics",
-    "Chemistry",
-    "Mathematics",
-    "Biology",
-  ];
+  const subjects = useMemo(() => {
+    const subjects = new Set(questions.map((q: any) => q.subject));
+    return ["All Subjects", ...Array.from(subjects)];
+  }, [questions]);
 
   const stats = {
     answered: questions.filter((q) => q.answered).length,
     marked: questions.filter((q) => q.markedForReview).length,
     total: questions.length,
   };
+
+  const filteredQuestions = useMemo(() => {
+    if (selectedSubject === "All Subjects") {
+      return questions;
+    }
+    return questions.filter((q: any) => q.subject === selectedSubject);
+  }, [questions, selectedSubject]);
 
   const getQuestionStatus = (question: (typeof questions)[0]) => {
     const isCurrent = question.id === currentQuestion;
@@ -142,7 +153,7 @@ export default function QuestionNavigation({
         {/* Question Grid */}
         <div className="p-3 md:p-4 max-h-48 md:max-h-64 overflow-y-auto">
           <div className="grid grid-cols-10 md:grid-cols-12 gap-1.5">
-            {questions.map((question) => {
+            {filteredQuestions.map((question) => {
               const status = getQuestionStatus(question);
               const isCurrent = status === "current";
               return (
@@ -158,11 +169,11 @@ export default function QuestionNavigation({
                     backgroundColor: isCurrent ? "#ff6b35" : undefined,
                     borderColor: isCurrent ? "#ff6b35" : undefined,
                   }}
-                  title={`Question ${question.id}${
+                  title={`Question ${question.number}${
                     question.answered ? " (Answered)" : ""
                   }${question.markedForReview ? " (Marked)" : ""}`}
                 >
-                  {question.id}
+                  {question.number}
                   {question.markedForReview && (
                     <div className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 md:w-2 md:h-2 bg-amber-400 rounded-full border border-white" />
                   )}
@@ -268,7 +279,7 @@ export default function QuestionNavigation({
       {/* Question Grid */}
       <div className="p-4 max-h-72 overflow-y-auto">
         <div className="grid grid-cols-8 gap-1.5">
-          {questions.map((question) => {
+          {filteredQuestions.map((question) => {
             const status = getQuestionStatus(question);
             const isCurrent = status === "current";
             return (
@@ -284,11 +295,11 @@ export default function QuestionNavigation({
                   backgroundColor: isCurrent ? "#ff6b35" : undefined,
                   borderColor: isCurrent ? "#ff6b35" : undefined,
                 }}
-                title={`Question ${question.id}${
+                title={`Question ${question.number}${
                   question.answered ? " (Answered)" : ""
                 }${question.markedForReview ? " (Marked)" : ""}`}
               >
-                {question.id}
+                {question.number}
                 {question.markedForReview && (
                   <div className="absolute -top-1 -right-1 w-2 h-2 bg-amber-400 rounded-full border border-white" />
                 )}
